@@ -3,6 +3,8 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 
 public class LaunchBarResult extends JFrame {
 
@@ -16,8 +18,9 @@ public class LaunchBarResult extends JFrame {
     }
 
     public void deactivate() {
-        if(!this.isVisible()) return;
+        if (!this.isVisible()) return;
         System.out.println("Deactivate results bar " + index);
+        firstTimeShowResult = true;
         this.setVisible(false);
     }
 
@@ -31,6 +34,7 @@ public class LaunchBarResult extends JFrame {
     }
 
     private Tile tile;
+    private boolean firstTimeShowResult = true;
 
     public void setResult(Tile tile) {
         this.tile = tile;
@@ -51,10 +55,13 @@ public class LaunchBarResult extends JFrame {
     private JPanel contentPane;
     private Color average = new Color(255, 255, 255);
     private JTextField inputField;
+    private JLabel backgroundImageLabel, frameBorderLabel;
 
     private void updateBar() {
-        this.setVisible(false);
-        this.setVisible(true);
+        if (firstTimeShowResult)
+            updateBackgroundImage();
+        updateBackgroundImageColor();
+        firstTimeShowResult = false;
         inputField.setText(" ");
         inputField.setForeground(average);
         inputField.setVisible(false);
@@ -62,6 +69,7 @@ public class LaunchBarResult extends JFrame {
         inputField.validate();
         inputField.revalidate();
         inputField.setVisible(true);
+        this.setVisible(true);
     }
 
     private void createBar() {
@@ -75,38 +83,7 @@ public class LaunchBarResult extends JFrame {
         this.setLocation(this.getX(), (int) ((int) mainBarRectangle.getY() + main.getDistanceToMainBar() + 20 + ((barRectangle.getHeight() + main.getDistanceBetweenResults()) * (index + 1))));
         barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
 
-        contentPane = new JPanel(null) {
-            public void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                BufferedImage background;
-                if (recalculateBackground) {
-                    background = LaunchBar.getScreenshotImage();
-                    background = LaunchBar.cropImage(background, barRectangle);
-                    background = LaunchBar.darken(background, .9f);
-                    average = LaunchBar.averageColor(background);
-                    background = LaunchBar.blurImageSmall(background);
-                    background = LaunchBar.makeRoundedCorner(background, 20);
-                    oldBackground = background;
-                } else background = oldBackground;
-                g2.drawImage(background, 0, 0, barRectangle.width, barRectangle.height, null);
-                if (tile != null) {
-                    Color overlayGradientColor = main.getColorForCategory(tile.getCategory());
-                    int width = 18 + Math.min(barRectangle.width - 100, Math.min(tile.getLabel().length(), 40) * 18);
-                    GradientPaint gradient = new GradientPaint(3, 0, overlayGradientColor, width, 0, TRANSPARENT, false);
-                    g2.setPaint(gradient);
-                    g2.fillRect(3, 3, width, barRectangle.height - 6);
-                }
-                if (recalculateBackground)
-                    if (average.getRed() + average.getGreen() + average.getBlue() > 300)
-                        average = BLACK;
-                    else average = WHITE;
-                g2.setColor(average);
-                g2.setStroke(new BasicStroke(4));
-                g2.drawRoundRect(1, 1, (int) barRectangle.getWidth() - 2, (int) barRectangle.getHeight() - 2, 20, 20);
-                g2.drawRoundRect(1, 1, (int) barRectangle.getWidth() - 2, (int) barRectangle.getHeight() - 2, 20, 20);
-                g2.dispose();
-            }
-        };
+        contentPane = new JPanel(null);
         contentPane.setPreferredSize(new Dimension(xSize, ySize));
         contentPane.setBackground(new Color(0, 0, 0, 0));
         setBackground(new Color(0, 0, 0, 0));
@@ -126,11 +103,57 @@ public class LaunchBarResult extends JFrame {
         });
         contentPane.add(inputField);
 
+        LaunchBar.TextBubbleBorder roundedLineBorder = new LaunchBar.TextBubbleBorder(Color.WHITE, 4, 18, 0);
+        frameBorderLabel = new JLabel();
+        frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
+        frameBorderLabel.setBackground(new Color(0, 0, 0, 0));
+        frameBorderLabel.setBorder(roundedLineBorder);
+        contentPane.add(frameBorderLabel);
+
+        backgroundImageLabel = new JLabel();
+        backgroundImageLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
+        backgroundImageLabel.setBackground(new Color(0, 0, 0, 0));
+        backgroundImageLabel.setVisible(true);
+        contentPane.add(backgroundImageLabel);
+
         this.setType(Type.UTILITY);
         this.setContentPane(contentPane);
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         this.pack();
         this.setVisible(false);
+    }
+
+    private void updateBackgroundImageColor() {
+        if (tile != null) {
+            BufferedImage updated = deepCopy(oldBackground);
+            Color overlayGradientColor = main.getColorForCategory(tile.getCategory());
+            int width = 18 + Math.min(barRectangle.width - 100, Math.min(tile.getLabel().length(), 40) * 18);
+            GradientPaint gradient = new GradientPaint(3, 0, overlayGradientColor, width, 0, TRANSPARENT, false);
+            Graphics2D g2 = (Graphics2D) updated.getGraphics();
+            g2.setPaint(gradient);
+            g2.fillRect(3, 3, width, barRectangle.height - 6);
+            backgroundImageLabel.setIcon(new ImageIcon(updated));
+        }
+    }
+    private void updateBackgroundImage() {
+        BufferedImage background = LaunchBar.getScreenshotImage();
+        background = LaunchBar.cropImage(background, barRectangle);
+        background = LaunchBar.darken(background, .9f);
+        average = LaunchBar.averageColor(background);
+        background = LaunchBar.blurImageSmall(background);
+        background = LaunchBar.makeRoundedCorner(background, 20);
+        backgroundImageLabel.setIcon(new ImageIcon(background));
+        if (average.getRed() + average.getGreen() + average.getBlue() > 300)
+            average = LaunchBarResult.BLACK;
+        else average = LaunchBarResult.WHITE;
+        oldBackground = background;
+    }
+
+    public static BufferedImage deepCopy(BufferedImage bi) {
+        ColorModel cm = bi.getColorModel();
+        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        WritableRaster raster = bi.copyData(null);
+        return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
     }
 
     public final static Color TRANSPARENT = new Color(0, 0, 0, 0);

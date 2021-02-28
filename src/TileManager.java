@@ -13,6 +13,7 @@ public class TileManager {
     private final ArrayList<Tile> generatedTiles = new ArrayList<>();
     private final ArrayList<TileGenerator> tileGenerators = new ArrayList<>();
     private final ArrayList<Pair<String, String>> categories = new ArrayList<>();
+    private final ArrayList<Pair<String, String>> generatedCategories = new ArrayList<>();
 
     public TileManager(String directory) {
         this.directory = directory;
@@ -48,7 +49,11 @@ public class TileManager {
             System.out.println("Invalid JSON tile data!");
             e.printStackTrace();
         }
-        System.out.println("Read " + this.tiles.size() + " tile" + (this.tiles.size() != 1 ? "s" : "") + " and " + this.categories.size() + (this.categories.size() != 1 ? " categories" : " category"));
+        System.out.println("Done reading:\n" +
+                this.tiles.size() + " custom tile" + (this.tiles.size() != 1 ? "s" : "") + "\n" +
+                this.tileGenerators.size() + " tile generator" + (this.tiles.size() != 1 ? "s" : "") + "\n" +
+                this.generatedTiles.size() + " generated tile" + (this.tiles.size() != 1 ? "s" : "") + "\n" +
+                this.categories.size() + (this.categories.size() != 1 ? " categories" : " category"));
     }
 
     public ArrayList<Tile> search(String search) {
@@ -69,6 +74,8 @@ public class TileManager {
             return catCol.get(cat);
         } else {
             for (Pair<String, String> category : categories)
+                catCol.put(category.getLeft(), LaunchBar.hex2Rgb(category.getRight()));
+            for (Pair<String, String> category : generatedCategories)
                 catCol.put(category.getLeft(), LaunchBar.hex2Rgb(category.getRight()));
             if (catCol.containsKey(cat))
                 return catCol.get(cat);
@@ -99,6 +106,32 @@ public class TileManager {
             tiles.put(tileGenerator.generateJSON());
         }
         return tiles;
+    }
+
+    public void generateCategory(String name, String color) {
+        generatedCategories.add(new Pair<>(name, color));
+    }
+
+    public void generateTile(String id, String label, String category, String keywords, JSONArray actions) {
+        JSONObject tile = new JSONObject();
+        tile.put("id", id);
+        tile.put("label", label);
+        tile.put("category", category);
+        tile.put("keywords", keywords);
+        tile.put("lastExecuted", "0");
+        tile.put("actions", actions);
+        generatedTiles.add(new Tile(tile));
+    }
+
+    public void generateSettingTile(String id, String label, String category, String keywords, String action) {
+        JSONArray settingsAction = new JSONArray();
+        JSONObject settingsActionObject = new JSONObject();
+        JSONObject settingsActionObjectParameters = new JSONObject();
+        settingsActionObjectParameters.put("setting", action);
+        settingsActionObject.put("action", settingsActionObjectParameters);
+        settingsActionObject.put("type", "settings");
+        settingsAction.put(settingsActionObject);
+        generateTile(id, label, category, keywords, settingsAction);
     }
 
     public void save() {
