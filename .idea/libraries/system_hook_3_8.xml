@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="system-hook-3.8">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/system-hook-3.8.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
