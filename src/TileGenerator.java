@@ -73,14 +73,43 @@ public class TileGenerator {
                 }
 
             }
+        } else if (type.equals("file")) {
+            if (param1 != null) {
+                for (File file : FileUtils.listf(param1)) {
+                    boolean addFile = false, dontAddFile = false;
+                    if (param2 == null) addFile = true;
+                    else
+                        for (String mustContain : param2.split(",")) {
+                            if (file.getName().contains(mustContain)) {
+                                if (param3 == null) {
+                                    addFile = true;
+                                    break;
+                                } else {
+                                    addFile = true;
+                                    for (String mayNotContain : param3.split(","))
+                                        if (file.getName().contains(mayNotContain)) {
+                                            dontAddFile = true;
+                                            break;
+                                        }
+                                }
+                            }
+                            if(dontAddFile) break;
+                        }
+                    if (addFile && !dontAddFile)
+                        generated.add(generateOpenFileTile(file));
+                }
+            }
         }
 
         return generated;
     }
 
+    private Tile generateOpenFileTile(File file) {
+        return generateOpenFileTile(file.getAbsolutePath(), file.getName(), file.getName(), file.getParentFile().getName(), category);
+    }
+
     private Tile generateMusicTile(File file) {
         return generateOpenFileTile(file.getAbsolutePath(), file.getName(), file.getName(), file.getParentFile().getName(), category);
-
     }
 
     private Tile generateOpenFileTile(String file, String id, String label, String keywords, String category) {

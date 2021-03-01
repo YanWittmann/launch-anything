@@ -116,7 +116,7 @@ public class GuiSettings {
     private final static String[] CATEGORIES_COLUMN_NAMES = new String[]{"ID", "Category name", "Color"};
 
     private final static String[] CREATE_NEW_TILE_PRESET = new String[]{"None", "Open file", "Open URL", "Copy to clipboard", "Settings"};
-    private final static String[] CREATE_NEW_TILE_GENERATOR_PRESET = new String[]{"None", "Music"};
+    private final static String[] CREATE_NEW_TILE_GENERATOR_PRESET = new String[]{"None", "Files", "Music"};
 
     private ArrayList<Pair<String, String>> displayCategories;
 
@@ -199,6 +199,13 @@ public class GuiSettings {
         TileGenerator tileGeneratorToAdd = null;
         switch (preset) {
             case "None" -> tileGeneratorToAdd = new TileGenerator();
+            case "Files" -> {
+                String input = Popup.input("Enter the path to the folder with the files:", "");
+                String filerMust = Popup.input("Enter filter strings (split with ',') from which at least one must be contained in the filename or leave empty:", "");
+                String filerMayNot = Popup.input("Enter filter strings (split with ',') that may not be contained in the filename or leave empty:", "");
+                if (input == null || input.length() == 0) return;
+                tileGeneratorToAdd = new TileGenerator("file", "openFile", new File(input).getAbsolutePath(), makeNullIfEmpty(filerMust), makeNullIfEmpty(filerMayNot), null);
+            }
             case "Music" -> {
                 String input = Popup.input("Enter the path to the folder with the music files:", "");
                 if (input == null || input.length() == 0) return;
