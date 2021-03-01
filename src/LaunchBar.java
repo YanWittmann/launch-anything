@@ -15,12 +15,6 @@ public class LaunchBar extends JFrame {
 
     public LaunchBar(Main main) {
         this.main = main;
-        try {
-            robot = new Robot();
-        } catch (AWTException e) {
-            e.printStackTrace();
-            robot = null;
-        }
         createBar();
         BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
@@ -139,7 +133,7 @@ public class LaunchBar extends JFrame {
     public static Rectangle barRectangle;
 
     public static BufferedImage getScreenshotImage() {
-        return robot.createScreenCapture(screenRectangle);
+        return getRobot().createScreenCapture(screenRectangle);
     }
 
     public static BufferedImage blurImage(BufferedImage image) {
@@ -247,13 +241,13 @@ public class LaunchBar extends JFrame {
     }
 
     public static void click(int x, int y) throws AWTException {
-        robot.mouseMove(x, y);
-        robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-        robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+        getRobot().mouseMove(x, y);
+        getRobot().mousePress(InputEvent.BUTTON1_DOWN_MASK);
+        getRobot().mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
     }
 
     public static void goTo(int x, int y) throws AWTException {
-        robot.mouseMove(x, y);
+        getRobot().mouseMove(x, y);
     }
 
     public static BufferedImage cropImage(BufferedImage src, Rectangle rect) {
@@ -457,5 +451,16 @@ public class LaunchBar extends JFrame {
             g2.setStroke(stroke);
             g2.draw(area);
         }
+    }
+
+    private static Robot getRobot() {
+        if (robot == null)
+            try {
+                robot = new Robot();
+            } catch (AWTException e) {
+                e.printStackTrace();
+                robot = null;
+            }
+        return robot;
     }
 }

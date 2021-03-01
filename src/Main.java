@@ -24,6 +24,7 @@ public class Main {
         if (openMode.equals("bar")) {
             main.initializeBar();
             main.initializeKeyDetector();
+            new LaunchBarNotification("LaunchAnything is active");
         } else if (openMode.equals("settings")) {
             main.openSettings();
         }
@@ -51,8 +52,8 @@ public class Main {
 
     private void beforeTasks() {
         if (getConfig("firstTimeOpen").equals("true")) {
-            int result = Popup.selectButton("LaunchBar", "Do you want to create an autostart shortcut to launch the application on system startup?\n" +
-                    "You can still do this later in the general settings.", new String[]{"Yes", "No"});
+            int result = Popup.selectButton("LaunchBar", "Do you want to have the application launch on system startup?\n" +
+                    "You can still change this later in the general settings.", new String[]{"Yes", "No"});
             if (result == 0) setAutostart(true);
             setConfig("firstTimeOpen", "false");
         }
