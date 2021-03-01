@@ -30,8 +30,8 @@ public class TileAction {
             case "settings":
                 if (action.has("setting")) {
                     String setting = action.getString("setting");
-                    if(setting.equals("settings")) Main.setOpenMode(false);
-                    if(setting.equals("exit")) System.exit(1);
+                    if (setting.equals("settings")) Main.setOpenMode(false);
+                    if (setting.equals("exit")) System.exit(1);
                 }
         }
     }
@@ -47,5 +47,14 @@ public class TileAction {
         StringSelection selection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(selection, selection);
+    }
+
+    public void openEditor() {
+
+    }
+
+    @Override
+    public String toString() {
+        return actionType + " " + action;
     }
 }

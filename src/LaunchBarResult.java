@@ -25,12 +25,9 @@ public class LaunchBarResult extends JFrame {
     }
 
     public void prepareNow() {
-        recalculateBackground = true;
         System.out.println("Preparing results bar " + index);
-        this.setVisible(false);
-        this.setVisible(true);
-        this.setVisible(false);
-        recalculateBackground = false;
+        firstTimeShowResult = true;
+        updateBar(false);
     }
 
     private Tile tile;
@@ -39,7 +36,7 @@ public class LaunchBarResult extends JFrame {
     public void setResult(Tile tile) {
         this.tile = tile;
         System.out.println("Display results bar " + index);
-        updateBar();
+        updateBar(true);
         inputField.setText(tile.getLabel());
     }
 
@@ -56,20 +53,26 @@ public class LaunchBarResult extends JFrame {
     private Color average = new Color(255, 255, 255);
     private JTextField inputField;
     private JLabel backgroundImageLabel, frameBorderLabel;
+    private LaunchBar.TextBubbleBorder roundedLineBorderWhite = new LaunchBar.TextBubbleBorder(Color.WHITE, 4, 18, 0);
+    private LaunchBar.TextBubbleBorder roundedLineBorderBlack = new LaunchBar.TextBubbleBorder(Color.BLACK, 4, 18, 0);
 
-    private void updateBar() {
+    private void updateBar(boolean setVisibleAfterwards) {
         if (firstTimeShowResult)
             updateBackgroundImage();
         updateBackgroundImageColor();
         firstTimeShowResult = false;
-        inputField.setText(" ");
+        inputField.setText("");
         inputField.setForeground(average);
+        if (average.getBlue() == 255)
+            frameBorderLabel.setBorder(roundedLineBorderWhite);
+        else frameBorderLabel.setBorder(roundedLineBorderBlack);
         inputField.setVisible(false);
         inputField.invalidate();
         inputField.validate();
         inputField.revalidate();
         inputField.setVisible(true);
-        this.setVisible(true);
+        this.setVisible(setVisibleAfterwards);
+        System.out.println("Done preparing " + index);
     }
 
     private void createBar() {
@@ -103,11 +106,10 @@ public class LaunchBarResult extends JFrame {
         });
         contentPane.add(inputField);
 
-        LaunchBar.TextBubbleBorder roundedLineBorder = new LaunchBar.TextBubbleBorder(Color.WHITE, 4, 18, 0);
         frameBorderLabel = new JLabel();
         frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
         frameBorderLabel.setBackground(new Color(0, 0, 0, 0));
-        frameBorderLabel.setBorder(roundedLineBorder);
+        frameBorderLabel.setBorder(roundedLineBorderWhite);
         contentPane.add(frameBorderLabel);
 
         backgroundImageLabel = new JLabel();
@@ -135,6 +137,7 @@ public class LaunchBarResult extends JFrame {
             backgroundImageLabel.setIcon(new ImageIcon(updated));
         }
     }
+
     private void updateBackgroundImage() {
         BufferedImage background = LaunchBar.getScreenshotImage();
         background = LaunchBar.cropImage(background, barRectangle);

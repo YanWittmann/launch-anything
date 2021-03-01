@@ -1,7 +1,10 @@
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
 import org.json.JSONObject;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -13,19 +16,19 @@ public class Main {
         Main main = new Main();
         self = main;
         main.initializeConfig();
-        if (main.configOpenMode.equals("bar")) {
-            main.initializeSettings();
+        main.initializeTileManager();
+        String openMode = main.getConfigOrSetDefault("openMode", "bar");
+        if (openMode.equals("bar")) {
             main.initializeBar();
             main.initializeKeyDetector();
-        } else if (main.configOpenMode.equals("settings")) {
-
+        } else if (openMode.equals("settings")) {
+            main.openSettings();
         }
     }
 
     private final static int ACTIVATION_KEY = GlobalKeyEvent.VK_CONTROL;
     private final static int CANCEL_KEY = GlobalKeyEvent.VK_ESCAPE;
 
-    private String configOpenMode = "bar";
     private JSONObject config = new JSONObject();
 
     private void initializeConfig() {
@@ -35,12 +38,11 @@ public class Main {
                 StringBuilder inputJSONbuilder = new StringBuilder();
                 for (String s : input) inputJSONbuilder.append(s.trim());
                 config = new JSONObject(inputJSONbuilder.toString());
-                if (config.has("openMode"))
-                    configOpenMode = config.getString("openMode");
                 return;
             }
         }
-        setConfig("openMode", configOpenMode);
+        //file does not exist, write new
+        setConfig("openMode", "bar");
     }
 
     private void initializeKeyDetector() {
@@ -60,12 +62,13 @@ public class Main {
 
     private void initializeBar() {
         launchBar = new LaunchBar(this);
+        createResultsAmount(maxAmountResults);
     }
 
     private TileManager tileManager;
 
-    private void initializeSettings() {
-        tileManager = new TileManager("D:\\files\\create\\programming\\projects\\launch-anything\\launch-anything-res\\");
+    private void initializeTileManager() {
+        tileManager = new TileManager("D:\\files\\create\\programming\\projects\\launch-anything\\res\\");
         readSettingsData();
 
         tileManager.generateSettingTile("openSettings", "LaunchAnything Settings", "settings", "settings,launch,anything,open,options", "settings");
@@ -73,8 +76,34 @@ public class Main {
         tileManager.generateCategory("settings", "#8a0a14");
     }
 
+    private void openSettings() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+        GuiSettings settings = new GuiSettings(this);
+        JFrame frame = new JFrame("LaunchAnything Settings");
+
+        frame.setContentPane(settings.getMainPanel());
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.setIconImage(new ImageIcon("res/icon.png").getImage());
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                frame.dispose();
+                System.exit(0);
+            }
+        });
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
+        settings.updateTiles(tileManager.getNonGeneratedTiles());
+    }
+
     private void readSettingsData() {
-        tileManager.read();
+        tileManager.read(getConfig("openMode").equals("bar"));
     }
 
     private long mostRecentSearchTime = 0;
@@ -95,14 +124,13 @@ public class Main {
             }
         }
         searchRunning = true;
-        System.out.println("searching for '" + search + "'");
+        System.out.println("Searching for '" + search + "'");
         search = search.toLowerCase();
         currentResults = sortResults(tileManager.search(search));
         createResultsAmount(currentResults.size());
         for (int i = 0, resultsSize = currentResults.size(); i < launchBarResults.size() && i < maxAmountResults; i++) {
             if (i < resultsSize) {
                 Tile tile = currentResults.get(i);
-                if (previousAmount <= i) launchBarResults.get(i).prepareNow();
                 launchBarResults.get(i).setResult(tile);
                 System.out.println("Displaying result tile (" + i + ") " + tile);
             } else {
@@ -162,7 +190,6 @@ public class Main {
             if (i < 0) continue;
             if (i < resultsSize) {
                 Tile tile = currentResults.get(i);
-                if (previousAmount <= i) launchBarResults.get(counter).prepareNow();
                 launchBarResults.get(counter).setResult(tile);
                 System.out.println("Displaying result tile (" + counter + ") " + tile);
             } else {
@@ -200,7 +227,7 @@ public class Main {
         long millis = getTime();
         if (millis < lastActivationKeyPressMillis + maxPeriod && millis > lastActivationKeyPressMillis + minPeriod) {
             launchBar.activate();
-            launchBarResults.forEach(LaunchBarResult::prepareNow);
+            launchBarResults.forEach(launchBarResult -> new Thread(launchBarResult::prepareNow).start());
         }
         lastActivationKeyPressMillis = millis;
     }
@@ -208,6 +235,10 @@ public class Main {
     private void cancelKeyPress() {
         launchBar.deactivate();
         launchBarResults.forEach(LaunchBarResult::deactivate);
+    }
+
+    public void save() {
+        tileManager.save();
     }
 
     public static long getTime() {
@@ -227,6 +258,14 @@ public class Main {
         if(config.has(key))
             return config.getString(key);
         return "";
+    }
+
+    public String getConfigOrSetDefault(String key, String def) {
+        if(config.has(key))
+            return config.getString(key);
+        setConfig(key, def);
+        FileUtils.writeFile(new File("res/config.json"), config.toString());
+        return def;
     }
 
     public static void setOpenMode(boolean barMode) {

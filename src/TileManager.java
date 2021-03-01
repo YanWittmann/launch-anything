@@ -19,7 +19,7 @@ public class TileManager {
         this.directory = directory;
     }
 
-    public void read() {
+    public void read(boolean generateTiles) {
         String[] tiles = FileUtils.readFile(new File(directory + TILES_JSON));
         if (tiles == null || tiles.length == 0) {
             System.out.println("Unable to read tile data!");
@@ -39,20 +39,22 @@ public class TileManager {
                 JSONObject cat = categoriesArray.getJSONObject(i);
                 this.categories.add(new Pair<>(cat.getString("name"), cat.getString("color")));
             }
-            for (int i = 0; i < tileGeneratorsArray.length(); i++) {
-                TileGenerator generator = new TileGenerator(tileGeneratorsArray.getJSONObject(i));
-                generatedTiles.addAll(generator.generateTiles());
-                this.tileGenerators.add(generator);
-            }
+                for (int i = 0; i < tileGeneratorsArray.length(); i++) {
+                    TileGenerator generator = new TileGenerator(tileGeneratorsArray.getJSONObject(i));
+                    if (generateTiles)
+                    generatedTiles.addAll(generator.generateTiles());
+                    this.tileGenerators.add(generator);
+                }
 
         } catch (Exception e) {
             System.out.println("Invalid JSON tile data!");
             e.printStackTrace();
+            Popup.error("LaunchAnything", "Unable to import data:\nInvalid JSON tile data!\n" + e.toString());
         }
-        System.out.println("Done reading:\n" +
+        System.out.println("Imported:\n" +
                 this.tiles.size() + " custom tile" + (this.tiles.size() != 1 ? "s" : "") + "\n" +
-                this.tileGenerators.size() + " tile generator" + (this.tiles.size() != 1 ? "s" : "") + "\n" +
-                this.generatedTiles.size() + " generated tile" + (this.tiles.size() != 1 ? "s" : "") + "\n" +
+                this.tileGenerators.size() + " tile generator" + (this.tileGenerators.size() != 1 ? "s" : "") + "\n" +
+                this.generatedTiles.size() + " generated tile" + (this.generatedTiles.size() != 1 ? "s" : "") + "\n" +
                 this.categories.size() + (this.categories.size() != 1 ? " categories" : " category"));
     }
 
@@ -140,5 +142,9 @@ public class TileManager {
         object.put("categories", generateCategoriesJSON());
         object.put("tileGenerators", generateGeneratorsJSON());
         FileUtils.writeFile(new File(directory + TILES_JSON), object.toString());
+    }
+
+    public ArrayList<Tile> getNonGeneratedTiles() {
+        return tiles;
     }
 }

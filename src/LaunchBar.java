@@ -22,12 +22,16 @@ public class LaunchBar extends JFrame {
             robot = null;
         }
         createBar();
+        BufferedImage cursorImg = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+        Cursor blankCursor = Toolkit.getDefaultToolkit().createCustomCursor(
+                cursorImg, new Point(0, 0), "blank cursor");
+        this.getContentPane().setCursor(blankCursor);
     }
 
     public void activate() {
         System.out.println("Activate bar");
         updateBackgroundImage();
-        updateBar(true);
+        updateBar();
     }
 
     public void deactivate() {
@@ -110,10 +114,13 @@ public class LaunchBar extends JFrame {
             c = '+';
         } else if (Character.isAlphabetic(c) || Character.isDigit(c)) append = true;
         else if (c == ' ') append = true;
-        else if (typed == 8 && inputField.getText().length() > 1)
+        else if (typed == 8 && inputField.getText().length() > 1) { //backspace
             inputField.setText(inputField.getText().substring(0, inputField.getText().length() - 1));
+            getFocus();
+        }
         if (append) {
             inputField.setText(inputField.getText() + c);
+            getFocus();
         }
         if (updateLastCharacter) lastCharacter = typed;
         if (inputField.getText().length() > 1) new Thread(() -> main.search(inputField.getText().trim())).start();
@@ -145,30 +152,27 @@ public class LaunchBar extends JFrame {
 
     private static int xSize, ySize;
     private BufferedImage oldBackground;
-    private boolean recalculateBackground = true;
     private JPanel contentPane;
     private Color average = new Color(255, 255, 255);
     private JTextField inputField;
     private JLabel backgroundImageLabel, frameBorderLabel;
+    private LaunchBar.TextBubbleBorder roundedLineBorderWhite = new LaunchBar.TextBubbleBorder(Color.WHITE, 4, 18, 0);
+    private LaunchBar.TextBubbleBorder roundedLineBorderBlack = new LaunchBar.TextBubbleBorder(Color.BLACK, 4, 18, 0);
 
-    private void updateBar(boolean recalculateBackground) {
-        this.recalculateBackground = recalculateBackground;
-        this.setVisible(false);
-        this.setVisible(true);
+    private void updateBar() {
         inputField.setText(" ");
         inputField.setForeground(average);
+        if (average.getBlue() == 255)
+            frameBorderLabel.setBorder(roundedLineBorderWhite);
+        else frameBorderLabel.setBorder(roundedLineBorderBlack);
         inputField.setVisible(false);
         inputField.invalidate();
         inputField.validate();
         inputField.revalidate();
         inputField.setVisible(true);
-        try {
-            Point mouse = MouseInfo.getPointerInfo().getLocation();
-            click((int) barRectangle.getX() + 10, (int) barRectangle.getY());
-            goTo((int) mouse.getX(), (int) mouse.getY());
-        } catch (AWTException e) {
-            e.printStackTrace();
-        }
+        this.setVisible(false);
+        this.setVisible(true);
+        getFocus();
     }
 
     private void createBar() {
@@ -198,11 +202,10 @@ public class LaunchBar extends JFrame {
         inputField.setVisible(true);
         contentPane.add(inputField);
 
-        TextBubbleBorder roundedLineBorder = new TextBubbleBorder(Color.WHITE, 4, 18, 0);
         frameBorderLabel = new JLabel();
         frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
         frameBorderLabel.setBackground(new Color(0, 0, 0, 0));
-        frameBorderLabel.setBorder(roundedLineBorder);
+        frameBorderLabel.setBorder(roundedLineBorderWhite);
         contentPane.add(frameBorderLabel);
 
         backgroundImageLabel = new JLabel();
@@ -222,7 +225,6 @@ public class LaunchBar extends JFrame {
     private void updateBackgroundImage() {
         BufferedImage background = getScreenshotImage();
         background = cropImage(background, barRectangle);
-        System.out.println(barRectangle);
         background = darken(background, .9f);
         average = averageColor(background);
         background = blurImage(background);
@@ -232,6 +234,16 @@ public class LaunchBar extends JFrame {
             average = LaunchBarResult.BLACK;
         else average = LaunchBarResult.WHITE;
         oldBackground = background;
+    }
+
+    public static void getFocus() {
+        try {
+            Point mouse = MouseInfo.getPointerInfo().getLocation();
+            click((int) barRectangle.getX() + 10, (int) barRectangle.getY());
+            goTo((int) mouse.getX(), (int) mouse.getY());
+        } catch (AWTException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void click(int x, int y) throws AWTException {

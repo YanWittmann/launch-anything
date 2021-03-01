@@ -7,6 +7,7 @@ import java.util.stream.IntStream;
 public class Tile {
 
     private long lastExecuted = 0;
+    private boolean hidden = false;
     private String category;
     private String id;
     private String label;
@@ -25,6 +26,7 @@ public class Tile {
         keywordsString = json.getString("keywords");
         keywords = keywordsString.split(",");
         lastExecuted = Long.parseLong("" + json.getString("lastExecuted"));
+        if (json.has("hidden")) hidden = json.getString("hidden").equals("true");
 
         normalizedCategory = normalize(category);
         normalizedId = normalize(id);
@@ -37,6 +39,7 @@ public class Tile {
     }
 
     public boolean matchesSearch(String search) {
+        if (hidden) return false;
         //look for entire words
         String[] splitted = search.split(" ");
         int amountSearchFound = 0;
@@ -79,7 +82,7 @@ public class Tile {
                 }
 
             if (mayMatchNonBeginningCharacter) {
-                if(charArray[i] == search.charAt(amountFound)) amountFound++;
+                if (charArray[i] == search.charAt(amountFound)) amountFound++;
                 else mayMatchNonBeginningCharacter = false;
             }
             if (amountFound >= search.length()) return true;
@@ -103,6 +106,7 @@ public class Tile {
         object.put("label", label);
         object.put("keywords", keywordsString);
         object.put("lastExecuted", "" + lastExecuted);
+        if (hidden) object.put("hidden", true);
         JSONArray actions = new JSONArray();
         Arrays.stream(this.actions).map(TileAction::generateJSON).forEach(actions::put);
         object.put("actions", actions);
@@ -119,6 +123,43 @@ public class Tile {
 
     public String getCategory() {
         return category;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getKeywordsString() {
+        return keywordsString;
+    }
+
+    public TileAction[] getActions() {
+        return actions;
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setTileDataFromSettings(String id, String label, String category, String keywords, boolean hidden, String lastExecuted) {
+        this.id = id;
+        this.label = label;
+        this.category = category;
+        this.keywordsString = keywords;
+        this.keywords = keywordsString.split(",");
+        this.hidden = hidden;
+        try {
+            this.lastExecuted = Long.parseLong(lastExecuted);
+        } catch (Exception e) {}
+
+        normalizedCategory = normalize(category);
+        normalizedId = normalize(id);
+        normalizedLabel = normalize(label);
+        normalizedKeywords = normalize(keywordsString).split(",");
+    }
+
+    public void openActionEditor() {
+        System.out.println("Editing " + toString());
     }
 
     @Override
