@@ -29,8 +29,8 @@ public class Main {
         }
     }
 
-    private final static int ACTIVATION_KEY = GlobalKeyEvent.VK_CONTROL;
-    private final static int CANCEL_KEY = GlobalKeyEvent.VK_ESCAPE;
+    private int activationKey = GlobalKeyEvent.VK_CONTROL;
+    private int cancelKey = GlobalKeyEvent.VK_ESCAPE;
 
     private JSONObject config = new JSONObject();
 
@@ -53,9 +53,16 @@ public class Main {
         if (getConfig("firstTimeOpen").equals("true")) {
             int result = Popup.selectButton("LaunchBar", "Do you want to create an autostart shortcut to launch the application on system startup?\n" +
                     "You can still do this later in the general settings.", new String[]{"Yes", "No"});
-            if (result == 0) createAutostartShortcut();
+            if (result == 0) setAutostart(true);
             setConfig("firstTimeOpen", "false");
         }
+        launcherBarXsize = getConfigIntegerOrSetDefault("launcherBarXsize", 800);
+        launcherBarYsize = getConfigIntegerOrSetDefault("launcherBarYsize", 80);
+        distanceToMainBar = getConfigIntegerOrSetDefault("distanceToMainBar", 10);
+        distanceBetweenResults = getConfigIntegerOrSetDefault("distanceBetweenResults", 6);
+        maxAmountResults = getConfigIntegerOrSetDefault("maxAmountResults", 8);
+        activationKey = getConfigIntegerOrSetDefault("activationKey", 17);
+        maxPeriod = getConfigIntegerOrSetDefault("maxDoubleClickDuration", 300);
     }
 
     private void initializeKeyDetector() {
@@ -64,10 +71,13 @@ public class Main {
             @Override
             public void keyDetected(GlobalKeyEvent event) {
                 //System.out.println(event);
-                switch (event.getVirtualKeyCode()) {
-                    case ACTIVATION_KEY -> activationKeyPress();
-                    case CANCEL_KEY -> cancelKeyPress();
-                    default -> launchBar.characterTyped(event.getVirtualKeyCode());
+                int virtualKeyCode = event.getVirtualKeyCode();
+                if (virtualKeyCode == activationKey) {
+                    activationKeyPress();
+                } else if (virtualKeyCode == cancelKey) {
+                    cancelKeyPress();
+                } else {
+                    launchBar.characterTyped(event.getVirtualKeyCode());
                 }
             }
         };
@@ -115,6 +125,7 @@ public class Main {
         settings.updateTiles(tileManager.getNonGeneratedTiles());
         settings.updateTileGenerators(tileManager.getTileGenerators());
         settings.updateCategories(tileManager.getCategories());
+        settings.initializeGeneralSettings();
     }
 
     private void readSettingsData() {
@@ -152,13 +163,11 @@ public class Main {
                 launchBarResults.get(i).deactivate();
             }
         }
-        previousAmount = currentResults.size();
         searchRunning = false;
     }
 
     public void resetSearch() {
         launchBarResults.forEach(LaunchBarResult::deactivate);
-        previousAmount = 0;
     }
 
     private ArrayList<Tile> sortResults(ArrayList<Tile> tiles) {
@@ -216,7 +225,6 @@ public class Main {
     }
 
     private final ArrayList<LaunchBarResult> launchBarResults = new ArrayList<>();
-    private int previousAmount = 0;
 
     private void createResultsAmount(int amount) {
         while (launchBarResults.size() < amount && maxAmountResults > launchBarResults.size()) {
@@ -287,21 +295,49 @@ public class Main {
         return def;
     }
 
+    public int getConfigIntegerOrSetDefault(String key, int def) {
+        if (config.has(key)) {
+            try {
+                return Integer.parseInt(config.getString(key));
+            } catch (Exception ignored) {
+            }
+        }
+        setConfig(key, "" + def);
+        FileUtils.writeFile(new File("res/config.json"), config.toString());
+        return def;
+    }
+
     public static void setOpenMode(boolean barMode) {
         self.setConfig("openMode", barMode ? "bar" : "settings");
+        if (FileUtils.fileExists("launch-anything.jar")) FileUtils.openJar("launch-anything.jar", ".", new String[]{});
         System.exit(0);
     }
 
-    public static void createAutostartShortcut() {
+    public final static String AUTOSTART_SHORTCUT = "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\launch-anything.lnk";
+
+    public void setAutostart(boolean active) {
         try {
-            ShellLink.createLink("launch-anything.jar", "launch-anything.lnk");
-            FileUtils.copyFile("launch-anything.lnk", "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\launch-anything.lnk");
-            FileUtils.deleteFile("launch-anything.lnk");
-            Popup.message("LaunchAnything", "Created shortcut in:\nC:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\launch-anything.lnk");
+            if (active) {
+                if (!getAutostartState()) {
+                    ShellLink.createLink("launch-anything.jar", "launch-anything.lnk");
+                    FileUtils.copyFile("launch-anything.lnk", AUTOSTART_SHORTCUT);
+                    FileUtils.deleteFile("launch-anything.lnk");
+                    Popup.message("LaunchAnything", "Created shortcut in:\n" + AUTOSTART_SHORTCUT);
+                }
+            } else {
+                if (getAutostartState()) {
+                    FileUtils.deleteFile(AUTOSTART_SHORTCUT);
+                    Popup.message("LaunchAnything", "Removed shortcut from:\n" + AUTOSTART_SHORTCUT);
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
-            Popup.error("LaunchAnything", "Unable to create shortcut:\n" + e.toString());
+            Popup.error("LaunchAnything", "Unable to set shortcut state to (" + active + "):\n" + e.toString());
         }
+    }
+
+    public boolean getAutostartState() {
+        return FileUtils.fileExists(AUTOSTART_SHORTCUT);
     }
 
     private int launcherBarXsize = 800;

@@ -3,6 +3,8 @@ import org.json.JSONObject;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.io.IOException;
+import java.net.URI;
 
 public class TileAction {
     private String actionType;
@@ -31,6 +33,16 @@ public class TileAction {
                 if (action.has("path")) {
                     String path = action.getString("path");
                     FileUtils.openFile(path, path.replaceAll("(^.+)(?:/|\\\\)[^\\\\/]+", "$1"));
+                }
+                break;
+            case "openURL":
+                if (action.has("url")) {
+                    String path = action.getString("url");
+                    try {
+                        Desktop.getDesktop().browse(URI.create(path));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
             case "copyToClipboard":

@@ -3,14 +3,18 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.IntStream;
 
 public class GuiSettings {
     private JPanel mainPanel;
-    private JTabbedPane tabbedPane1;
+    private JTabbedPane tabPane;
     private JTable tilesTable;
     private JTable categoriesTable;
     private JTable tileGeneratorsTable;
@@ -25,18 +29,28 @@ public class GuiSettings {
     private JButton createCategoryButton;
     private JButton removeCategoryButton;
     private JButton saveCategoriesButton;
+    private JButton saveGeneralButton;
+    private JTextField generalWidth;
+    private JRadioButton onRadioButton;
+    private JRadioButton offRadioButton;
+    private JButton clickMeButton;
+    private JTextField generalHeight;
+    private JTextField generalDistToResults;
+    private JTextField generalDistBetweenResults;
+    private JTextField generalMaxResults;
+    private JTextField generalActivationKey;
+    private JTextField generalDoubleClickMax;
     private Main main;
     private static GuiSettings self;
 
     public GuiSettings(Main main) {
         self = this;
         this.main = main;
+
         createTileButton.addActionListener(e -> createTileClicked());
         editTileButton.addActionListener(e -> editTileActionClicked());
         removeTileButton.addActionListener(e -> removeTileClicked());
         saveTilesButton.addActionListener(e -> saveTilesClicked(false));
-
-        returnToBarButton.addActionListener(e -> finishAndLeave());
 
         createTileGeneratorButton.addActionListener(e -> createTileGeneratorClicked());
         removeTileGeneratorButton.addActionListener(e -> removeTileGeneratorClicked());
@@ -46,16 +60,62 @@ public class GuiSettings {
         removeCategoryButton.addActionListener(e -> removeCategoryClicked());
         saveCategoriesButton.addActionListener(e -> saveCategoriesClicked(false));
 
+        saveGeneralButton.addActionListener(e -> saveGeneralSettings(false));
+        clickMeButton.addActionListener(e -> buyMeACoffee());
+        onRadioButton.addActionListener(e -> offRadioButton.setSelected(false));
+        offRadioButton.addActionListener(e -> onRadioButton.setSelected(false));
+        generalActivationKey.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                generalActivationKey.setText("" + e.getKeyCode());
+            }
+        });
+
+        returnToBarButton.addActionListener(e -> finishAndLeave());
+
         tilesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         tileGeneratorsTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         categoriesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+    }
+
+    public void initializeGeneralSettings() {
+        generalWidth.setText(main.getConfigOrSetDefault("launcherBarXsize", "800"));
+        generalHeight.setText(main.getConfigOrSetDefault("launcherBarYsize", "80"));
+        generalDistToResults.setText(main.getConfigOrSetDefault("distanceToMainBar", "10"));
+        generalDistBetweenResults.setText(main.getConfigOrSetDefault("distanceBetweenResults", "6"));
+        generalMaxResults.setText(main.getConfigOrSetDefault("maxAmountResults", "8"));
+        generalActivationKey.setText(main.getConfigOrSetDefault("activationKey", "17"));
+        generalDoubleClickMax.setText(main.getConfigOrSetDefault("maxDoubleClickDuration", "300"));
+        if (main.getAutostartState()) onRadioButton.setSelected(true);
+        else offRadioButton.setSelected(true);
+    }
+
+    public void saveGeneralSettings(boolean silent) {
+        main.setConfig("launcherBarXsize", generalWidth.getText());
+        main.setConfig("launcherBarYsize", generalHeight.getText());
+        main.setConfig("distanceToMainBar", generalDistToResults.getText());
+        main.setConfig("distanceBetweenResults", generalDistBetweenResults.getText());
+        main.setConfig("maxAmountResults", generalMaxResults.getText());
+        main.setConfig("activationKey", generalActivationKey.getText());
+        main.setConfig("maxDoubleClickDuration", generalDoubleClickMax.getText());
+        main.setAutostart(onRadioButton.isSelected());
+        if (!silent) Popup.message("LaunchBar", "Saved general settings!");
+    }
+
+    public static void buyMeACoffee() {
+        try {
+            Desktop.getDesktop().browse(URI.create("https://paypal.me/yanwittmann"));
+        } catch (IOException e) {
+            Popup.error("LaunchBar", "Unable to open https://paypal.me/yanwittmann\n" + e.toString());
+            e.printStackTrace();
+        }
     }
 
     private final static String[] TILES_COLUMN_NAMES = new String[]{"ID", "String ID", "Label", "Category", "Keywords", "Actions (Use button below to edit)", "Hidden", "Last executed"};
     private final static String[] TILE_GENERATORS_COLUMN_NAMES = new String[]{"ID", "Type", "Category", "Parameter 1", "Parameter 2", "Parameter 3", "Parameter 4"};
     private final static String[] CATEGORIES_COLUMN_NAMES = new String[]{"ID", "Category name", "Color"};
 
-    private final static String[] CREATE_NEW_TILE_PRESET = new String[]{"None", "Open file", "Copy to clipboard", "Settings"};
+    private final static String[] CREATE_NEW_TILE_PRESET = new String[]{"None", "Open file", "Open URL", "Copy to clipboard", "Settings"};
     private final static String[] CREATE_NEW_TILE_GENERATOR_PRESET = new String[]{"None", "Music"};
 
     private ArrayList<Pair<String, String>> displayCategories;
@@ -197,9 +257,12 @@ public class GuiSettings {
 
     private void finishAndLeave() {
         int result = Popup.selectButton("LaunchBar", "Do you want to save before you return?", new String[]{"Yes", "No"});
-        if(result == 1) {
+        if (result == 0) {
             saveTilesClicked(true);
             saveTileGeneratorsClicked(true);
+            saveCategoriesClicked(true);
+            saveGeneralSettings(true);
+            Popup.message("LaunchBar", "Saved all settings and tiles!");
         }
         Main.setOpenMode(true);
     }
@@ -227,6 +290,14 @@ public class GuiSettings {
                 File file = new File(input);
                 tileToAdd.setTileDataFromSettings(makeStringID("open " + file.getName()), "Open " + file.getName(), "openFile", file.getAbsolutePath().split("[/\\\\]"), false, "0");
                 TileAction action = new TileAction("openFile", "path=" + file.getAbsolutePath());
+                tileToAdd.addAction(action);
+            }
+            case "Open URL" -> {
+                tileToAdd = new Tile();
+                String input = Popup.input("Enter the URL:", "");
+                if (input == null || input.length() == 0) return;
+                tileToAdd.setTileDataFromSettings(makeStringID("open " + input), "Open " + input, "openURL", input, false, "0");
+                TileAction action = new TileAction("openURL", "url=" + input);
                 tileToAdd.addAction(action);
             }
             case "Copy to clipboard" -> {
