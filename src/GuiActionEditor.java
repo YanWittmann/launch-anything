@@ -52,7 +52,7 @@ public class GuiActionEditor {
             action.setParametersFromString(getValueAt(i, 2));
         }
         tile.setActions(actions);
-        GuiSettings.update("actions");
+        GuiSettings.updateTilesTable("actions");
     }
 
     private void removeClicked() {

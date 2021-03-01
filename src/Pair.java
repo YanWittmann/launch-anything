@@ -8,14 +8,6 @@ public class Pair<L, R> {
         this.r = r;
     }
 
-    public L getL() {
-        return l;
-    }
-
-    public R getR() {
-        return r;
-    }
-
     public L getLeft() {
         return l;
     }
@@ -24,11 +16,19 @@ public class Pair<L, R> {
         return r;
     }
 
-    public void setL(L l) {
+    public void setLeft(L l) {
         this.l = l;
     }
 
-    public void setR(R r) {
+    public void setRight(R r) {
         this.r = r;
+    }
+
+    @Override
+    public String toString() {
+        return "Pair{" +
+                "l=" + l +
+                ", r=" + r +
+                '}';
     }
 }

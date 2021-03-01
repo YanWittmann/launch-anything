@@ -3,7 +3,11 @@
     <output-path>$PROJECT_DIR$/out/artifacts/launch_anything_jar</output-path>
     <root id="archive" name="launch-anything.jar">
       <element id="module-output" name="launch-anything" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/json-20201115.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/mslinks.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/system-hook-3.8.jar" path-in-jar="/" />
+      <element id="library" level="project" name="json-20201115" />
+      <element id="library" level="project" name="mslinks" />
       <element id="library" level="project" name="system-hook-3.8" />
     </root>
   </artifact>

@@ -12,7 +12,7 @@ public class TileManager {
     private final ArrayList<Tile> tiles = new ArrayList<>();
     private final ArrayList<Tile> generatedTiles = new ArrayList<>();
     private final ArrayList<TileGenerator> tileGenerators = new ArrayList<>();
-    private final ArrayList<Pair<String, String>> categories = new ArrayList<>();
+    private ArrayList<Pair<String, String>> categories = new ArrayList<>();
     private final ArrayList<Pair<String, String>> generatedCategories = new ArrayList<>();
 
     public TileManager(String directory) {
@@ -39,12 +39,12 @@ public class TileManager {
                 JSONObject cat = categoriesArray.getJSONObject(i);
                 this.categories.add(new Pair<>(cat.getString("name"), cat.getString("color")));
             }
-                for (int i = 0; i < tileGeneratorsArray.length(); i++) {
-                    TileGenerator generator = new TileGenerator(tileGeneratorsArray.getJSONObject(i));
-                    if (generateTiles)
+            for (int i = 0; i < tileGeneratorsArray.length(); i++) {
+                TileGenerator generator = new TileGenerator(tileGeneratorsArray.getJSONObject(i));
+                if (generateTiles)
                     generatedTiles.addAll(generator.generateTiles());
-                    this.tileGenerators.add(generator);
-                }
+                this.tileGenerators.add(generator);
+            }
 
         } catch (Exception e) {
             System.out.println("Invalid JSON tile data!");
@@ -144,7 +144,19 @@ public class TileManager {
         FileUtils.writeFile(new File(directory + TILES_JSON), object.toString());
     }
 
+    public void setCategories(ArrayList<Pair<String, String>> categories) {
+        this.categories = categories;
+    }
+
     public ArrayList<Tile> getNonGeneratedTiles() {
         return tiles;
+    }
+
+    public ArrayList<TileGenerator> getTileGenerators() {
+        return tileGenerators;
+    }
+
+    public ArrayList<Pair<String, String>> getCategories() {
+        return categories;
     }
 }

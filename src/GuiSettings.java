@@ -12,13 +12,19 @@ public class GuiSettings {
     private JPanel mainPanel;
     private JTabbedPane tabbedPane1;
     private JTable tilesTable;
+    private JTable categoriesTable;
+    private JTable tileGeneratorsTable;
     private JButton createTileButton;
     private JButton editTileButton;
     private JButton removeTileButton;
     private JButton saveTilesButton;
     private JButton returnToBarButton;
-    private JTable categoriesTable;
-    private JTable tileGeneratorsTable;
+    private JButton createTileGeneratorButton;
+    private JButton removeTileGeneratorButton;
+    private JButton saveTileGeneratorsButton;
+    private JButton createCategoryButton;
+    private JButton removeCategoryButton;
+    private JButton saveCategoriesButton;
     private Main main;
     private static GuiSettings self;
 
@@ -27,19 +33,149 @@ public class GuiSettings {
         this.main = main;
         createTileButton.addActionListener(e -> createTileClicked());
         editTileButton.addActionListener(e -> editTileActionClicked());
-        removeTileButton.addActionListener(e -> deleteTileClicked());
+        removeTileButton.addActionListener(e -> removeTileClicked());
         saveTilesButton.addActionListener(e -> saveTilesClicked(false));
+
         returnToBarButton.addActionListener(e -> finishAndLeave());
+
+        createTileGeneratorButton.addActionListener(e -> createTileGeneratorClicked());
+        removeTileGeneratorButton.addActionListener(e -> removeTileGeneratorClicked());
+        saveTileGeneratorsButton.addActionListener(e -> saveTileGeneratorsClicked(false));
+
+        createCategoryButton.addActionListener(e -> createCategoryClicked());
+        removeCategoryButton.addActionListener(e -> removeCategoryClicked());
+        saveCategoriesButton.addActionListener(e -> saveCategoriesClicked(false));
+
         tilesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        tileGeneratorsTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+        categoriesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
     }
 
-    private final static String[] COLUMN_NAMES = new String[]{"ID", "String ID", "Label", "Category", "Keywords", "Actions (Use button below to edit)", "Hidden", "Last executed"};
+    private final static String[] TILES_COLUMN_NAMES = new String[]{"ID", "String ID", "Label", "Category", "Keywords", "Actions (Use button below to edit)", "Hidden", "Last executed"};
+    private final static String[] TILE_GENERATORS_COLUMN_NAMES = new String[]{"ID", "Type", "Category", "Parameter 1", "Parameter 2", "Parameter 3", "Parameter 4"};
+    private final static String[] CATEGORIES_COLUMN_NAMES = new String[]{"ID", "Category name", "Color"};
+
+    private final static String[] CREATE_NEW_TILE_PRESET = new String[]{"None", "Open file", "Copy to clipboard", "Settings"};
+    private final static String[] CREATE_NEW_TILE_GENERATOR_PRESET = new String[]{"None", "Music"};
+
+    private ArrayList<Pair<String, String>> displayCategories;
+
+    public void updateCategories(ArrayList<Pair<String, String>> categories) {
+        displayCategories = categories;
+        categoriesTable.setModel(new DefaultTableModel(new String[categories.size()][CATEGORIES_COLUMN_NAMES.length], CATEGORIES_COLUMN_NAMES));
+        for (int i = 0; i < categories.size(); i++) {
+            categoriesTable.setValueAt(i, i, 0);
+            categoriesTable.setValueAt(categories.get(i).getLeft(), i, 1);
+            categoriesTable.setValueAt(categories.get(i).getRight(), i, 2);
+        }
+        resizeColumnWidth(categoriesTable);
+    }
+
+    private void saveCategoriesClicked(boolean silent) {
+        for (int i = 0; i < displayCategories.size(); i++) {
+            displayCategories.get(i).setLeft(getValueAt(categoriesTable, i, 1));
+            displayCategories.get(i).setRight(getValueAt(categoriesTable, i, 2));
+        }
+        main.setCategories(displayCategories);
+        main.save();
+        displayCategories.forEach(System.out::println);
+        if (!silent) Popup.message("LaunchAnything", "Saved all categories!");
+    }
+
+    private void createCategoryClicked() {
+        saveCategoriesClicked(true);
+        displayCategories.add(new Pair<>("", ""));
+        updateCategories(displayCategories);
+    }
+
+    private void removeCategoryClicked() {
+        saveCategoriesClicked(true);
+        String input = Popup.input("Enter the ID of the category you want to remove:", "");
+        if (input == null || input.length() == 0) return;
+        int id;
+        try {
+            id = Integer.parseInt(input);
+        } catch (Exception e) {
+            return;
+        }
+        if (id > displayCategories.size() || id < 0) return;
+        displayCategories.remove(id);
+        updateCategories(displayCategories);
+    }
+
+    private ArrayList<TileGenerator> displayTileGenerators;
+
+    public void updateTileGenerators(ArrayList<TileGenerator> tilegenerators) {
+        displayTileGenerators = tilegenerators;
+        tileGeneratorsTable.setModel(new DefaultTableModel(new String[tilegenerators.size()][TILE_GENERATORS_COLUMN_NAMES.length], TILE_GENERATORS_COLUMN_NAMES));
+        for (int i = 0; i < tilegenerators.size(); i++) {
+            tileGeneratorsTable.setValueAt(i, i, 0);
+            tileGeneratorsTable.setValueAt(tilegenerators.get(i).getType(), i, 1);
+            tileGeneratorsTable.setValueAt(tilegenerators.get(i).getCategory(), i, 2);
+            tileGeneratorsTable.setValueAt(tilegenerators.get(i).getParam1(), i, 3);
+            tileGeneratorsTable.setValueAt(tilegenerators.get(i).getParam2(), i, 4);
+            tileGeneratorsTable.setValueAt(tilegenerators.get(i).getParam3(), i, 5);
+            tileGeneratorsTable.setValueAt(tilegenerators.get(i).getParam4(), i, 6);
+        }
+        resizeColumnWidth(tileGeneratorsTable);
+    }
+
+    private void saveTileGeneratorsClicked(boolean silent) {
+        for (int i = 0; i < displayTileGenerators.size(); i++) {
+            TileGenerator tileGenerator = displayTileGenerators.get(i);
+            tileGenerator.setAllData(getValueAt(tileGeneratorsTable, i, 1), getValueAt(tileGeneratorsTable, i, 2), makeNullIfEmpty(getValueAt(tileGeneratorsTable, i, 3)), makeNullIfEmpty(getValueAt(tileGeneratorsTable, i, 4)), makeNullIfEmpty(getValueAt(tileGeneratorsTable, i, 5)), makeNullIfEmpty(getValueAt(tileGeneratorsTable, i, 6)));
+        }
+        main.save();
+        displayTileGenerators.forEach(System.out::println);
+        if (!silent) Popup.message("LaunchAnything", "Saved all tile generators!");
+    }
+
+    private void createTileGeneratorClicked() {
+        saveTileGeneratorsClicked(true);
+
+        String preset = Popup.dropDown("LaunchBar", "Select a preset", CREATE_NEW_TILE_GENERATOR_PRESET);
+        if (preset == null) return;
+
+        TileGenerator tileGeneratorToAdd = null;
+        switch (preset) {
+            case "None" -> tileGeneratorToAdd = new TileGenerator();
+            case "Music" -> {
+                String input = Popup.input("Enter the path to the folder with the music files:", "");
+                if (input == null || input.length() == 0) return;
+                tileGeneratorToAdd = new TileGenerator("music", "music", new File(input).getAbsolutePath(), null, null, null);
+            }
+        }
+
+        if (tileGeneratorToAdd == null) return;
+        displayTileGenerators.add(tileGeneratorToAdd);
+        updateTileGenerators(displayTileGenerators);
+    }
+
+    private void removeTileGeneratorClicked() {
+        saveTileGeneratorsClicked(true);
+        String input = Popup.input("Enter the ID of the tile generator you want to remove:", "");
+        if (input == null || input.length() == 0) return;
+        int id;
+        try {
+            id = Integer.parseInt(input);
+        } catch (Exception e) {
+            return;
+        }
+        if (id > displayTileGenerators.size() || id < 0) return;
+        displayTileGenerators.remove(id);
+        updateTileGenerators(displayTileGenerators);
+    }
+
+    private String makeNullIfEmpty(String s) {
+        if (s == null || s.length() == 0) return null;
+        return s;
+    }
 
     private ArrayList<Tile> displayedTiles;
 
     public void updateTiles(ArrayList<Tile> tiles) {
         displayedTiles = tiles;
-        tilesTable.setModel(new DefaultTableModel(new String[tiles.size()][COLUMN_NAMES.length], COLUMN_NAMES));
+        tilesTable.setModel(new DefaultTableModel(new String[tiles.size()][TILES_COLUMN_NAMES.length], TILES_COLUMN_NAMES));
         for (int i = 0; i < tiles.size(); i++) {
             tilesTable.setValueAt(i, i, 0);
             tilesTable.setValueAt(tiles.get(i).getId(), i, 1);
@@ -60,22 +196,25 @@ public class GuiSettings {
     }
 
     private void finishAndLeave() {
+        int result = Popup.selectButton("LaunchBar", "Do you want to save before you return?", new String[]{"Yes", "No"});
+        if(result == 1) {
+            saveTilesClicked(true);
+            saveTileGeneratorsClicked(true);
+        }
         Main.setOpenMode(true);
     }
 
-    public static void update(String what) {
+    public static void updateTilesTable(String what) {
         if (what.equals("all"))
             self.updateTiles(self.displayedTiles);
         else if (what.equals("actions"))
             self.updateTilesActions(self.displayedTiles);
     }
 
-    private final static String[] CREATE_NEW_PRESET = new String[]{"None", "Open file", "Copy to clipboard", "Settings"};
-
     private void createTileClicked() {
         saveTilesClicked(true);
 
-        String preset = Popup.dropDown("LaunchBar", "Select a preset", CREATE_NEW_PRESET);
+        String preset = Popup.dropDown("LaunchBar", "Select a preset", CREATE_NEW_TILE_PRESET);
         if (preset == null) return;
 
         Tile tileToAdd = null;
@@ -117,22 +256,35 @@ public class GuiSettings {
         return text.replace(" " + c, ("" + c).toUpperCase()).replace(" " + ("" + c).toUpperCase(), ("" + c).toUpperCase());
     }
 
-    private void deleteTileClicked() {
-
+    private void removeTileClicked() {
+        saveTilesClicked(true);
+        String input = Popup.input("Enter the ID of the tile you want to remove:", "");
+        if (input == null || input.length() == 0) return;
+        int id;
+        try {
+            id = Integer.parseInt(input);
+        } catch (Exception e) {
+            return;
+        }
+        if (id > displayedTiles.size() || id < 0) return;
+        displayedTiles.remove(id);
+        updateTiles(displayedTiles);
     }
 
     private void saveTilesClicked(boolean silent) {
         for (int i = 0; i < displayedTiles.size(); i++) {
             Tile tile = displayedTiles.get(i);
-            tile.setTileDataFromSettings(getValueAt(i, 1), getValueAt(i, 2), getValueAt(i, 3), getValueAt(i, 4), getValueAt(i, 5).equals("true"), getValueAt(i, 6));
+            tile.setTileDataFromSettings(getValueAt(tilesTable, i, 1), getValueAt(tilesTable, i, 2), getValueAt(tilesTable, i, 3), getValueAt(tilesTable, i, 4), getValueAt(tilesTable, i, 5).equals("true"), getValueAt(tilesTable, i, 6));
         }
         main.save();
         displayedTiles.forEach(System.out::println);
         if (!silent) Popup.message("LaunchAnything", "Saved all tiles!");
     }
 
-    private String getValueAt(int x, int y) {
-        return tilesTable.getModel().getValueAt(x, y).toString();
+    private String getValueAt(JTable table, int x, int y) {
+        Object value = table.getModel().getValueAt(x, y);
+        if (value == null) return null;
+        return value.toString();
     }
 
     private void editTileActionClicked() {

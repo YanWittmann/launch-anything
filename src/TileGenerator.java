@@ -25,6 +25,24 @@ public class TileGenerator {
             param4 = json.getString("param4");
     }
 
+    public TileGenerator(String type, String category, String param1, String param2, String param3, String param4) {
+        this.type = type;
+        this.category = category;
+        this.param1 = param1;
+        this.param2 = param2;
+        this.param3 = param3;
+        this.param4 = param4;
+    }
+
+    public TileGenerator() {
+        this.type = "";
+        this.category = "";
+        this.param1 = null;
+        this.param2 = null;
+        this.param3 = null;
+        this.param4 = null;
+    }
+
     public JSONObject generateJSON() {
         JSONObject object = new JSONObject();
         object.put("type", type);
@@ -68,6 +86,39 @@ public class TileGenerator {
     private Tile generateOpenFileTile(String file, String id, String label, String keywords, String category) {
         String json = Tile.TEMPLATE_OPEN_FILE.replace("ID", id).replace("LABEL", label).replace("PATH", file).replace("KEYWORDS", keywords).replace("CATEGORY", category).replace("LASTEXECUTED", "0");
         return new Tile(new JSONObject(json.replace("\\", "\\\\")));
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getParam1() {
+        return param1;
+    }
+
+    public String getParam2() {
+        return param2;
+    }
+
+    public String getParam3() {
+        return param3;
+    }
+
+    public String getParam4() {
+        return param4;
+    }
+
+    public void setAllData(String type, String category, String param1, String param2, String param3, String param4) {
+        this.type = type;
+        this.category = category;
+        this.param1 = param1;
+        this.param2 = param2;
+        this.param3 = param3;
+        this.param4 = param4;
     }
 
     private final static String[] MUSIC_EXTENSIONS = new String[]{"mp3", "wav", "m4a", "flac", "wma", "aac"};

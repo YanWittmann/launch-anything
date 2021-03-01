@@ -139,7 +139,7 @@
                     <properties/>
                     <border type="none"/>
                     <children>
-                      <component id="7015" class="javax.swing.JButton">
+                      <component id="7015" class="javax.swing.JButton" binding="createTileGeneratorButton">
                         <constraints>
                           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -148,7 +148,7 @@
                           <toolTipText value="Create a new tile"/>
                         </properties>
                       </component>
-                      <component id="37885" class="javax.swing.JButton">
+                      <component id="37885" class="javax.swing.JButton" binding="removeTileGeneratorButton">
                         <constraints>
                           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -157,7 +157,7 @@
                           <toolTipText value="Delete the currently selected tile"/>
                         </properties>
                       </component>
-                      <component id="c021c" class="javax.swing.JButton" default-binding="true">
+                      <component id="c021c" class="javax.swing.JButton" binding="saveTileGeneratorsButton">
                         <constraints>
                           <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -208,7 +208,7 @@
                     <properties/>
                     <border type="none"/>
                     <children>
-                      <component id="f4211" class="javax.swing.JButton">
+                      <component id="f4211" class="javax.swing.JButton" binding="createCategoryButton">
                         <constraints>
                           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -217,7 +217,7 @@
                           <toolTipText value="Create a new tile"/>
                         </properties>
                       </component>
-                      <component id="4fb4d" class="javax.swing.JButton">
+                      <component id="4fb4d" class="javax.swing.JButton" binding="removeCategoryButton">
                         <constraints>
                           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>
@@ -226,7 +226,7 @@
                           <toolTipText value="Delete the currently selected tile"/>
                         </properties>
                       </component>
-                      <component id="cbe21" class="javax.swing.JButton" default-binding="true">
+                      <component id="cbe21" class="javax.swing.JButton" binding="saveCategoriesButton">
                         <constraints>
                           <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                         </constraints>

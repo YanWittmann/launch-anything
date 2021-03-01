@@ -1,4 +1,5 @@
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
+import mslinks.ShellLink;
 import org.json.JSONObject;
 
 import javax.swing.*;
@@ -6,6 +7,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Main {
@@ -16,6 +18,7 @@ public class Main {
         Main main = new Main();
         self = main;
         main.initializeConfig();
+        main.beforeTasks();
         main.initializeTileManager();
         String openMode = main.getConfigOrSetDefault("openMode", "bar");
         if (openMode.equals("bar")) {
@@ -42,7 +45,17 @@ public class Main {
             }
         }
         //file does not exist, write new
-        setConfig("openMode", "bar");
+        setConfig("openMode", "settings");
+        setConfig("firstTimeOpen", "true");
+    }
+
+    private void beforeTasks() {
+        if (getConfig("firstTimeOpen").equals("true")) {
+            int result = Popup.selectButton("LaunchBar", "Do you want to create an autostart shortcut to launch the application on system startup?\n" +
+                    "You can still do this later in the general settings.", new String[]{"Yes", "No"});
+            if (result == 0) createAutostartShortcut();
+            setConfig("firstTimeOpen", "false");
+        }
     }
 
     private void initializeKeyDetector() {
@@ -100,6 +113,8 @@ public class Main {
         frame.setVisible(true);
 
         settings.updateTiles(tileManager.getNonGeneratedTiles());
+        settings.updateTileGenerators(tileManager.getTileGenerators());
+        settings.updateCategories(tileManager.getCategories());
     }
 
     private void readSettingsData() {
@@ -249,19 +264,23 @@ public class Main {
         return tileManager.getColorForCategory(category);
     }
 
+    public void setCategories(ArrayList<Pair<String, String>> categories) {
+        tileManager.setCategories(categories);
+    }
+
     public void setConfig(String key, String value) {
         config.put(key, value);
         FileUtils.writeFile(new File("res/config.json"), config.toString());
     }
 
     public String getConfig(String key) {
-        if(config.has(key))
+        if (config.has(key))
             return config.getString(key);
         return "";
     }
 
     public String getConfigOrSetDefault(String key, String def) {
-        if(config.has(key))
+        if (config.has(key))
             return config.getString(key);
         setConfig(key, def);
         FileUtils.writeFile(new File("res/config.json"), config.toString());
@@ -271,6 +290,18 @@ public class Main {
     public static void setOpenMode(boolean barMode) {
         self.setConfig("openMode", barMode ? "bar" : "settings");
         System.exit(0);
+    }
+
+    public static void createAutostartShortcut() {
+        try {
+            ShellLink.createLink("launch-anything.jar", "launch-anything.lnk");
+            FileUtils.copyFile("launch-anything.lnk", "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\launch-anything.lnk");
+            FileUtils.deleteFile("launch-anything.lnk");
+            Popup.message("LaunchAnything", "Created shortcut in:\nC:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\launch-anything.lnk");
+        } catch (IOException e) {
+            e.printStackTrace();
+            Popup.error("LaunchAnything", "Unable to create shortcut:\n" + e.toString());
+        }
     }
 
     private int launcherBarXsize = 800;
