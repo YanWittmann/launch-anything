@@ -1,7 +1,12 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class Tile {
@@ -17,7 +22,7 @@ public class Tile {
     private String normalizedId;
     private String normalizedLabel;
     private String[] normalizedKeywords;
-    private TileAction[] actions;
+    private ArrayList<TileAction> actions;
 
     public Tile(JSONObject json) {
         category = json.getString("category");
@@ -34,8 +39,30 @@ public class Tile {
         normalizedKeywords = normalize(json.getString("keywords")).split(",");
 
         JSONArray actionsArray = json.getJSONArray("actions");
-        actions = new TileAction[actionsArray.length()];
-        IntStream.range(0, actionsArray.length()).forEach(i -> actions[i] = new TileAction(actionsArray.getJSONObject(i)));
+        actions = new ArrayList<>();
+        int bound = actionsArray.length();
+        for (int i = 0; i < bound; i++) {
+            actions.add(new TileAction(actionsArray.getJSONObject(i)));
+        }
+    }
+
+    public Tile() {
+        category = "";
+        id = "";
+        label = "";
+        keywordsString = "";
+        keywords = "".split(",");
+        lastExecuted = 0;
+        hidden = false;
+
+        normalizedCategory = normalize(category);
+        normalizedId = normalize(id);
+        normalizedLabel = normalize(label);
+        normalizedKeywords = normalize("").split(",");
+
+        JSONArray actionsArray = new JSONArray();
+        actions = new ArrayList<>();
+        IntStream.range(0, actionsArray.length()).forEach(i -> actions.set(i, new TileAction(actionsArray.getJSONObject(i))));
     }
 
     public boolean matchesSearch(String search) {
@@ -92,7 +119,7 @@ public class Tile {
 
     public void execute() {
         lastExecuted = Main.getTime();
-        Arrays.stream(actions).forEach(TileAction::execute);
+        actions.forEach(TileAction::execute);
     }
 
     private String normalize(String s) {
@@ -108,7 +135,10 @@ public class Tile {
         object.put("lastExecuted", "" + lastExecuted);
         if (hidden) object.put("hidden", true);
         JSONArray actions = new JSONArray();
-        Arrays.stream(this.actions).map(TileAction::generateJSON).forEach(actions::put);
+        for (TileAction action : this.actions) {
+            JSONObject generated = action.generateJSON();
+            actions.put(generated);
+        }
         object.put("actions", actions);
         return object;
     }
@@ -133,12 +163,21 @@ public class Tile {
         return keywordsString;
     }
 
-    public TileAction[] getActions() {
+    public ArrayList<TileAction> getActions() {
         return actions;
     }
 
     public boolean isHidden() {
         return hidden;
+    }
+
+    public void setTileDataFromSettings(String id, String label, String category, String[] keywords, boolean hidden, String lastExecuted) {
+        StringBuilder key = new StringBuilder();
+        for (String keyword : keywords) {
+            if(key.length() > 0) key.append(",");
+            key.append(keyword);
+        }
+        setTileDataFromSettings(id, label, category, key.toString(), hidden, lastExecuted);
     }
 
     public void setTileDataFromSettings(String id, String label, String category, String keywords, boolean hidden, String lastExecuted) {
@@ -150,7 +189,8 @@ public class Tile {
         this.hidden = hidden;
         try {
             this.lastExecuted = Long.parseLong(lastExecuted);
-        } catch (Exception e) {}
+        } catch (Exception ignored) {
+        }
 
         normalizedCategory = normalize(category);
         normalizedId = normalize(id);
@@ -159,7 +199,34 @@ public class Tile {
     }
 
     public void openActionEditor() {
-        System.out.println("Editing " + toString());
+        System.out.println("Editing actions of " + toString());
+
+        GuiActionEditor settings = new GuiActionEditor(this);
+        JFrame frame = new JFrame("LaunchAnything tile action editor: '" + label + "'");
+
+        frame.setContentPane(settings.getMainPanel());
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.setIconImage(new ImageIcon("res/icon.png").getImage());
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                frame.dispose();
+            }
+        });
+        frame.pack();
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+        settings.setFrame(frame);
+
+        settings.updateTiles(actions);
+    }
+
+    public void setActions(List<TileAction> actions) {
+        this.actions = new ArrayList<>(actions);
+    }
+
+    public void addAction(TileAction action) {
+        this.actions.add(action);
     }
 
     @Override
@@ -170,9 +237,10 @@ public class Tile {
                 ", id='" + id + '\'' +
                 ", label='" + label + '\'' +
                 ", keywords=" + Arrays.toString(keywords) +
-                ", actions=" + Arrays.toString(actions) +
+                ", actions=" + Arrays.toString(actions.toArray(new TileAction[0])) +
                 '}';
     }
 
     public final static String TEMPLATE_OPEN_FILE = "{\"keywords\":\"KEYWORDS\",\"id\":\"ID\",\"label\":\"LABEL\",\"category\":\"CATEGORY\",\"lastExecuted\":\"LASTEXECUTED\",\"actions\":[{\"action\":{\"path\":\"PATH\"},\"type\":\"openFile\"}]}";
+
 }
