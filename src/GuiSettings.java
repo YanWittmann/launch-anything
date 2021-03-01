@@ -204,12 +204,12 @@ public class GuiSettings {
                 String filerMust = Popup.input("Enter filter strings (split with ',') from which at least one must be contained in the filename or leave empty:", "");
                 String filerMayNot = Popup.input("Enter filter strings (split with ',') that may not be contained in the filename or leave empty:", "");
                 if (input == null || input.length() == 0) return;
-                tileGeneratorToAdd = new TileGenerator("file", "openFile", new File(input).getAbsolutePath(), makeNullIfEmpty(filerMust), makeNullIfEmpty(filerMayNot), null);
+                tileGeneratorToAdd = new TileGenerator("file", "openFile", input, makeNullIfEmpty(filerMust), makeNullIfEmpty(filerMayNot), null);
             }
             case "Music" -> {
                 String input = Popup.input("Enter the path to the folder with the music files:", "");
                 if (input == null || input.length() == 0) return;
-                tileGeneratorToAdd = new TileGenerator("music", "music", new File(input).getAbsolutePath(), null, null, null);
+                tileGeneratorToAdd = new TileGenerator("music", "music", input, null, null, null);
             }
         }
 
@@ -295,8 +295,8 @@ public class GuiSettings {
                 String input = Popup.input("Enter the path to the file:", "");
                 if (input == null || input.length() == 0) return;
                 File file = new File(input);
-                tileToAdd.setTileDataFromSettings(makeStringID("open " + file.getName()), "Open " + file.getName(), "openFile", file.getAbsolutePath().split("[/\\\\]"), false, "0");
-                TileAction action = new TileAction("openFile", "path=" + file.getAbsolutePath());
+                tileToAdd.setTileDataFromSettings(makeStringID("open " + file.getName()), "Open " + file.getName(), "openFile", input.split("[/\\\\]"), false, "0");
+                TileAction action = new TileAction("openFile", "path=" + input);
                 tileToAdd.addAction(action);
             }
             case "Open URL" -> {

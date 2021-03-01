@@ -69,6 +69,11 @@ public class TileAction {
                     return "path=" + action.getString("path");
                 }
                 break;
+            case "openURL":
+                if (action.has("url")) {
+                    return "url=" + action.getString("url");
+                }
+                break;
             case "copyToClipboard":
                 if (action.has("text")) {
                     return "text=" + action.getString("text");
