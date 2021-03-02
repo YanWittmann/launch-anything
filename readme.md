@@ -1,9 +1,11 @@
-# Launch Anything ![launchAnything](other/img/launchAnything small.png)
+# Launch Anything
 ### _A search bar for anything you need_
 
 ![readmeLaunchBarIsOpen](other/img/readmeLaunchBarIsOpen.png)
 
 Use this application to launch a variety of processes on your system.
+
+![launchAnything](other/img/launchAnything small.png)
 
 ## Features
 
