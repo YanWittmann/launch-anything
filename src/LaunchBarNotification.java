@@ -1,15 +1,30 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
 public class LaunchBarNotification extends JFrame {
 
+    private final static ArrayList<String> indexesUsed = new ArrayList<>();
+    private final int myIndex;
+
     public LaunchBarNotification(String text) {
+        myIndex = getNewIndex();
         createBar(text);
         updateBar();
         fadeIn();
         fadeOut();
         System.out.println("Showing notification '" + text + "'");
+    }
+
+    private static int getNewIndex() {
+        for (int i = 0; i < 100; i++) {
+            if (!indexesUsed.contains("" + i)) {
+                indexesUsed.add("" + i);
+                return i;
+            }
+        }
+        return -1;
     }
 
     private void fadeOut() {
@@ -29,6 +44,7 @@ public class LaunchBarNotification extends JFrame {
                 setLocation((int) (startX + (xPerStep * stepsDone)), getY());
                 setOpacity(currentOpacity * 0.01f);
             }
+            indexesUsed.remove("" + myIndex);
             dispose();
         });
         opacity.start();
@@ -81,7 +97,7 @@ public class LaunchBarNotification extends JFrame {
         Insets scnMax = Toolkit.getDefaultToolkit().getScreenInsets(getGraphicsConfiguration());
         int taskBarSizeBottom = scnMax.bottom;
         int taskBarSizeRight = scnMax.right;
-        setLocation(screenSize.width - taskBarSizeRight - getWidth() - 20, screenSize.height - taskBarSizeBottom - getHeight() - 20);
+        setLocation(screenSize.width - taskBarSizeRight - getWidth() - 20, screenSize.height - taskBarSizeBottom - getHeight() - 20 - (myIndex * (ySize + 15)));
         barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
 
         JPanel contentPane = new JPanel(null);

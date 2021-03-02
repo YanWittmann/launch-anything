@@ -92,7 +92,7 @@ public class Main {
     private TileManager tileManager;
 
     private void initializeTileManager() {
-        tileManager = new TileManager("D:\\files\\create\\programming\\projects\\launch-anything\\res\\");
+        tileManager = new TileManager("res\\");
         readSettingsData();
 
         tileManager.generateSettingTile("openSettings", "LaunchAnything Settings", "settings", "settings,launch,anything,open,options", "settings");
@@ -323,17 +323,18 @@ public class Main {
                     ShellLink.createLink("launch-anything.jar", "launch-anything.lnk");
                     FileUtils.copyFile("launch-anything.lnk", AUTOSTART_SHORTCUT);
                     FileUtils.deleteFile("launch-anything.lnk");
-                    Popup.message("LaunchAnything", "Created shortcut in:\n" + AUTOSTART_SHORTCUT);
+                    new LaunchBarNotification("Created shortcut");
                 }
             } else {
                 if (getAutostartState()) {
                     FileUtils.deleteFile(AUTOSTART_SHORTCUT);
-                    Popup.message("LaunchAnything", "Removed shortcut from:\n" + AUTOSTART_SHORTCUT);
+                    new LaunchBarNotification("Removed shortcut");
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Popup.error("LaunchAnything", "Unable to set shortcut state to (" + active + "):\n" + e.toString());
+            new LaunchBarNotification("Unable to set shortcut state to (\" + active + \")");
+            new LaunchBarNotification(e.toString());
         }
     }
 

@@ -1,3 +1,4 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -40,6 +41,7 @@ public class GuiSettings {
     private JTextField generalMaxResults;
     private JTextField generalActivationKey;
     private JTextField generalDoubleClickMax;
+    private JLabel launchAnythingIcon;
     private Main main;
     private static GuiSettings self;
 
@@ -76,6 +78,19 @@ public class GuiSettings {
         tilesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         tileGeneratorsTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         categoriesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
+
+        try {
+            launchAnythingIcon.setIcon(getScaledImage(new ImageIcon(ImageIO.read(new File("res/icon.png"))), 140, 140));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //https://stackoverflow.com/questions/6714045/how-to-resize-jlabel-imageicon; Thanks to trolologuy!
+    public static ImageIcon getScaledImage(ImageIcon srcImg, int w, int h) {
+        Image image = srcImg.getImage();
+        Image newimg = image.getScaledInstance(w, h, java.awt.Image.SCALE_SMOOTH);
+        return new ImageIcon(newimg);
     }
 
     public void initializeGeneralSettings() {
@@ -99,7 +114,8 @@ public class GuiSettings {
         main.setConfig("activationKey", generalActivationKey.getText());
         main.setConfig("maxDoubleClickDuration", generalDoubleClickMax.getText());
         main.setAutostart(onRadioButton.isSelected());
-        if (!silent) Popup.message("LaunchBar", "Saved general settings!");
+        if (!silent)
+            new LaunchBarNotification("Saved general settings!");
     }
 
     public static void buyMeACoffee() {
@@ -139,7 +155,8 @@ public class GuiSettings {
         main.setCategories(displayCategories);
         main.save();
         displayCategories.forEach(System.out::println);
-        if (!silent) Popup.message("LaunchAnything", "Saved all categories!");
+        if (!silent)
+            new LaunchBarNotification("Saved all categories");
     }
 
     private void createCategoryClicked() {
@@ -187,7 +204,8 @@ public class GuiSettings {
         }
         main.save();
         displayTileGenerators.forEach(System.out::println);
-        if (!silent) Popup.message("LaunchAnything", "Saved all tile generators!");
+        if (!silent)
+            new LaunchBarNotification("Saved all tile generators!");
     }
 
     private void createTileGeneratorClicked() {
@@ -356,7 +374,8 @@ public class GuiSettings {
         }
         main.save();
         displayedTiles.forEach(System.out::println);
-        if (!silent) Popup.message("LaunchAnything", "Saved all tiles!");
+        if (!silent)
+            new LaunchBarNotification("Saved all tiles!");
     }
 
     private String getValueAt(JTable table, int x, int y) {
