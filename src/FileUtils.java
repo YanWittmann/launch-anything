@@ -162,8 +162,8 @@ public abstract class FileUtils {
             pb.start();
             return true;
         } catch (Exception e) {
-            if(!openFileViaDesktop(new File(file)))
-            e.printStackTrace();
+            if (!openFileViaDesktop(new File(file)))
+                e.printStackTrace();
             return false;
         }
     }
@@ -174,7 +174,8 @@ public abstract class FileUtils {
             pb.start();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            if (!openFileViaDesktop(new File(file)))
+                e.printStackTrace();
             return false;
         }
     }

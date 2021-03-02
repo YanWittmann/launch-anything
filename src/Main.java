@@ -97,6 +97,7 @@ public class Main {
 
         tileManager.generateSettingTile("openSettings", "LaunchAnything Settings", "settings", "settings,launch,anything,open,options", "settings");
         tileManager.generateSettingTile("closeAction", "Exit LaunchAnything", "settings", "exit,quit,close,dispose", "exit");
+        tileManager.generateSettingTile("openLaunchAnythingDir", "Open LaunchAnything directory", "settings", "open,directory,folder,lafolder,ladir", "lafolder");
         tileManager.generateCategory("settings", "#8a0a14");
     }
 

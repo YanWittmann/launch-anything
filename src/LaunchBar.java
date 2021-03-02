@@ -144,9 +144,6 @@ public class LaunchBar extends JFrame {
         return filter_small.filter(image, image);
     }
 
-    private static int xSize, ySize;
-    private BufferedImage oldBackground;
-    private JPanel contentPane;
     private Color average = new Color(255, 255, 255);
     private JTextField inputField;
     private JLabel backgroundImageLabel, frameBorderLabel;
@@ -170,8 +167,8 @@ public class LaunchBar extends JFrame {
     }
 
     private void createBar() {
-        xSize = 800;
-        ySize = 80;
+        int xSize = 800;
+        int ySize = 80;
 
         this.setSize(xSize, ySize);
         this.setTitle("LaunchAnything");
@@ -181,7 +178,7 @@ public class LaunchBar extends JFrame {
         this.setLocation(this.getX(), screenRectangle.height / 6);
         barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
 
-        contentPane = new JPanel(null);
+        JPanel contentPane = new JPanel(null);
         contentPane.setPreferredSize(new Dimension(xSize, ySize));
         contentPane.setBackground(new Color(0, 0, 0, 0));
         setBackground(new Color(0, 0, 0, 0));
@@ -219,15 +216,17 @@ public class LaunchBar extends JFrame {
     private void updateBackgroundImage() {
         BufferedImage background = getScreenshotImage();
         background = cropImage(background, barRectangle);
-        background = darken(background, .9f);
         average = averageColor(background);
-        background = blurImage(background);
-        background = makeRoundedCorner(background, 20);
-        backgroundImageLabel.setIcon(new ImageIcon(background));
         if (average.getRed() + average.getGreen() + average.getBlue() > 300)
             average = LaunchBarResult.BLACK;
         else average = LaunchBarResult.WHITE;
-        oldBackground = background;
+        if (average.getBlue() == 255)
+            background = LaunchBar.modifyBrightness(background, .9f);
+        else background = LaunchBar.modifyBrightness(background, 1.3f);
+        background = blurImage(background);
+        background = makeRoundedCorner(background, 28);
+        backgroundImageLabel.setIcon(new ImageIcon(background));
+        BufferedImage oldBackground = background;
     }
 
     public static void getFocus() {
@@ -309,11 +308,11 @@ public class LaunchBar extends JFrame {
                 sumb += pixel.getBlue();
             }
         }
-        int num = (int) (bi.getWidth() * bi.getHeight());
+        int num = bi.getWidth() * bi.getHeight();
         return new Color((int) (sumr / toF(num)), (int) (sumg / toF(num)), (int) (sumb / toF(num)));
     }
 
-    public static BufferedImage darken(BufferedImage image, float amount) {
+    public static BufferedImage modifyBrightness(BufferedImage image, float amount) {
         RescaleOp op = new RescaleOp(amount, 0, null);
         return op.filter(image, null);
     }

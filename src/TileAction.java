@@ -5,6 +5,7 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Arrays;
 
 public class TileAction {
     private String actionType;
@@ -47,13 +48,14 @@ public class TileAction {
                 break;
             case "copyToClipboard":
                 if (action.has("text")) {
-                    copyString(action.getString("text"));
+                    copyString(action.getString("text").replace("EOL", "\n").replaceAll("\\\\(.)", "$1"));
                 }
             case "settings":
                 if (action.has("setting")) {
                     String setting = action.getString("setting");
                     if (setting.equals("settings")) Main.setOpenMode(false);
                     if (setting.equals("exit")) System.exit(1);
+                    if (setting.equals("lafolder")) FileUtils.openFile(".");
                 }
         }
     }
@@ -91,9 +93,11 @@ public class TileAction {
     }
 
     public void setParametersFromString(String parameters) {
+        System.out.println(parameters);
         action = new JSONObject();
-        for (String s : parameters.split("; ?")) {
+        for (String s : parameters.split(" ?&{3} ?")) {
             String[] p = s.split("=", 2);
+            System.out.println(Arrays.toString(p));
             if (p.length == 2)
                 action.put(p[0], p[1]);
             else if(p.length == 1)

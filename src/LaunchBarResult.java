@@ -129,11 +129,11 @@ public class LaunchBarResult extends JFrame {
         if (tile != null) {
             BufferedImage updated = deepCopy(oldBackground);
             Color overlayGradientColor = main.getColorForCategory(tile.getCategory());
-            int width = 18 + Math.min(barRectangle.width - 100, Math.min(tile.getLabel().length(), 40) * 18);
-            GradientPaint gradient = new GradientPaint(3, 0, overlayGradientColor, width, 0, TRANSPARENT, false);
+            int width = 30 + Math.min(barRectangle.width - 90, Math.min(tile.getLabel().length(), 40) * 18);
+            GradientPaint gradient = new GradientPaint(3, 0, (average.getBlue() == 255) ? overlayGradientColor : overlayGradientColor.brighter(), width, 0, TRANSPARENT, false);
             Graphics2D g2 = (Graphics2D) updated.getGraphics();
             g2.setPaint(gradient);
-            g2.fillRect(3, 3, width, barRectangle.height - 6);
+            g2.fillRect(3, 4, width, barRectangle.height - 7);
             backgroundImageLabel.setIcon(new ImageIcon(updated));
         }
     }
@@ -141,14 +141,16 @@ public class LaunchBarResult extends JFrame {
     private void updateBackgroundImage() {
         BufferedImage background = LaunchBar.getScreenshotImage();
         background = LaunchBar.cropImage(background, barRectangle);
-        background = LaunchBar.darken(background, .9f);
         average = LaunchBar.averageColor(background);
-        background = LaunchBar.blurImageSmall(background);
-        background = LaunchBar.makeRoundedCorner(background, 20);
-        backgroundImageLabel.setIcon(new ImageIcon(background));
         if (average.getRed() + average.getGreen() + average.getBlue() > 300)
             average = LaunchBarResult.BLACK;
         else average = LaunchBarResult.WHITE;
+        if (average.getBlue() == 255)
+            background = LaunchBar.modifyBrightness(background, .9f);
+        else background = LaunchBar.modifyBrightness(background, 1.3f);
+        background = LaunchBar.blurImageSmall(background);
+        background = LaunchBar.makeRoundedCorner(background, 28);
+        backgroundImageLabel.setIcon(new ImageIcon(background));
         oldBackground = background;
     }
 

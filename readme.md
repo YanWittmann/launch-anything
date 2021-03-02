@@ -30,8 +30,10 @@ To edit a tile's action, click on `Edit Tile Action` and enter the ID of the til
 
 - `openFile` with the parameter `path`
 - `openURL` with the parameter `url`
-- `copyToClipboard` with the parameter `text`
-- `settings` with the parameter `setting` (set to either `exit` or `settings`)
+- `copyToClipboard` with the parameter `text` (use `EOL` for a new line)
+- `settings` with the parameter `setting` (set to either `exit`, `settings` or `lafolder`)
+
+You can join multiple parameters by using `&&&`.
 
 The next tab are the `Tile Generators`, which create tiles dynamically each time when starting up the LaunchBar. These are the generators that are available:
 

@@ -136,14 +136,16 @@ public class LaunchBarNotification extends JFrame {
     private void updateBackgroundImage() {
         BufferedImage background = LaunchBar.getScreenshotImage();
         background = LaunchBar.cropImage(background, barRectangle);
-        background = LaunchBar.darken(background, .9f);
         average = LaunchBar.averageColor(background);
-        background = LaunchBar.blurImage(background);
-        background = LaunchBar.makeRoundedCorner(background, 20);
-        backgroundImageLabel.setIcon(new ImageIcon(background));
         if (average.getRed() + average.getGreen() + average.getBlue() > 300)
             average = LaunchBarNotification.BLACK;
         else average = LaunchBarNotification.WHITE;
+        if (average.getBlue() == 255)
+            background = LaunchBar.modifyBrightness(background, .9f);
+        else background = LaunchBar.modifyBrightness(background, 1.3f);
+        background = LaunchBar.blurImage(background);
+        background = LaunchBar.makeRoundedCorner(background, 20);
+        backgroundImageLabel.setIcon(new ImageIcon(background));
     }
 
     public final static Color WHITE = new Color(255, 255, 255);
