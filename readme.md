@@ -5,6 +5,7 @@
 
 Use this application to launch a variety of processes on your system.
 
+![readmeLaunchBarIsOpen](other/img/launchAnything_small.png)
 
 ## Features
 
