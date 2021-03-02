@@ -5,7 +5,6 @@
 
 Use this application to launch a variety of processes on your system.
 
-![launchAnything](other/img/launchAnything_small.png)
 
 ## Features
 
