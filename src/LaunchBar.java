@@ -117,7 +117,8 @@ public class LaunchBar extends JFrame {
             getFocus();
         }
         if (updateLastCharacter) lastCharacter = typed;
-        if (inputField.getText().length() > 1) new Thread(() -> main.search(inputField.getText().trim())).start();
+        if (inputField.getText().length() > 1)
+            new Thread(() -> main.search(inputField.getText().toLowerCase().trim())).start();
         else main.resetSearch();
 
         inputField.setVisible(false);
@@ -226,23 +227,22 @@ public class LaunchBar extends JFrame {
         background = blurImage(background);
         background = makeRoundedCorner(background, 28);
         backgroundImageLabel.setIcon(new ImageIcon(background));
-        BufferedImage oldBackground = background;
     }
 
     public static void getFocus() {
         try {
-            Point mouse = MouseInfo.getPointerInfo().getLocation();
-            click((int) barRectangle.getX() + 10, (int) barRectangle.getY());
-            goTo((int) mouse.getX(), (int) mouse.getY());
+            clickAndGoBack((int) barRectangle.getX() + 10, (int) barRectangle.getY());
         } catch (AWTException e) {
             e.printStackTrace();
         }
     }
 
-    public static void click(int x, int y) throws AWTException {
+    public static void clickAndGoBack(int x, int y) throws AWTException {
+        Point mouse = MouseInfo.getPointerInfo().getLocation();
         getRobot().mouseMove(x, y);
         getRobot().mousePress(InputEvent.BUTTON1_DOWN_MASK);
         getRobot().mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+        goTo((int) mouse.getX(), (int) mouse.getY());
     }
 
     public static void goTo(int x, int y) throws AWTException {
@@ -330,6 +330,10 @@ public class LaunchBar extends JFrame {
 
     public static float toF(int i) {
         return Float.parseFloat("" + i);
+    }
+
+    public String getSearch() {
+        return inputField.getText().toLowerCase().trim();
     }
 
     static class TextBubbleBorder extends AbstractBorder {

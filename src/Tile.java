@@ -118,6 +118,7 @@ public class Tile {
     }
 
     public void execute() {
+        Main.setLastExecutedTile(this);
         lastExecuted = Main.getTime();
         actions.forEach(TileAction::execute);
     }

@@ -8,6 +8,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 
 public class Main {
@@ -140,6 +141,10 @@ public class Main {
     private ArrayList<Tile> currentResults;
 
     public void search(String search) {
+        if (search.matches("go.+")) {
+            resetSearch();
+            return;
+        }
         currentResultScrollIndex = 0;
         if (search.trim().length() <= 1) return;
         long mySearchTime = getTime();
@@ -196,6 +201,10 @@ public class Main {
     private boolean scrollRunning = false;
 
     public void scrollResults(int amount) {
+        if (launchBar.getSearch().matches("go.+")) {
+            resetSearch();
+            return;
+        }
         if (currentResults == null) return;
         int newScrollIndex = Math.min(currentResults.size() - 1, Math.max(0, currentResultScrollIndex + amount));
         if (newScrollIndex == currentResultScrollIndex) return;
@@ -236,9 +245,31 @@ public class Main {
         }
     }
 
+    private static Tile lastExecutedTile = null;
+
+    public static void setLastExecutedTile(Tile lastExecutedTile) {
+        Main.lastExecutedTile = lastExecutedTile;
+    }
+
     public void executeResultsTile(int index) {
         launchBar.deactivate();
         launchBarResults.forEach(LaunchBarResult::deactivate);
+        if (launchBar.getSearch().matches("go.+")) {
+            try {
+                Desktop.getDesktop().browse(URI.create("http://www.google.com/search?q=" + launchBar.getSearch().replaceAll("go(.+)", "$1").trim().replace(" ", "+") + "&btnI"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+        } else if (launchBar.getSearch().equals("again") || launchBar.getSearch().length() == 0) {
+            if (lastExecutedTile != null) {
+                System.out.println("Executing tile (" + index + "): " + lastExecutedTile);
+                lastExecutedTile.execute();
+                tileManager.save();
+            }
+            return;
+        }
+        if (launchBarResults.size() < index) return;
         System.out.println("Executing tile (" + index + "): " + launchBarResults.get(index).getTile());
         launchBarResults.get(index).getTile().execute();
         tileManager.save();

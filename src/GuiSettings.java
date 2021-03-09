@@ -329,7 +329,7 @@ public class GuiSettings {
                 tileToAdd = new Tile();
                 String input = Popup.input("Enter the text to copy:", "");
                 if (input == null || input.length() == 0) return;
-                tileToAdd.setTileDataFromSettings(makeStringID("copy " + input), "Copy '" + input.replace("EOL", "") + "'", "copy", input.replaceAll("(?<!\\\\)([;\\[\\]{}\"'])", "\\\\$1"), false, "0");
+                tileToAdd.setTileDataFromSettings(makeStringID("copy " + input), "Copy '" + input.replace("EOL", "") + "'", "copy", input, false, "0");
                 TileAction action = new TileAction("copyToClipboard", "text=" + input);
                 tileToAdd.addAction(action);
             }

@@ -49,9 +49,7 @@ public class GuiActionEditor {
         for (int i = 0; i < actions.size(); i++) {
             TileAction action = actions.get(i);
             action.setActionType(getValueAt(i, 1));
-            if(getValueAt(i, 1).equals("copyToClipboard"))
-            action.setParametersFromString(getValueAt(i, 2).replaceAll("(?<!\\\\)([;\\[\\]{}\"'])", "\\\\$1"));
-            else action.setParametersFromString(getValueAt(i, 2));
+            action.setParametersFromString(getValueAt(i, 2));
         }
         tile.setActions(actions);
         GuiSettings.updateTilesTable("actions");
