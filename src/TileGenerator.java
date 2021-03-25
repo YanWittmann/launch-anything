@@ -63,7 +63,7 @@ public class TileGenerator {
 
         if (type.equals("music")) {
             if (param1 != null) {
-                for (File file : FileUtils.listf(param1)) {
+                for (File file : listf(param1)) {
                     for (String musicExtension : MUSIC_EXTENSIONS) {
                         if (file.getName().contains("." + musicExtension)) {
                             generated.add(generateMusicTile(file));
@@ -75,7 +75,7 @@ public class TileGenerator {
             }
         } else if (type.equals("file")) {
             if (param1 != null) {
-                for (File file : FileUtils.listf(param1)) {
+                for (File file : listf(param1)) {
                     boolean addFile = false, dontAddFile = false;
                     if (param2 == null) addFile = true;
                     else
@@ -148,6 +148,22 @@ public class TileGenerator {
         this.param2 = param2;
         this.param3 = param3;
         this.param4 = param4;
+    }
+
+    public static ArrayList<File> listf(String directoryName) {
+        ArrayList<File> files = new ArrayList<>();
+        File directory = new File(directoryName);
+
+        File[] fList = directory.listFiles();
+        if (fList != null)
+            for (File file : fList) {
+                if (file.isFile()) {
+                    files.add(file);
+                } else if (file.isDirectory()) {
+                    files.addAll(listf(file.getAbsolutePath()));
+                }
+            }
+        return files;
     }
 
     private final static String[] MUSIC_EXTENSIONS = new String[]{"mp3", "wav", "m4a", "flac", "wma", "aac"};

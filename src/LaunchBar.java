@@ -8,6 +8,7 @@ import java.awt.geom.Area;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
+import java.io.IOException;
 
 public class LaunchBar extends JFrame {
 
@@ -68,7 +69,11 @@ public class LaunchBar extends JFrame {
                 }
             }
         } else if (typed == 13) { //enter
-            main.executeResultsTile(0);
+            try {
+                main.executeResultsTile(0);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return;
         } else if (typed == 40) { //up
             new Thread(() -> main.scrollResults(1)).start();
@@ -128,7 +133,6 @@ public class LaunchBar extends JFrame {
 
     public final static GaussianFilter filter = new GaussianFilter(4);
     public final static GaussianFilter filter_small = new GaussianFilter(3);
-    //public final static UnsharpFilter filter = new UnsharpFilter();
     private static Robot robot;
     public final static Rectangle screenRectangle = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
     public static Rectangle barRectangle;
@@ -146,10 +150,11 @@ public class LaunchBar extends JFrame {
     }
 
     private Color average = new Color(255, 255, 255);
+    private final JPanel contentPane = new JPanel(null);
     private JTextField inputField;
     private JLabel backgroundImageLabel, frameBorderLabel;
-    private LaunchBar.TextBubbleBorder roundedLineBorderWhite = new LaunchBar.TextBubbleBorder(Color.WHITE, 4, 18, 0);
-    private LaunchBar.TextBubbleBorder roundedLineBorderBlack = new LaunchBar.TextBubbleBorder(Color.BLACK, 4, 18, 0);
+    private final LaunchBar.TextBubbleBorder roundedLineBorderWhite = new LaunchBar.TextBubbleBorder(Color.WHITE, 4, 18, 0);
+    private final LaunchBar.TextBubbleBorder roundedLineBorderBlack = new LaunchBar.TextBubbleBorder(Color.BLACK, 4, 18, 0);
 
     private void updateBar() {
         inputField.setText(" ");
@@ -163,6 +168,8 @@ public class LaunchBar extends JFrame {
         inputField.revalidate();
         inputField.setVisible(true);
         this.setVisible(false);
+        contentPane.setBackground(new Color(0, 0, 0, 0));
+        setBackground(new Color(0, 0, 0, 0));
         this.setVisible(true);
         getFocus();
     }
@@ -179,7 +186,6 @@ public class LaunchBar extends JFrame {
         this.setLocation(this.getX(), screenRectangle.height / 6);
         barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
 
-        JPanel contentPane = new JPanel(null);
         contentPane.setPreferredSize(new Dimension(xSize, ySize));
         contentPane.setBackground(new Color(0, 0, 0, 0));
         setBackground(new Color(0, 0, 0, 0));

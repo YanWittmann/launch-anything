@@ -5,6 +5,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
+import java.io.IOException;
 
 public class LaunchBarResult extends JFrame {
 
@@ -101,7 +102,11 @@ public class LaunchBarResult extends JFrame {
         inputField.setVisible(true);
         inputField.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                main.executeResultsTile(index);
+                try {
+                    main.executeResultsTile(index);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
             }
         });
         contentPane.add(inputField);

@@ -1,12 +1,13 @@
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
 import mslinks.ShellLink;
 import org.json.JSONObject;
+import yanwittmann.File;
+import yanwittmann.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ public class Main {
 
     private static Main self;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Main main = new Main();
         self = main;
         main.initializeConfig();
@@ -29,6 +30,8 @@ public class Main {
         } else if (openMode.equals("settings")) {
             main.openSettings();
         }
+
+
     }
 
     private int activationKey = GlobalKeyEvent.VK_CONTROL;
@@ -36,9 +39,10 @@ public class Main {
 
     private JSONObject config = new JSONObject();
 
-    private void initializeConfig() {
-        if (FileUtils.fileExists("res/config.json")) {
-            String[] input = FileUtils.readFile(new File("res/config.json"));
+    private void initializeConfig() throws IOException {
+        File configFile = new File("res/config.json");
+        if (configFile.exists()) {
+            String[] input = configFile.readToArray();
             if (input != null) {
                 StringBuilder inputJSONbuilder = new StringBuilder();
                 for (String s : input) inputJSONbuilder.append(s.trim());
@@ -51,7 +55,7 @@ public class Main {
         setConfig("firstTimeOpen", "true");
     }
 
-    private void beforeTasks() {
+    private void beforeTasks() throws IOException {
         if (getConfig("firstTimeOpen").equals("true")) {
             int result = Popup.selectButton("LaunchBar", "Do you want to have the application launch on system startup?\n" +
                     "You can still change this later in the general settings.", new String[]{"Yes", "No"});
@@ -92,7 +96,7 @@ public class Main {
 
     private TileManager tileManager;
 
-    private void initializeTileManager() {
+    private void initializeTileManager() throws IOException {
         tileManager = new TileManager("res\\");
         readSettingsData();
 
@@ -102,7 +106,7 @@ public class Main {
         tileManager.generateCategory("settings", "#8a0a14");
     }
 
-    private void openSettings() {
+    private void openSettings() throws IOException {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
@@ -131,7 +135,7 @@ public class Main {
         settings.initializeGeneralSettings();
     }
 
-    private void readSettingsData() {
+    private void readSettingsData() throws IOException {
         tileManager.read(getConfig("openMode").equals("bar"));
     }
 
@@ -251,7 +255,7 @@ public class Main {
         Main.lastExecutedTile = lastExecutedTile;
     }
 
-    public void executeResultsTile(int index) {
+    public void executeResultsTile(int index) throws IOException {
         launchBar.deactivate();
         launchBarResults.forEach(LaunchBarResult::deactivate);
         if (launchBar.getSearch().matches("go.+")) {
@@ -294,7 +298,11 @@ public class Main {
     }
 
     public void save() {
-        tileManager.save();
+        try {
+            tileManager.save();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static long getTime() {
@@ -309,9 +317,11 @@ public class Main {
         tileManager.setCategories(categories);
     }
 
-    public void setConfig(String key, String value) {
+    private final static File CONFIG_FILE = new File("res/config.json");
+
+    public void setConfig(String key, String value) throws IOException {
         config.put(key, value);
-        FileUtils.writeFile(new File("res/config.json"), config.toString());
+        CONFIG_FILE.write(config.toString());
     }
 
     public String getConfig(String key) {
@@ -320,15 +330,15 @@ public class Main {
         return "";
     }
 
-    public String getConfigOrSetDefault(String key, String def) {
+    public String getConfigOrSetDefault(String key, String def) throws IOException {
         if (config.has(key))
             return config.getString(key);
         setConfig(key, def);
-        FileUtils.writeFile(new File("res/config.json"), config.toString());
+        CONFIG_FILE.write(config.toString());
         return def;
     }
 
-    public int getConfigIntegerOrSetDefault(String key, int def) {
+    public int getConfigIntegerOrSetDefault(String key, int def) throws IOException {
         if (config.has(key)) {
             try {
                 return Integer.parseInt(config.getString(key));
@@ -336,30 +346,32 @@ public class Main {
             }
         }
         setConfig(key, "" + def);
-        FileUtils.writeFile(new File("res/config.json"), config.toString());
+        CONFIG_FILE.write(config.toString());
         return def;
     }
 
-    public static void setOpenMode(boolean barMode) {
+    public static void setOpenMode(boolean barMode) throws IOException {
         self.setConfig("openMode", barMode ? "bar" : "settings");
-        if (FileUtils.fileExists("launch-anything.jar")) FileUtils.openJar("launch-anything.jar", ".", new String[]{});
+        File launchAnything = new File("launch-anything.jar");
+        if (launchAnything.exists()) FileUtils.openJar("launch-anything.jar", ".", new String[]{});
         System.exit(0);
     }
 
-    public final static String AUTOSTART_SHORTCUT = "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\launch-anything.lnk";
+    public final static File AUTOSTART_SHORTCUT = new File("C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\Startup\\launch-anything.lnk");
 
     public void setAutostart(boolean active) {
         try {
             if (active) {
                 if (!getAutostartState()) {
                     ShellLink.createLink("launch-anything.jar", "launch-anything.lnk");
-                    FileUtils.copyFile("launch-anything.lnk", AUTOSTART_SHORTCUT);
-                    FileUtils.deleteFile("launch-anything.lnk");
+                    File lnk = new File("launch-anything.lnk");
+                    lnk.copyFile(AUTOSTART_SHORTCUT);
+                    lnk.delete();
                     new LaunchBarNotification("Created shortcut");
                 }
             } else {
                 if (getAutostartState()) {
-                    FileUtils.deleteFile(AUTOSTART_SHORTCUT);
+                    AUTOSTART_SHORTCUT.delete();
                     new LaunchBarNotification("Removed shortcut");
                 }
             }
@@ -371,7 +383,7 @@ public class Main {
     }
 
     public boolean getAutostartState() {
-        return FileUtils.fileExists(AUTOSTART_SHORTCUT);
+        return AUTOSTART_SHORTCUT.exists();
     }
 
     private int launcherBarXsize = 800;

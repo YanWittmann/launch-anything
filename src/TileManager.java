@@ -1,8 +1,9 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
+import yanwittmann.File;
 
 import java.awt.*;
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -19,8 +20,8 @@ public class TileManager {
         this.directory = directory;
     }
 
-    public void read(boolean generateTiles) {
-        String[] tiles = FileUtils.readFile(new File(directory + TILES_JSON));
+    public void read(boolean generateTiles) throws IOException {
+        String[] tiles = new File(directory + TILES_JSON).readToArray();
         if (tiles == null || tiles.length == 0) {
             System.out.println("Unable to read tile data!");
             return;
@@ -136,12 +137,12 @@ public class TileManager {
         generateTile(id, label, category, keywords, settingsAction);
     }
 
-    public void save() {
+    public void save() throws IOException {
         JSONObject object = new JSONObject();
         object.put("tiles", generateTilesJSON());
         object.put("categories", generateCategoriesJSON());
         object.put("tileGenerators", generateGeneratorsJSON());
-        FileUtils.writeFile(new File(directory + TILES_JSON), object.toString());
+        new File(directory + TILES_JSON).write(object.toString());
     }
 
     public void setCategories(ArrayList<Pair<String, String>> categories) {

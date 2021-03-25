@@ -74,7 +74,7 @@ public class GuiActionEditor {
         this.frame = frame;
     }
 
-    private final static String[] CREATE_NEW_PRESET = new String[]{"None", "Open file", "Open URL", "Copy to clipboard", "Settings"};
+    private final static String[] CREATE_NEW_PRESET = new String[]{"None", "Open file", "Open URL", "Copy to clipboard", "Scan screen for QR code", "Settings"};
 
     public void addNewClicked() {
         saveClicked();
@@ -86,6 +86,7 @@ public class GuiActionEditor {
             case "Open URL" -> actions.add(new TileAction("openURL", "url=https://paypal.me/yanwittmann"));
             case "Settings" -> actions.add(new TileAction("settings", "setting=settings"));
             case "Copy to clipboard" -> actions.add(new TileAction("copyToClipboard", "text=Hello World!"));
+            case "Scan screen for QR code" -> actions.add(new TileAction("scanForQR", ""));
         }
         updateTiles(actions);
     }

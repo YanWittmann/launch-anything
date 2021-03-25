@@ -62,7 +62,13 @@ public class GuiSettings {
         removeCategoryButton.addActionListener(e -> removeCategoryClicked());
         saveCategoriesButton.addActionListener(e -> saveCategoriesClicked(false));
 
-        saveGeneralButton.addActionListener(e -> saveGeneralSettings(false));
+        saveGeneralButton.addActionListener(e -> {
+            try {
+                saveGeneralSettings(false);
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
         clickMeButton.addActionListener(e -> buyMeACoffee());
         onRadioButton.addActionListener(e -> offRadioButton.setSelected(false));
         offRadioButton.addActionListener(e -> onRadioButton.setSelected(false));
@@ -93,7 +99,7 @@ public class GuiSettings {
         return new ImageIcon(newimg);
     }
 
-    public void initializeGeneralSettings() {
+    public void initializeGeneralSettings() throws IOException {
         generalWidth.setText(main.getConfigOrSetDefault("launcherBarXsize", "800"));
         generalHeight.setText(main.getConfigOrSetDefault("launcherBarYsize", "80"));
         generalDistToResults.setText(main.getConfigOrSetDefault("distanceToMainBar", "10"));
@@ -105,7 +111,7 @@ public class GuiSettings {
         else offRadioButton.setSelected(true);
     }
 
-    public void saveGeneralSettings(boolean silent) {
+    public void saveGeneralSettings(boolean silent) throws IOException {
         main.setConfig("launcherBarXsize", generalWidth.getText());
         main.setConfig("launcherBarYsize", generalHeight.getText());
         main.setConfig("distanceToMainBar", generalDistToResults.getText());
@@ -131,7 +137,7 @@ public class GuiSettings {
     private final static String[] TILE_GENERATORS_COLUMN_NAMES = new String[]{"ID", "Type", "Category", "Parameter 1", "Parameter 2", "Parameter 3", "Parameter 4"};
     private final static String[] CATEGORIES_COLUMN_NAMES = new String[]{"ID", "Category name", "Color"};
 
-    private final static String[] CREATE_NEW_TILE_PRESET = new String[]{"None", "Open file", "Open URL", "Copy to clipboard", "Settings"};
+    private final static String[] CREATE_NEW_TILE_PRESET = new String[]{"None", "Open file", "Open URL", "Copy to clipboard", "Scan for QR", "Settings"};
     private final static String[] CREATE_NEW_TILE_GENERATOR_PRESET = new String[]{"None", "Files", "Music"};
 
     private ArrayList<Pair<String, String>> displayCategories;
@@ -286,10 +292,18 @@ public class GuiSettings {
             saveTilesClicked(true);
             saveTileGeneratorsClicked(true);
             saveCategoriesClicked(true);
-            saveGeneralSettings(true);
+            try {
+                saveGeneralSettings(true);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             Popup.message("LaunchBar", "Saved all settings and tiles!");
         }
-        Main.setOpenMode(true);
+        try {
+            Main.setOpenMode(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void updateTilesTable(String what) {
@@ -321,7 +335,8 @@ public class GuiSettings {
                 tileToAdd = new Tile();
                 String input = Popup.input("Enter the URL:", "");
                 if (input == null || input.length() == 0) return;
-                tileToAdd.setTileDataFromSettings(makeStringID("open " + input), "Open " + input, "openURL", input, false, "0");
+                String domain = urlToDomain(input);
+                tileToAdd.setTileDataFromSettings(makeStringID("open " + domain), "Open " + domain, "openURL", input, false, "0");
                 TileAction action = new TileAction("openURL", "url=" + input);
                 tileToAdd.addAction(action);
             }
@@ -333,11 +348,21 @@ public class GuiSettings {
                 TileAction action = new TileAction("copyToClipboard", "text=" + input);
                 tileToAdd.addAction(action);
             }
+            case "Scan for QR" -> {
+                tileToAdd = new Tile();
+                tileToAdd.setTileDataFromSettings("scanQRCode", "Scan screen for QR code", "copy", "", false, "0");
+                TileAction action = new TileAction("scanForQR", "");
+                tileToAdd.addAction(action);
+            }
         }
 
         if (tileToAdd == null) return;
         displayedTiles.add(tileToAdd);
         updateTiles(displayedTiles);
+    }
+
+    private String urlToDomain(String url) {
+        return url.replaceAll("(?:https?:)?(?://)?(?:[^@\\n]+@)?(?:www\\.)?([^:/\\n]+).*", "$1");
     }
 
     private final static String LOWER_CASE_LETTERS = "abcdefghijklmnopqrstuvwxyzöäü";
