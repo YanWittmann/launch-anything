@@ -14,6 +14,7 @@ Use this application to launch a variety of processes on your system.
 - Open music files inside a specified directory
 - Copy text to the clipboard
 - Open URLs in your browser
+- Open QR codes that are visible on-screen
 
 ## Setup
 
@@ -32,6 +33,7 @@ To edit a tile's action, click on `Edit Tile Action` and enter the ID of the til
 - `openURL` with the parameter `url`
 - `copyToClipboard` with the parameter `text` (use `EOL` for a new line)
 - `settings` with the parameter `setting` (set to either `exit`, `settings` or `lafolder`)
+- `scanForQR`
 
 You can join multiple parameters by using `&&&`.
 
