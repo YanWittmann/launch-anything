@@ -42,7 +42,12 @@ public class TileAction {
                     try {
                         FileUtils.openFile(new File(path), new File(path.replaceAll("(^.+)(?:/|\\\\)[^\\\\/]+", "$1")));
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        try {
+                            FileUtils.openFile(new File(path));
+                        } catch (IOException e2) {
+                            new LaunchBarNotification("Unable to open file");
+                            e2.printStackTrace();
+                        }
                     }
                 }
                 break;
@@ -52,6 +57,7 @@ public class TileAction {
                     try {
                         Desktop.getDesktop().browse(URI.create(path));
                     } catch (IOException e) {
+                        new LaunchBarNotification("Unable to open URL");
                         e.printStackTrace();
                     }
                 }
@@ -69,6 +75,7 @@ public class TileAction {
                         try {
                             Main.setOpenMode(false);
                         } catch (IOException e) {
+                            new LaunchBarNotification("Unable to open settings");
                             e.printStackTrace();
                         }
                     }
@@ -77,6 +84,7 @@ public class TileAction {
                         try {
                             FileUtils.openFile(new File("."));
                         } catch (IOException e) {
+                            new LaunchBarNotification("Unable to folder");
                             e.printStackTrace();
                         }
                     }
