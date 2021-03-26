@@ -1,8 +1,9 @@
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
 import mslinks.ShellLink;
 import org.json.JSONObject;
-import yanwittmann.File;
-import yanwittmann.FileUtils;
+import yanwittmann.notification.BlurNotification;
+import yanwittmann.types.File;
+import yanwittmann.utils.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,7 +27,7 @@ public class Main {
         if (openMode.equals("bar")) {
             main.initializeBar();
             main.initializeKeyDetector();
-            new LaunchBarNotification("LaunchAnything is active");
+            new BlurNotification("LaunchAnything is active");
         } else if (openMode.equals("settings")) {
             main.openSettings();
         }
@@ -367,18 +368,18 @@ public class Main {
                     File lnk = new File("launch-anything.lnk");
                     lnk.copyFile(AUTOSTART_SHORTCUT);
                     lnk.delete();
-                    new LaunchBarNotification("Created shortcut");
+                    new BlurNotification("Created shortcut");
                 }
             } else {
                 if (getAutostartState()) {
                     AUTOSTART_SHORTCUT.delete();
-                    new LaunchBarNotification("Removed shortcut");
+                    new BlurNotification("Removed shortcut");
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
-            new LaunchBarNotification("Unable to set shortcut state to (\" + active + \")");
-            new LaunchBarNotification(e.toString());
+            new BlurNotification("Unable to set shortcut state to (\" + active + \")");
+            new BlurNotification(e.toString());
         }
     }
 

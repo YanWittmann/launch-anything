@@ -1,6 +1,6 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
-import yanwittmann.File;
+import yanwittmann.types.File;
 
 import java.awt.*;
 import java.io.IOException;

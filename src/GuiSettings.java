@@ -1,3 +1,5 @@
+import yanwittmann.notification.BlurNotification;
+
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -121,7 +123,7 @@ public class GuiSettings {
         main.setConfig("maxDoubleClickDuration", generalDoubleClickMax.getText());
         main.setAutostart(onRadioButton.isSelected());
         if (!silent)
-            new LaunchBarNotification("Saved general settings!");
+            new BlurNotification("Saved general settings!");
     }
 
     public static void buyMeACoffee() {
@@ -162,7 +164,7 @@ public class GuiSettings {
         main.save();
         displayCategories.forEach(System.out::println);
         if (!silent)
-            new LaunchBarNotification("Saved all categories");
+            new BlurNotification("Saved all categories");
     }
 
     private void createCategoryClicked() {
@@ -211,7 +213,7 @@ public class GuiSettings {
         main.save();
         displayTileGenerators.forEach(System.out::println);
         if (!silent)
-            new LaunchBarNotification("Saved all tile generators!");
+            new BlurNotification("Saved all tile generators!");
     }
 
     private void createTileGeneratorClicked() {
@@ -400,7 +402,7 @@ public class GuiSettings {
         main.save();
         displayedTiles.forEach(System.out::println);
         if (!silent)
-            new LaunchBarNotification("Saved all tiles!");
+            new BlurNotification("Saved all tiles!");
     }
 
     private String getValueAt(JTable table, int x, int y) {

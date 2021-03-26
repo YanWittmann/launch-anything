@@ -1,8 +1,9 @@
 import com.google.zxing.NotFoundException;
 import org.json.JSONObject;
-import yanwittmann.File;
-import yanwittmann.FileUtils;
-import yanwittmann.GeneralUtils;
+import yanwittmann.notification.BlurNotification;
+import yanwittmann.types.File;
+import yanwittmann.utils.FileUtils;
+import yanwittmann.utils.GeneralUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -45,7 +46,7 @@ public class TileAction {
                         try {
                             FileUtils.openFile(new File(path));
                         } catch (IOException e2) {
-                            new LaunchBarNotification("Unable to open file");
+                            new BlurNotification("Unable to open file");
                             e2.printStackTrace();
                         }
                     }
@@ -57,7 +58,7 @@ public class TileAction {
                     try {
                         Desktop.getDesktop().browse(URI.create(path));
                     } catch (IOException e) {
-                        new LaunchBarNotification("Unable to open URL");
+                        new BlurNotification("Unable to open URL");
                         e.printStackTrace();
                     }
                 }
@@ -75,7 +76,7 @@ public class TileAction {
                         try {
                             Main.setOpenMode(false);
                         } catch (IOException e) {
-                            new LaunchBarNotification("Unable to open settings");
+                            new BlurNotification("Unable to open settings");
                             e.printStackTrace();
                         }
                     }
@@ -84,7 +85,7 @@ public class TileAction {
                         try {
                             FileUtils.openFile(new File("."));
                         } catch (IOException e) {
-                            new LaunchBarNotification("Unable to folder");
+                            new BlurNotification("Unable to folder");
                             e.printStackTrace();
                         }
                     }
@@ -117,12 +118,12 @@ public class TileAction {
                 GeneralUtils.mailto("mailto:" + to + "?subject=" + sub + "&body=" + body);
             } else {
                 copyString(result);
-                new LaunchBarNotification("Copied QR code text to clipboard");
+                new BlurNotification("Copied QR code text to clipboard");
             }
 
             TMP_QR_CODE_FILE.delete();
         } catch (IOException | NotFoundException e) {
-            new LaunchBarNotification("No QR code detected");
+            new BlurNotification("No QR code detected");
         }
     }
 
