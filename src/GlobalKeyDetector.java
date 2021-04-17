@@ -7,7 +7,7 @@ public class GlobalKeyDetector {
 
     public GlobalKeyDetector() {
         /*for (Map.Entry<Long, String> keyboard : GlobalKeyboardHook.listKeyboards().entrySet()) {
-            System.out.format("%d: %s\n", keyboard.getKey(), keyboard.getValue());
+            Log.info("%d: %s\n", keyboard.getKey(), keyboard.getValue());
         }*/
         keyboardHook.addKeyListener(new GlobalKeyAdapter() {
 
@@ -18,7 +18,7 @@ public class GlobalKeyDetector {
 
             @Override
             public void keyReleased(GlobalKeyEvent event) {
-                //System.out.println(event);
+                //Log.info(event);
             }
         });
     }

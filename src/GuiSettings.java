@@ -1,4 +1,5 @@
 import yanwittmann.notification.BlurNotification;
+import yanwittmann.utils.Log;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -162,7 +163,7 @@ public class GuiSettings {
         }
         main.setCategories(displayCategories);
         main.save();
-        displayCategories.forEach(System.out::println);
+        displayCategories.forEach(Log::info);
         if (!silent)
             new BlurNotification("Saved all categories");
     }
@@ -211,7 +212,7 @@ public class GuiSettings {
             tileGenerator.setAllData(getValueAt(tileGeneratorsTable, i, 1), getValueAt(tileGeneratorsTable, i, 2), makeNullIfEmpty(getValueAt(tileGeneratorsTable, i, 3)), makeNullIfEmpty(getValueAt(tileGeneratorsTable, i, 4)), makeNullIfEmpty(getValueAt(tileGeneratorsTable, i, 5)), makeNullIfEmpty(getValueAt(tileGeneratorsTable, i, 6)));
         }
         main.save();
-        displayTileGenerators.forEach(System.out::println);
+        displayTileGenerators.forEach(Log::info);
         if (!silent)
             new BlurNotification("Saved all tile generators!");
     }
@@ -400,7 +401,7 @@ public class GuiSettings {
             tile.setTileDataFromSettings(getValueAt(tilesTable, i, 1), getValueAt(tilesTable, i, 2), getValueAt(tilesTable, i, 3), getValueAt(tilesTable, i, 4), getValueAt(tilesTable, i, 5).equals("true"), getValueAt(tilesTable, i, 6));
         }
         main.save();
-        displayedTiles.forEach(System.out::println);
+        displayedTiles.forEach(Log::info);
         if (!silent)
             new BlurNotification("Saved all tiles!");
     }

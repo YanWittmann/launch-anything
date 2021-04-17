@@ -1,9 +1,11 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
 import yanwittmann.types.File;
+import yanwittmann.utils.Log;
 
 import java.awt.*;
 import java.io.IOException;
+import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -21,15 +23,32 @@ public class TileManager {
     }
 
     public void read(boolean generateTiles) throws IOException {
-        String[] tiles = new File(directory + TILES_JSON).readToArray();
+        Log.info("Loading tiles from " + directory + TILES_JSON);
+        String[] tiles = new String[0];
+        try {
+            tiles = new File(directory + TILES_JSON).readToArray();
+        } catch (MalformedInputException e) {
+            Log.error("Unable to load tiles from file: {}", e.getMessage());
+            e.printStackTrace();
+            Popup.error("Launch Anything", """
+                    Unable to load tiles from file.
+                    Are all of the characters in an UTF-8 encoding?
+                    Try converting your tiles.json file to UTF-8.""");
+            System.exit(0);
+        } catch (Exception e) {
+            Log.error("Unable to load tiles from file: {}", e.getMessage());
+            e.printStackTrace();
+            Popup.error("Launch Anything", "Unable to load tiles from file: " + e.getMessage());
+            System.exit(0);
+        }
         if (tiles == null || tiles.length == 0) {
-            System.out.println("Unable to read tile data!");
+            Log.error("Unable to read tile data!");
             return;
         }
-        StringBuilder inputJSONbuilder = new StringBuilder();
-        for (String tile : tiles) inputJSONbuilder.append(tile.trim());
+        StringBuilder inputJSONBuilder = new StringBuilder();
+        for (String tile : tiles) inputJSONBuilder.append(tile.trim());
         try {
-            JSONObject tileData = new JSONObject(inputJSONbuilder.toString());
+            JSONObject tileData = new JSONObject(inputJSONBuilder.toString());
             JSONArray tilesArray = tileData.getJSONArray("tiles");
             JSONArray categoriesArray = tileData.getJSONArray("categories");
             JSONArray tileGeneratorsArray = tileData.getJSONArray("tileGenerators");
@@ -48,15 +67,15 @@ public class TileManager {
             }
 
         } catch (Exception e) {
-            System.out.println("Invalid JSON tile data!");
+            Log.error("Unable to import data:\nInvalid JSON tile data!\n" + e);
             e.printStackTrace();
-            Popup.error("LaunchAnything", "Unable to import data:\nInvalid JSON tile data!\n" + e.toString());
+            Popup.error("LaunchAnything", "Unable to import data:\nInvalid JSON tile data!\n" + e);
         }
-        System.out.println("Imported:\n" +
-                this.tiles.size() + " custom tile" + (this.tiles.size() != 1 ? "s" : "") + "\n" +
-                this.tileGenerators.size() + " tile generator" + (this.tileGenerators.size() != 1 ? "s" : "") + "\n" +
-                this.generatedTiles.size() + " generated tile" + (this.generatedTiles.size() != 1 ? "s" : "") + "\n" +
-                this.categories.size() + (this.categories.size() != 1 ? " categories" : " category"));
+        Log.info("Imported:\n");
+        Log.info(this.tiles.size() + " custom tile" + (this.tiles.size() != 1 ? "s" : ""));
+        Log.info(this.tileGenerators.size() + " tile generator" + (this.tileGenerators.size() != 1 ? "s" : ""));
+        Log.info(this.generatedTiles.size() + " generated tile" + (this.generatedTiles.size() != 1 ? "s" : ""));
+        Log.info(this.categories.size() + (this.categories.size() != 1 ? " categories" : " category"));
     }
 
     public ArrayList<Tile> search(String search) {

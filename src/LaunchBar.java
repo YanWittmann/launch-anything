@@ -1,4 +1,5 @@
 import Blur.GaussianFilter;
+import yanwittmann.utils.Log;
 
 import javax.swing.*;
 import javax.swing.border.AbstractBorder;
@@ -24,13 +25,13 @@ public class LaunchBar extends JFrame {
     }
 
     public void activate() {
-        System.out.println("Activate bar");
+        Log.info("Activate bar");
         updateBackgroundImage();
         updateBar();
     }
 
     public void deactivate() {
-        System.out.println("Deactivate bar");
+        Log.info("Deactivate bar");
         this.setVisible(false);
     }
 
@@ -39,7 +40,7 @@ public class LaunchBar extends JFrame {
     public void characterTyped(int typed) {
         if (!this.isVisible()) return;
         char c = (char) typed;
-        System.out.println("Character typed: " + typed + " " + c);
+        Log.info("Character typed: " + typed + " " + c);
         boolean append = false, updateLastCharacter = true;
         if (lastCharacter == 16) {
             append = true;

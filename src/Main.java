@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import yanwittmann.notification.BlurNotification;
 import yanwittmann.types.File;
 import yanwittmann.utils.FileUtils;
+import yanwittmann.utils.Log;
 
 import javax.swing.*;
 import java.awt.*;
@@ -73,11 +74,11 @@ public class Main {
     }
 
     private void initializeKeyDetector() {
-        //System.out.println(event);
+        //Log.info(event);
         new GlobalKeyDetector() {
             @Override
             public void keyDetected(GlobalKeyEvent event) {
-                //System.out.println(event);
+                //Log.info(event);
                 int virtualKeyCode = event.getVirtualKeyCode();
                 if (virtualKeyCode == activationKey) {
                     activationKeyPress();
@@ -157,12 +158,12 @@ public class Main {
         while (searchRunning) {
             Sleep.milliseconds(100);
             if (mySearchTime != mostRecentSearchTime) {
-                System.out.println("Gave up search '" + search + "'");
+                Log.info("Gave up search '" + search + "'");
                 return;
             }
         }
         searchRunning = true;
-        System.out.println("Searching for '" + search + "'");
+        Log.info("Searching for '" + search + "'");
         search = search.toLowerCase();
         currentResults = sortResults(tileManager.search(search));
         createResultsAmount(currentResults.size());
@@ -170,7 +171,7 @@ public class Main {
             if (i < resultsSize) {
                 Tile tile = currentResults.get(i);
                 launchBarResults.get(i).setResult(tile);
-                System.out.println("Displaying result tile (" + i + ") " + tile);
+                Log.info("Displaying result tile (" + i + ") " + tile);
             } else {
                 launchBarResults.get(i).deactivate();
             }
@@ -219,19 +220,19 @@ public class Main {
         while (scrollRunning) {
             Sleep.milliseconds(100);
             if (myScrollTime != latestScrollTime) {
-                System.out.println("Gave up displaying scroll '" + amount + "'");
+                Log.info("Gave up displaying scroll '" + amount + "'");
                 return;
             }
         }
         scrollRunning = true;
-        System.out.println("Displaying scroll index: " + currentResultScrollIndex);
+        Log.info("Displaying scroll index: " + currentResultScrollIndex);
         int counter = 0;
         for (int i = currentResultScrollIndex, resultsSize = currentResults.size(); counter < launchBarResults.size() && counter < maxAmountResults; i++) {
             if (i < 0) continue;
             if (i < resultsSize) {
                 Tile tile = currentResults.get(i);
                 launchBarResults.get(counter).setResult(tile);
-                System.out.println("Displaying result tile (" + counter + ") " + tile);
+                Log.info("Displaying result tile (" + counter + ") " + tile);
             } else {
                 launchBarResults.get(counter).deactivate();
             }
@@ -268,14 +269,14 @@ public class Main {
             return;
         } else if (launchBar.getSearch().equals("again") || launchBar.getSearch().length() == 0) {
             if (lastExecutedTile != null) {
-                System.out.println("Executing tile (" + index + "): " + lastExecutedTile);
+                Log.info("Executing tile (" + index + "): " + lastExecutedTile);
                 lastExecutedTile.execute();
                 tileManager.save();
             }
             return;
         }
         if (launchBarResults.size() < index) return;
-        System.out.println("Executing tile (" + index + "): " + launchBarResults.get(index).getTile());
+        Log.info("Executing tile (" + index + "): " + launchBarResults.get(index).getTile());
         launchBarResults.get(index).getTile().execute();
         tileManager.save();
     }

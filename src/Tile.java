@@ -1,5 +1,6 @@
 import org.json.JSONArray;
 import org.json.JSONObject;
+import yanwittmann.utils.Log;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -200,7 +201,7 @@ public class Tile {
     }
 
     public void openActionEditor() {
-        System.out.println("Editing actions of " + toString());
+        Log.info("Editing actions of " + toString());
 
         GuiActionEditor settings = new GuiActionEditor(this);
         JFrame frame = new JFrame("LaunchAnything tile action editor: '" + label + "'");

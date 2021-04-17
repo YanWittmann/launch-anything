@@ -4,6 +4,7 @@ import yanwittmann.notification.BlurNotification;
 import yanwittmann.types.File;
 import yanwittmann.utils.FileUtils;
 import yanwittmann.utils.GeneralUtils;
+import yanwittmann.utils.Log;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -34,7 +35,7 @@ public class TileAction {
     }
 
     public void execute() {
-        System.out.println("Executing: " + actionType + " " + action);
+        Log.info("Executing: " + actionType + " " + action);
 
         switch (actionType) {
             case "openFile":
@@ -67,8 +68,10 @@ public class TileAction {
                 if (action.has("text")) {
                     copyString(action.getString("text").replaceAll(" ?EOL ?", "\n"));
                 }
+                break;
             case "scanForQR":
                 scanForQR();
+                break;
             case "settings":
                 if (action.has("setting")) {
                     String setting = action.getString("setting");
@@ -90,6 +93,9 @@ public class TileAction {
                         }
                     }
                 }
+                break;
+            default:
+                new BlurNotification("Invalid action: " + actionType);
         }
     }
 
@@ -101,7 +107,7 @@ public class TileAction {
         writeBufferedImage(TMP_QR_CODE_FILE, screenshot);
         try {
             String result = QRCode.readQRCode(TMP_QR_CODE_FILE.getPath());
-            System.out.println("QR code text: " + result);
+            Log.info("QR code text: " + result);
 
             if (result.matches(URL_REGEX)) {
                 Desktop desktop = Desktop.getDesktop();
@@ -121,7 +127,8 @@ public class TileAction {
                 new BlurNotification("Copied QR code text to clipboard");
             }
 
-            TMP_QR_CODE_FILE.delete();
+            if (!TMP_QR_CODE_FILE.delete())
+                Log.warning("Unable to delete temp image file: " + TMP_QR_CODE_FILE.getPath());
         } catch (IOException | NotFoundException e) {
             new BlurNotification("No QR code detected");
         }

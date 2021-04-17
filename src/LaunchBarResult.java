@@ -1,3 +1,5 @@
+import yanwittmann.utils.Log;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -20,13 +22,13 @@ public class LaunchBarResult extends JFrame {
 
     public void deactivate() {
         if (!this.isVisible()) return;
-        System.out.println("Deactivate results bar " + index);
+        Log.info("Deactivate results bar " + index);
         firstTimeShowResult = true;
         this.setVisible(false);
     }
 
     public void prepareNow() {
-        System.out.println("Preparing results bar " + index);
+        Log.info("Preparing results bar " + index);
         firstTimeShowResult = true;
         updateBar(false);
     }
@@ -36,7 +38,7 @@ public class LaunchBarResult extends JFrame {
 
     public void setResult(Tile tile) {
         this.tile = tile;
-        System.out.println("Display results bar " + index);
+        Log.info("Display results bar " + index);
         updateBar(true);
         inputField.setText(tile.getLabel());
     }
@@ -73,7 +75,7 @@ public class LaunchBarResult extends JFrame {
         inputField.revalidate();
         inputField.setVisible(true);
         this.setVisible(setVisibleAfterwards);
-        System.out.println("Done preparing " + index);
+        Log.info("Done preparing " + index);
     }
 
     private void createBar() {
