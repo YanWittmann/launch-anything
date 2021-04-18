@@ -47,6 +47,25 @@ public class Tile {
         }
     }
 
+    public Tile(String text) {
+        category = "";
+        id = "";
+        label = text;
+        keywordsString = "";
+        keywords = "".split(",");
+        lastExecuted = 0;
+        hidden = false;
+
+        normalizedCategory = normalize(category);
+        normalizedId = normalize(id);
+        normalizedLabel = normalize(label);
+        normalizedKeywords = normalize("").split(",");
+
+        JSONArray actionsArray = new JSONArray();
+        actions = new ArrayList<>();
+        IntStream.range(0, actionsArray.length()).forEach(i -> actions.set(i, new TileAction(actionsArray.getJSONObject(i))));
+    }
+
     public Tile() {
         category = "";
         id = "";
@@ -229,6 +248,10 @@ public class Tile {
 
     public void addAction(TileAction action) {
         this.actions.add(action);
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     @Override

@@ -4,7 +4,9 @@ import org.json.JSONObject;
 import yanwittmann.notification.BlurNotification;
 import yanwittmann.types.File;
 import yanwittmann.utils.FileUtils;
+import yanwittmann.utils.GeneralUtils;
 import yanwittmann.utils.Log;
+import yanwittmann.utils.MathEval;
 
 import javax.swing.*;
 import java.awt.*;
@@ -145,6 +147,7 @@ public class Main {
     private int currentResultScrollIndex = 0;
     private boolean searchRunning = false;
     private ArrayList<Tile> currentResults;
+    private String currentSearch = "";
 
     public void search(String search) {
         if (search.matches("go.+")) {
@@ -164,8 +167,10 @@ public class Main {
         }
         searchRunning = true;
         Log.info("Searching for '" + search + "'");
+        this.currentSearch = search;
         search = search.toLowerCase();
         currentResults = sortResults(tileManager.search(search));
+        if(checkForMathEval()) currentResults.add(mathResultsTile);
         createResultsAmount(currentResults.size());
         for (int i = 0, resultsSize = currentResults.size(); i < launchBarResults.size() && i < maxAmountResults; i++) {
             if (i < resultsSize) {
@@ -267,6 +272,8 @@ public class Main {
                 e.printStackTrace();
             }
             return;
+        } else if (checkForMathEval()) {
+            return;
         } else if (launchBar.getSearch().equals("again") || launchBar.getSearch().length() == 0) {
             if (lastExecutedTile != null) {
                 Log.info("Executing tile (" + index + "): " + lastExecutedTile);
@@ -276,9 +283,24 @@ public class Main {
             return;
         }
         if (launchBarResults.size() < index) return;
+        if (launchBarResults.get(index).getTile() == null) return;
         Log.info("Executing tile (" + index + "): " + launchBarResults.get(index).getTile());
         launchBarResults.get(index).getTile().execute();
         tileManager.save();
+    }
+
+    private Tile mathResultsTile = new Tile("");
+
+    private boolean checkForMathEval() {
+        try {
+            String result = "" + MathEval.evaluate(currentSearch.replace("d", ""));
+            if (!currentSearch.contains("d")) result = result.replaceAll("(.+)\\.0+", "$1");
+            mathResultsTile.setLabel(result);
+            GeneralUtils.copyString(result);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
     private LaunchBar launchBar;

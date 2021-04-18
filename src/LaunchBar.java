@@ -69,6 +69,7 @@ public class LaunchBar extends JFrame {
                     return;
                 }
             }
+            lastCharacter = -1;
         } else if (typed == 13) { //enter
             try {
                 main.executeResultsTile(0);

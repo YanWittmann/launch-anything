@@ -11,6 +11,6 @@
     <orderEntry type="library" name="json-20201115" level="project" />
     <orderEntry type="library" name="mslinks" level="project" />
     <orderEntry type="library" name="qrcode" level="project" />
-    <orderEntry type="library" name="utilityClasses" level="project" />
+    <orderEntry type="library" name="utility_classes" level="project" />
   </component>
 </module>
