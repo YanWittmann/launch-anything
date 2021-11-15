@@ -12,16 +12,6 @@ import java.util.Map;
 
 public class Webserver {
 
-    public static void main(String[] args) throws Exception {
-        Webserver server = new Webserver(36345, "settings");
-        server.setHandler(params -> {
-            System.out.println(params);
-            return params.toString();
-        });
-        server.open();
-        server.openInBrowser();
-    }
-
     private final HttpServer server;
     private final String subpath;
     private final int port;
@@ -36,7 +26,7 @@ public class Webserver {
 
     public void openInBrowser() {
         try {
-            java.awt.Desktop.getDesktop().browse(new java.net.URI("http://localhost:" + port + "/" + subpath + "?i=t"));
+            java.awt.Desktop.getDesktop().browse(new java.net.URI("http://localhost:" + port + "/" + subpath + "?p=" + port));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -79,6 +69,10 @@ public class Webserver {
         public void handle(HttpExchange httpExchange) throws IOException {
             String response = handler.handle(queryToMap(httpExchange.getRequestURI().getQuery()));
             httpExchange.sendResponseHeaders(200, response.length());
+            if (response.charAt(0) == '{')
+                httpExchange.getResponseHeaders().add("Content-Type", "application/json");
+            else if (response.charAt(0) == '<')
+                httpExchange.getResponseHeaders().add("Content-Type", "text/html");
             OutputStream os = httpExchange.getResponseBody();
             os.write(response.getBytes());
             os.close();

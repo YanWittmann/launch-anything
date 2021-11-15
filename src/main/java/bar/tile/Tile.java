@@ -1,5 +1,6 @@
 package bar.tile;
 
+import bar.Main;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 public class Tile {
 
-    private boolean isActive;
+    private boolean isActive, exportable;
     private String id, category, label, keywords;
     private long lastActivated = -1;
     private final List<TileAction> tileActions = new ArrayList<>();
@@ -21,6 +22,7 @@ public class Tile {
             label = json.optString("label", "Unlabeled tile");
             keywords = json.optString("keywords", "");
             isActive = json.optBoolean("isActive", true);
+            exportable = json.optBoolean("exportable", true);
             JSONArray actions = json.optJSONArray("actions");
             if (actions != null) {
                 for (int i = 0; i < actions.length(); i++) {
@@ -56,6 +58,10 @@ public class Tile {
         isActive = active;
     }
 
+    public void setExportable(boolean exportable) {
+        this.exportable = exportable;
+    }
+
     public void setId(String id) {
         this.id = id;
     }
@@ -76,6 +82,10 @@ public class Tile {
         this.lastActivated = lastActivated;
     }
 
+    public boolean isExportable() {
+        return exportable;
+    }
+
     public String getLabel() {
         return label;
     }
@@ -84,10 +94,10 @@ public class Tile {
         return lastActivated;
     }
 
-    public void execute() {
+    public void execute(Main main) {
         lastActivated = System.currentTimeMillis();
         for (TileAction action : tileActions) {
-            action.execute();
+            action.execute(main);
         }
     }
 

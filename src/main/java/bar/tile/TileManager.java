@@ -30,6 +30,7 @@ public class TileManager {
         findSettingsFile();
         if (tileFile == null) tileFile = new File("res/tiles.json");
         else readTilesFromFile();
+        tiles.add(new Tile(new JSONObject("{\"exportable\":false,\"keywords\":\"edit\",\"id\":\"settingsWeb\",\"label\":\"LaunchAnything Settings\",\"category\":\"settings\",\"isActive\":true,\"actions\":[{\"type\":\"settingsWeb\"}]}")));
     }
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -119,25 +120,30 @@ public class TileManager {
             tileFile.getParentFile().mkdirs();
             FileWriter myWriter = new FileWriter(tileFile);
 
-            JSONArray tilesArray = new JSONArray();
-            for (Tile tile : tiles) {
-                tilesArray.put(tile.toJSON());
-            }
-
-            JSONArray tileGeneratorsArray = new JSONArray();
-            for (TileGenerator tileGenerator : tileGenerators) {
-                tileGeneratorsArray.put(tileGenerator.toJSON());
-            }
-
-            JSONObject tilesRoot = new JSONObject();
-            tilesRoot.put("tiles", tilesArray);
-            tilesRoot.put("tile-generators", tileGeneratorsArray);
-
-            myWriter.write(tilesRoot.toString());
+            myWriter.write(toJSON().toString());
             myWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public JSONObject toJSON() {
+        JSONArray tilesArray = new JSONArray();
+        for (Tile tile : tiles) {
+            if (tile.isExportable())
+                tilesArray.put(tile.toJSON());
+        }
+
+        JSONArray tileGeneratorsArray = new JSONArray();
+        for (TileGenerator tileGenerator : tileGenerators) {
+            tileGeneratorsArray.put(tileGenerator.toJSON());
+        }
+
+        JSONObject tilesRoot = new JSONObject();
+        tilesRoot.put("tiles", tilesArray);
+        tilesRoot.put("tile-generators", tileGeneratorsArray);
+
+        return tilesRoot;
     }
 
     public void addOnInputEvaluatedListener(InputEvaluatedListener listener) {

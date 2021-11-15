@@ -6,10 +6,14 @@ import bar.tile.Tile;
 import bar.tile.TileManager;
 import bar.util.GlobalKeyListener;
 import bar.util.Util;
+import bar.webserver.Webserver;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
 
@@ -62,6 +66,8 @@ public class Main {
             }
         });
         keyListener.activate();
+
+        openSettingsWebServer();
     }
 
     private void userInput(String input) {
@@ -72,7 +78,7 @@ public class Main {
     private int currentResultIndex = 0;
 
     private void executeTopmostTile() {
-        lastTiles.get(currentResultIndex).execute();
+        lastTiles.get(currentResultIndex).execute(this);
         tileManager.save();
     }
 
@@ -80,5 +86,34 @@ public class Main {
         lastTiles = tiles;
         currentResultIndex = 0;
         barManager.setTiles(lastTiles, currentResultIndex);
+    }
+
+    private Webserver webserver;
+
+    public void openSettingsWebServer() {
+        if (webserver == null) {
+            try {
+                webserver = new Webserver(36345, "settings");
+                webserver.setHandler(this::handleSettingsWebServer);
+                webserver.open();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        webserver.openInBrowser();
+    }
+
+    private String handleSettingsWebServer(Map<String, String> params) {
+        if (!params.getOrDefault("p", "null").equals("null")) {
+            return Util.readClassResource("web/settings.html");
+        } else if (!params.getOrDefault("t", "null").equals("null")) {
+            String type = params.get("t");
+            switch (type) {
+                case "get_data":
+                    System.out.println(tileManager.toJSON().toString());
+                    return tileManager.toJSON().toString();
+            }
+        }
+        return new JSONObject().put("error", "no expected value defined").toString();
     }
 }

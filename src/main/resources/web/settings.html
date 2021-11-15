@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LaunchAnything Settings</title>
+    <style>
+
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .settings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .settings-table td, .settings-table th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .settings-table tr:nth-child(even) {
+            background-color: #eeeeee;
+        }
+
+        .settings-table tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .settings-table tr:hover {
+            background-color: #dddddd;
+        }
+
+        .settings-table th {
+            color: white;
+        }
+
+        .add-new-item {
+            color: white;
+            border: none;
+            padding: 2px 7px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 2px 4px 49vw;
+            cursor: pointer;
+            font-size: 24px;
+            border-radius: 10px;
+            transition: 0.3s background-color;
+        }
+
+        .add-new-item:hover {
+            background-color: #2e9f5e;
+        }
+
+        .bg-red {
+            background-color: #ff3e3e;
+            color: white;
+        }
+
+        .bg-blue {
+            background-color: #3c96c7;
+            color: white;
+        }
+
+        .bg-green {
+            background-color: #36c467;
+            color: white;
+        }
+
+        .badge {
+            padding: 3px 5px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-right: 4px;
+            margin-bottom: 6px;
+            cursor: pointer;
+            width: fit-content;
+            width: -moz-fit-content;
+        }
+
+    </style>
+</head>
+<body>
+
+<table class="settings-table">
+    <thead>
+    <tr>
+        <th class="bg-green">ID</th>
+        <th class="bg-green">Name</th>
+        <th class="bg-green">Category</th>
+        <th class="bg-green">Keywords</th>
+        <th class="bg-green">Actions</th>
+        <th class="bg-green">Settings</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>ID</td>
+        <td>This is the name</td>
+        <td>url</td>
+        <td>
+            <span class="badge bg-blue">Keyword</span>
+            <span class="badge bg-blue">Keyword</span>
+        </td>
+        <td>
+            <div class="badge bg-red">URL: https://git.informatik.hs-mannheim.de/y.wittmann/pr1-app</div>
+            <div class="badge bg-red">URL: https://git.informatik.hs-mannheim.de/y.wittmann/pr1-app</div>
+        </td>
+        <td><span class="badge bg-red">Remove</span></td>
+    </tr>
+    </tbody>
+</table>
+
+<button class="add-new-item bg-green">+</button>
+
+<script>
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const port = urlParams.get('p');
+
+    function init() {
+        console.log('http://localhost:' + port + '/settings?t=get_data');
+        httpGet('http://localhost:' + port + '/settings?t=get_data', function (response) {
+            console.log(response);
+        });
+    }
+
+    function httpGet(theUrl, callback) {
+        let xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", theUrl, false);
+        xmlHttp.send(null);
+        callback(xmlHttp.responseText);
+    }
+
+    init();
+</script>
+</body>
+</html>

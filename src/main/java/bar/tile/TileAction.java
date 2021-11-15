@@ -1,5 +1,6 @@
 package bar.tile;
 
+import bar.Main;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -16,7 +17,7 @@ public class TileAction {
         this.json = json;
     }
 
-    public void execute() {
+    public void execute(Main main) {
         String type = json.optString("type");
         String param1 = json.optString("param1");
         String param2 = json.optString("param2");
@@ -43,6 +44,9 @@ public class TileAction {
                             e.printStackTrace();
                         }
                     }
+                    break;
+                case "settingsWeb":
+                    main.openSettingsWebServer();
                     break;
             }
         }
