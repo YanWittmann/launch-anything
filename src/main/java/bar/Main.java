@@ -44,8 +44,7 @@ public class Main {
                     barManager.setInputActive(false);
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.CONFIRM_KEY)) {
                     barManager.setInputActive(false);
-                } else if (e.getVirtualKeyCode() == 53) {
-                    barManager.prepareResultBars();
+                    tileManager.save();
                 }
             }
 

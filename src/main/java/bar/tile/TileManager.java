@@ -11,10 +11,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.StringJoiner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 public class TileManager {
 
@@ -36,7 +36,11 @@ public class TileManager {
 
     public void evaluateUserInput(String input) {
         if (currentFuture != null) currentFuture.cancel(true);
-        currentFuture = evaluate(input);
+        if (input.length() <= 1) {
+            setEvaluationResults(new ArrayList<>());
+        } else {
+            currentFuture = evaluate(input);
+        }
     }
 
     private void setEvaluationResults(List<Tile> tiles) {
@@ -45,8 +49,7 @@ public class TileManager {
 
     private Future<?> evaluate(String input) {
         return executor.submit(() -> {
-            List<Tile> newTiles = new ArrayList<>();
-            setEvaluationResults(newTiles);
+            setEvaluationResults(tiles.stream().filter(tile -> tile.matchesSearch(input)).collect(Collectors.toList()));
             return null;
         });
     }
@@ -71,14 +74,14 @@ public class TileManager {
 
     private void readTilesFromFile() {
         try {
-            StringJoiner fileContent = new StringJoiner("\n");
+            StringBuilder fileContent = new StringBuilder();
             Scanner reader = new Scanner(tileFile);
             while (reader.hasNextLine()) {
-                fileContent.add(reader.nextLine());
+                fileContent.append(reader.nextLine().trim());
             }
             reader.close();
 
-            JSONObject tilesRoot = new JSONObject(fileContent);
+            JSONObject tilesRoot = new JSONObject(fileContent.toString());
             JSONArray tilesArray = tilesRoot.optJSONArray("tiles");
             if (tilesArray != null) {
                 for (int i = 0; i < tilesArray.length(); i++) {
@@ -94,10 +97,12 @@ public class TileManager {
                 for (int i = 0; i < tileGeneratorsArray.length(); i++) {
                     JSONObject tileGeneratorJson = tileGeneratorsArray.optJSONObject(i);
                     if (tileGeneratorJson == null) continue;
-                    TileGenerator tileGenerator = new TileGenerator(tileGeneratorJson);
+                    TileGenerator tileGenerator = new TileGenerator(tileGeneratorJson, true);
                     if (tileGenerator.isValid()) tileGenerators.add(tileGenerator);
                 }
             }
+
+            System.out.println("Loaded " + tiles.size() + " tile(s) and " + tileGenerators.size() + " tile generator(s).");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
