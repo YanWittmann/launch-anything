@@ -34,7 +34,6 @@ public class Main {
         keyListener.addListener(new GlobalKeyListener.KeyListener() {
             @Override
             public void keyPressed(GlobalKeyEvent e) {
-                System.out.println(e.getVirtualKeyCode());
                 if (e.getVirtualKeyCode() == settings.getInt(Settings.ACTIVATION_KEY)) {
                     long currentTime = System.currentTimeMillis();
                     if (currentTime - lastCommandInput[0] < settings.getInt(Settings.ACTIVATION_DELAY)) {
@@ -44,8 +43,17 @@ public class Main {
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.CANCEL_KEY)) {
                     barManager.setInputActive(false);
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.CONFIRM_KEY)) {
-                    barManager.setInputActive(false);
-                    executeTopmostTile();
+                    boolean isInputActive = barManager.isInputActive();
+                    if (isInputActive) {
+                        barManager.setInputActive(false);
+                        executeTopmostTile();
+                    }
+                } else if (e.getVirtualKeyCode() == settings.getInt(Settings.PREVIOUS_RESULT_KEY)) {
+                    currentResultIndex = Math.max(0, currentResultIndex - 1);
+                    barManager.setTiles(lastTiles, currentResultIndex);
+                } else if (e.getVirtualKeyCode() == settings.getInt(Settings.NEXT_RESULT_KEY)) {
+                    currentResultIndex = Math.min(currentResultIndex + 1, lastTiles.size() - 1);
+                    barManager.setTiles(lastTiles, currentResultIndex);
                 }
             }
 
@@ -61,13 +69,15 @@ public class Main {
     }
 
     private List<Tile> lastTiles = new ArrayList<>();
+    private int currentResultIndex = 0;
 
     private void executeTopmostTile() {
-        if (lastTiles.size() > 0) lastTiles.get(0).execute();
+        lastTiles.get(currentResultIndex).execute();
     }
 
     private void onInputEvaluated(List<Tile> tiles) {
         lastTiles = tiles;
-        barManager.setTiles(tiles);
+        currentResultIndex = 0;
+        barManager.setTiles(tiles, currentResultIndex);
     }
 }

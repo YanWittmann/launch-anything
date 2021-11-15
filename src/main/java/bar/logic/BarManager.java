@@ -35,25 +35,31 @@ public class BarManager {
         resultGlassBars.forEach(glassBar -> glassBar.setVisible(false));
         if (active) {
             inputGlassBar.setVisible(false);
-            resultGlassBars.forEach(GlassBar::prepareUpdateBackground);
+            for (GlassBar resultGlassBar : resultGlassBars) {
+                resultGlassBar.prepareUpdateBackground();
+                resultGlassBar.setOpacity(0.0f);
+                resultGlassBar.setOnlyVisibility(true);
+            }
         }
         inputGlassBar.setVisible(active);
+    }
+
+    public boolean isInputActive() {
+        return isInputActive;
     }
 
     public void addInputListener(GlassBar.InputListener listener) {
         inputGlassBar.addInputListener(listener);
     }
 
-    public void setTiles(List<Tile> tiles) {
+    public void setTiles(List<Tile> tiles, int index) {
         if (!isInputActive) return;
         for (int i = 0; i < resultGlassBars.size(); i++) {
-            if (tiles.size() > i) {
-                resultGlassBars.get(i).setText(tiles.get(i).getLabel());
-                resultGlassBars.get(i).setOnlyVisibility(true);
-                inputGlassBar.grabFocus();
+            if (tiles.size() > i + index) {
+                resultGlassBars.get(i).setText(tiles.get(i + index).getLabel());
+                resultGlassBars.get(i).setOpacity(1.0f);
             } else {
-                resultGlassBars.get(i).setOnlyVisibility(false);
-
+                resultGlassBars.get(i).setOpacity(0.0f);
             }
         }
     }

@@ -113,17 +113,17 @@ public class GlassBar extends JFrame {
         if (visible && allowInput) grabFocus();
     }
 
+    public void setOnlyVisibility(boolean visible) {
+        if (super.isVisible() != visible) super.setVisible(visible);
+    }
+
     public void grabFocus() {
         Point mousePosition = MouseInfo.getPointerInfo().getLocation();
-        robot.mouseMove(getX() + 10, getY() + 10);
+        robot.mouseMove(getX() + getWidth() - 3, getY() + getHeight() - 3);
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
         robot.mouseMove(mousePosition.x, mousePosition.y);
         inputField.requestFocus();
-    }
-
-    public void setOnlyVisibility(boolean visible) {
-        super.setVisible(visible);
     }
 
     public void prepareUpdateBackground() {
@@ -160,6 +160,8 @@ public class GlassBar extends JFrame {
     public void addInputListener(InputListener listener) {
         inputListeners.add(listener);
     }
+
+    private int type = -1;
 
     /**
      * Repositions the bar on the screen.<br>

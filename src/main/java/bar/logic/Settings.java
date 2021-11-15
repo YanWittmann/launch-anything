@@ -82,6 +82,8 @@ public class Settings {
         settings.put(ACTIVATION_KEY, 162);
         settings.put(CANCEL_KEY, 27);
         settings.put(CONFIRM_KEY, 13);
+        settings.put(NEXT_RESULT_KEY, 40);
+        settings.put(PREVIOUS_RESULT_KEY, 38);
         settingsFile = new File("res/settings.json");
     }
 
@@ -133,4 +135,6 @@ public class Settings {
     public final static String ACTIVATION_KEY = "activationKey";
     public final static String CANCEL_KEY = "cancelKey";
     public final static String CONFIRM_KEY = "confirmKey";
+    public final static String NEXT_RESULT_KEY = "nextResultKey";
+    public final static String PREVIOUS_RESULT_KEY = "previousResultKey";
 }
