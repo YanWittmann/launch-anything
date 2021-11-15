@@ -1,12 +1,13 @@
 package bar.ui;
 
 import bar.blur.GaussianFilter;
+import bar.logic.Settings;
+import bar.util.ImageUtil;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,7 @@ public class GlassBar extends JFrame {
     public final static Rectangle SCREEN_RECTANGLE = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
     public final static GaussianFilter BACKGROUND_BLUR_FILTER = new GaussianFilter(30);
 
+    private final JPanel contentPane;
     public static Rectangle barRectangle;
     private final JTextField inputField;
     private final JLabel backgroundImageLabel;
@@ -34,17 +36,13 @@ public class GlassBar extends JFrame {
 
     private final List<InputListener> inputListeners = new ArrayList<>();
 
-    public GlassBar(int width, int height) {
+    public GlassBar() {
         // set the general properties of the frame
-        this.setSize(width, height);
+        this.setSize(10, 10);
         this.setTitle("Launch Anything");
         this.setAlwaysOnTop(true);
         this.setUndecorated(true);
-        this.setLocationRelativeTo(null);
-        this.setLocation(this.getX(), SCREEN_RECTANGLE.height / 6);
-        barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-        JPanel contentPane = new JPanel(null);
-        contentPane.setPreferredSize(new Dimension(width, height));
+        contentPane = new JPanel(null);
 
         // configure the background to be transparent
         contentPane.setBackground(new Color(0, 0, 0, 0));
@@ -54,13 +52,12 @@ public class GlassBar extends JFrame {
         // add the content pane to the frame
         // start with the input field the user uses to enter the command
         inputField = new JTextField();
-        inputField.setBounds(25, 20, (int) barRectangle.getWidth() - 60, (int) barRectangle.getHeight() - 40);
+        inputField.setBounds(25, 0, 10, 10);
         inputField.setBackground(new Color(0, 0, 0, 0));
         inputField.setForeground(new Color(255, 255, 255));
         inputField.setCaretColor(new Color(0, 0, 0, 0));
         inputField.setSelectionColor(new Color(71, 76, 82));
         inputField.setSelectedTextColor(new Color(255, 255, 255));
-        inputField.setFont(new Font("Monospaced", Font.BOLD, 36));
         inputField.setBorder(null);
         inputField.setVisible(true);
         inputField.setOpaque(false);
@@ -84,7 +81,7 @@ public class GlassBar extends JFrame {
 
         // add the frame border
         frameBorderLabel = new JLabel();
-        frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
+        frameBorderLabel.setBounds(0, 0, 10, 10);
         frameBorderLabel.setBackground(new Color(0, 0, 0, 0));
         frameBorderLabel.setBorder(ROUNDED_LINE_BORDER_FOR_DARK_MODE);
         frameBorderLabel.setOpaque(false);
@@ -92,7 +89,7 @@ public class GlassBar extends JFrame {
 
         // add the background image label, the image will be set later when actually opening the bar
         backgroundImageLabel = new JLabel();
-        backgroundImageLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
+        backgroundImageLabel.setBounds(0, 0, 10, 10);
         backgroundImageLabel.setBackground(new Color(0, 0, 0, 0));
         backgroundImageLabel.setVisible(true);
         backgroundImageLabel.setOpaque(false);
@@ -107,107 +104,27 @@ public class GlassBar extends JFrame {
     }
 
     public void setVisible(boolean visible) {
-        if (visible) {
-            BufferedImage screenshot = robot.createScreenCapture(barRectangle);
-            screenshot = saturateImage(screenshot, 0.3f);
-            BACKGROUND_BLUR_FILTER.filter(screenshot, screenshot);
-            Color averageColor = averageColor(screenshot);
-            if (averageColor.getRed() + averageColor.getGreen() + averageColor.getBlue() > 170) {
-                frameBorderLabel.setBorder(ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE);
-                screenshot = overlayColor(screenshot, BLUR_COLOR_FOR_BRIGHT_MODE, BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE);
-                inputField.setForeground(TEXT_COLOR_FOR_BRIGHT_MODE);
-            } else {
-                frameBorderLabel.setBorder(ROUNDED_LINE_BORDER_FOR_DARK_MODE);
-                screenshot = overlayColor(screenshot, BLUR_COLOR_FOR_DARK_MODE, BACKGROUND_BLEND_FACTOR_FOR_DARK_MODE);
-                inputField.setForeground(TEXT_COLOR_FOR_DARK_MODE);
-            }
-            screenshot = makeRoundedCorner(screenshot, BORDER_RADIUS + BORDER_THICKNESS + 4);
-            backgroundImageLabel.setIcon(new ImageIcon(screenshot));
-        }
+        if (visible) updateBackground();
         super.setVisible(visible);
         if (visible && allowInput) inputField.requestFocus();
     }
 
-    private static BufferedImage overlayColor(BufferedImage image, Color color, float amount) {
-        BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = output.createGraphics();
-        g.drawImage(image, 0, 0, null);
-        g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, amount));
-        g.setColor(color);
-        g.fillRect(0, 0, image.getWidth(), image.getHeight());
-        g.dispose();
-        return output;
-    }
-
-    private BufferedImage saturateImage(BufferedImage image, float saturation) {
-        BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        for (int x = 0; x < image.getWidth(); x++) {
-            for (int y = 0; y < image.getHeight(); y++) {
-                int rgb = image.getRGB(x, y);
-                float[] hsb = Color.RGBtoHSB(getRed(rgb), getGreen(rgb), getBlue(rgb), null);
-                float hue = hsb[0];
-                float brightness = hsb[2];
-                int rgb2 = Color.HSBtoRGB(hue, saturation, brightness);
-                output.setRGB(x, y, rgb2);
-            }
+    public void updateBackground() {
+        BufferedImage screenshot = robot.createScreenCapture(barRectangle);
+        screenshot = ImageUtil.saturateImage(screenshot, 0.3f);
+        BACKGROUND_BLUR_FILTER.filter(screenshot, screenshot);
+        Color averageColor = ImageUtil.averageColor(screenshot);
+        if (averageColor.getRed() + averageColor.getGreen() + averageColor.getBlue() > 170) {
+            frameBorderLabel.setBorder(ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE);
+            screenshot = ImageUtil.overlayColor(screenshot, BLUR_COLOR_FOR_BRIGHT_MODE, BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE);
+            inputField.setForeground(TEXT_COLOR_FOR_BRIGHT_MODE);
+        } else {
+            frameBorderLabel.setBorder(ROUNDED_LINE_BORDER_FOR_DARK_MODE);
+            screenshot = ImageUtil.overlayColor(screenshot, BLUR_COLOR_FOR_DARK_MODE, BACKGROUND_BLEND_FACTOR_FOR_DARK_MODE);
+            inputField.setForeground(TEXT_COLOR_FOR_DARK_MODE);
         }
-        return output;
-    }
-
-    public int getAlpha(int rgb) {
-        return (rgb >> 24) & 0xFF;
-    }
-
-    public int getRed(int rgb) {
-        return (rgb >> 16) & 0xFF;
-    }
-
-    public int getGreen(int rgb) {
-        return (rgb >> 8) & 0xFF;
-    }
-
-    public int getBlue(int rgb) {
-        return rgb & 0xFF;
-    }
-
-    public static BufferedImage makeRoundedCorner(BufferedImage image, int cornerRadius) {
-        int w = image.getWidth();
-        int h = image.getHeight();
-        BufferedImage output = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = output.createGraphics();
-        g2.setComposite(AlphaComposite.Src);
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(Color.WHITE);
-        g2.fill(new RoundRectangle2D.Float(0, 0, w, h, cornerRadius, cornerRadius));
-        g2.setComposite(AlphaComposite.SrcAtop);
-        g2.drawImage(image, 0, 0, null);
-        g2.dispose();
-        return output;
-    }
-
-    private static Color averageColor(BufferedImage bi) {
-        int x1 = bi.getWidth();
-        int y1 = bi.getHeight();
-        long sumr = 0, sumg = 0, sumb = 0;
-        int skipper = 0;
-        for (int x = 0; x < x1; x++) {
-            for (int y = 0; y < y1; y++) {
-                if (++skipper > 1) {
-                    skipper = 0;
-                    continue;
-                }
-                Color pixel = new Color(bi.getRGB(x, y));
-                sumr += pixel.getRed();
-                sumg += pixel.getGreen();
-                sumb += pixel.getBlue();
-            }
-        }
-        int num = bi.getWidth() * bi.getHeight();
-        return new Color((int) (sumr / toF(num)), (int) (sumg / toF(num)), (int) (sumb / toF(num)));
-    }
-
-    private static float toF(int i) {
-        return Float.parseFloat("" + i);
+        screenshot = ImageUtil.makeRoundedCorner(screenshot, BORDER_RADIUS + BORDER_THICKNESS + 5);
+        backgroundImageLabel.setIcon(new ImageIcon(screenshot));
     }
 
     public void setAllowInput(boolean allowInput) {
@@ -215,8 +132,56 @@ public class GlassBar extends JFrame {
         inputField.setEditable(allowInput);
     }
 
+    public void setText(String text) {
+        inputField.setText(text);
+    }
+
     public void addInputListener(InputListener listener) {
         inputListeners.add(listener);
+    }
+
+    /**
+     * Repositions the bar on the screen.<br>
+     * The index determines the position of the bar on the screen:<ul>
+     * <li>-2: notification</li>
+     * <li>-1: input bar</li>
+     * <li>0+: results bar</li>
+     * </ul>
+     *
+     * @param index    Where to position the bar on the screen.
+     * @param settings The settings to use for the bar.
+     */
+    public void setType(int index, Settings settings) {
+        // first, using the index, the positioning of the bar is determined
+        int fontSize;
+        if (index == -2) {
+            int width = settings.getInt(Settings.INPUT_WIDTH), height = settings.getInt(Settings.INPUT_HEIGHT);
+            this.setSize(width, height);
+            contentPane.setPreferredSize(new Dimension(width, height));
+            this.setLocation((int) SCREEN_RECTANGLE.getWidth() - width - 10, (int) SCREEN_RECTANGLE.getHeight() - height - 10);
+            fontSize = 15;
+        } else if (index == -1) {
+            int width = settings.getInt(Settings.INPUT_WIDTH), height = settings.getInt(Settings.INPUT_HEIGHT);
+            this.setSize(width, height);
+            contentPane.setPreferredSize(new Dimension(width, height));
+            this.setLocationRelativeTo(null);
+            this.setLocation(this.getX(), SCREEN_RECTANGLE.height / 6);
+            fontSize = 36;
+        } else {
+            int width = settings.getInt(Settings.RESULT_WIDTH), height = settings.getInt(Settings.RESULT_HEIGHT);
+            this.setSize(width, height);
+            contentPane.setPreferredSize(new Dimension(width, height));
+            this.setLocationRelativeTo(null);
+            this.setLocation(this.getX(), (SCREEN_RECTANGLE.height / 6) + ((index + 1) * (height + settings.getInt(Settings.RESULT_MARGIN))) + settings.getInt(Settings.INPUT_RESULT_DISTANCE));
+            fontSize = 30;
+        }
+
+        // set the size of the components on the bar
+        barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
+        inputField.setBounds(fontSize - 5, 4, (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
+        inputField.setFont(new Font(settings.getString(Settings.BAR_FONT), Font.BOLD, fontSize));
+        frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
+        backgroundImageLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
     }
 
     private Robot robot;
