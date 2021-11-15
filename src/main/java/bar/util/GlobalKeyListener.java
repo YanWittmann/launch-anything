@@ -16,6 +16,17 @@ import java.util.List;
 public class GlobalKeyListener {
 
     private GlobalKeyboardHook keyboardHook;
+    private final GlobalKeyAdapter listener = new GlobalKeyAdapter() {
+        @Override
+        public void keyPressed(GlobalKeyEvent event) {
+            listeners.forEach(l -> l.keyPressed(event));
+        }
+
+        @Override
+        public void keyReleased(GlobalKeyEvent event) {
+            listeners.forEach(l -> l.keyReleased(event));
+        }
+    };
 
     private final List<KeyListener> listeners = new ArrayList<>();
 
@@ -29,22 +40,11 @@ public class GlobalKeyListener {
 
     public void activate() {
         keyboardHook = new GlobalKeyboardHook(false);
-
-        keyboardHook.addKeyListener(new GlobalKeyAdapter() {
-
-            @Override
-            public void keyPressed(GlobalKeyEvent event) {
-                listeners.forEach(l -> l.keyPressed(event));
-            }
-
-            @Override
-            public void keyReleased(GlobalKeyEvent event) {
-                listeners.forEach(l -> l.keyReleased(event));
-            }
-        });
+        keyboardHook.addKeyListener(listener);
     }
 
     public void deactivate() {
+        keyboardHook.removeKeyListener(listener);
         keyboardHook.shutdownHook();
     }
 

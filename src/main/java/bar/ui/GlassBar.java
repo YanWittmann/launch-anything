@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,7 @@ public class GlassBar extends JFrame {
     public final static GaussianFilter BACKGROUND_BLUR_FILTER = new GaussianFilter(30);
 
     private final JPanel contentPane;
-    public static Rectangle barRectangle;
+    private Rectangle barRectangle;
     private final JTextField inputField;
     private final JLabel backgroundImageLabel;
     private final JLabel frameBorderLabel;
@@ -104,9 +105,27 @@ public class GlassBar extends JFrame {
     }
 
     public void setVisible(boolean visible) {
-        if (visible) updateBackground();
+        if (visible) {
+            if (!isPrepared) updateBackground();
+            inputField.setText("");
+            isPrepared = false;
+        }
         super.setVisible(visible);
-        if (visible && allowInput) inputField.requestFocus();
+        if (visible && allowInput) {
+            Point mousePosition = MouseInfo.getPointerInfo().getLocation();
+            robot.mouseMove(getX() + 10, getY() + 10);
+            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+            robot.mouseMove(mousePosition.x, mousePosition.y);
+            inputField.requestFocus();
+        }
+    }
+
+    private boolean isPrepared = false;
+
+    public void prepare() {
+        new Thread(this::updateBackground).start();
+        isPrepared = true;
     }
 
     public void updateBackground() {
@@ -167,6 +186,12 @@ public class GlassBar extends JFrame {
             this.setLocationRelativeTo(null);
             this.setLocation(this.getX(), SCREEN_RECTANGLE.height / 6);
             fontSize = 36;
+
+            // hide the cursor if it is on the frame
+            this.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
+            backgroundImageLabel.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
+            frameBorderLabel.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
+            inputField.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
         } else {
             int width = settings.getInt(Settings.RESULT_WIDTH), height = settings.getInt(Settings.RESULT_HEIGHT);
             this.setSize(width, height);

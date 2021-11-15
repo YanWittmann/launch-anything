@@ -1,14 +1,71 @@
 package bar.logic;
 
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.StringJoiner;
 
 public class Settings {
 
     private final Map<String, Object> settings = new LinkedHashMap<>();
+    private File settingsFile;
 
     public Settings() {
+        findSettingsFile();
+        if (settingsFile == null) reset();
+        else readSettingsFromFile();
+
+        // FIXME: This is only for testing, since the settings file is not yet in real use
         reset();
+    }
+
+    private final static String[] possibleSettingsFiles = {
+            "settings.json",
+            "res/settings.json",
+            "../settings.json",
+            "../res/settings.json"
+    };
+
+    private void findSettingsFile() {
+        for (String possibleSettingsFile : possibleSettingsFiles) {
+            File candidate = new File(possibleSettingsFile).getAbsoluteFile();
+            if (candidate.exists()) {
+                settingsFile = candidate;
+                return;
+            }
+        }
+        settingsFile = null;
+    }
+
+    private void readSettingsFromFile() {
+        try {
+            StringJoiner fileContent = new StringJoiner("\n");
+            Scanner reader = new Scanner(settingsFile);
+            while (reader.hasNextLine()) {
+                fileContent.add(reader.nextLine());
+            }
+            reader.close();
+            settings.putAll(new JSONObject(fileContent.toString()).toMap());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void save() {
+        try {
+            settingsFile.getParentFile().mkdirs();
+            FileWriter myWriter = new FileWriter(settingsFile);
+            myWriter.write(new JSONObject(settings).toString());
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void reset() {
@@ -21,6 +78,11 @@ public class Settings {
         settings.put(RESULT_MARGIN, 10);
         settings.put(INPUT_RESULT_DISTANCE, 20);
         settings.put(BAR_FONT, "Comfortaa Regular");
+        settings.put(ACTIVATION_DELAY, 250);
+        settings.put(ACTIVATION_KEY, 162);
+        settings.put(CANCEL_KEY, 27);
+        settings.put(CONFIRM_KEY, 13);
+        settingsFile = new File("res/settings.json");
     }
 
     public boolean hasSetting(String key) {
@@ -67,4 +129,8 @@ public class Settings {
     public final static String RESULT_MARGIN = "resultMargin";
     public final static String INPUT_RESULT_DISTANCE = "inputResultDistance";
     public final static String BAR_FONT = "barFont";
+    public final static String ACTIVATION_DELAY = "activationDelay";
+    public final static String ACTIVATION_KEY = "activationKey";
+    public final static String CANCEL_KEY = "cancelKey";
+    public final static String CONFIRM_KEY = "confirmKey";
 }
