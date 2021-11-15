@@ -8,6 +8,7 @@ import bar.util.GlobalKeyListener;
 import bar.util.Util;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -44,7 +45,7 @@ public class Main {
                     barManager.setInputActive(false);
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.CONFIRM_KEY)) {
                     barManager.setInputActive(false);
-                    tileManager.save();
+                    executeTopmostTile();
                 }
             }
 
@@ -59,7 +60,14 @@ public class Main {
         tileManager.evaluateUserInput(input);
     }
 
+    private List<Tile> lastTiles = new ArrayList<>();
+
+    private void executeTopmostTile() {
+        if (lastTiles.size() > 0) lastTiles.get(0).execute();
+    }
+
     private void onInputEvaluated(List<Tile> tiles) {
-        System.out.println(tiles);
+        lastTiles = tiles;
+        barManager.setTiles(tiles);
     }
 }

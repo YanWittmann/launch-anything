@@ -106,26 +106,28 @@ public class GlassBar extends JFrame {
 
     public void setVisible(boolean visible) {
         if (visible) {
-            if (!isPrepared) updateBackground();
+            updateBackground();
             inputField.setText("");
-            isPrepared = false;
         }
         super.setVisible(visible);
-        if (visible && allowInput) {
-            Point mousePosition = MouseInfo.getPointerInfo().getLocation();
-            robot.mouseMove(getX() + 10, getY() + 10);
-            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
-            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-            robot.mouseMove(mousePosition.x, mousePosition.y);
-            inputField.requestFocus();
-        }
+        if (visible && allowInput) grabFocus();
     }
 
-    private boolean isPrepared = false;
+    public void grabFocus() {
+        Point mousePosition = MouseInfo.getPointerInfo().getLocation();
+        robot.mouseMove(getX() + 10, getY() + 10);
+        robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+        robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
+        robot.mouseMove(mousePosition.x, mousePosition.y);
+        inputField.requestFocus();
+    }
 
-    public void prepare() {
+    public void setOnlyVisibility(boolean visible) {
+        super.setVisible(visible);
+    }
+
+    public void prepareUpdateBackground() {
         new Thread(this::updateBackground).start();
-        isPrepared = true;
     }
 
     public void updateBackground() {

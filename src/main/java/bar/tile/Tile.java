@@ -76,6 +76,16 @@ public class Tile {
         this.lastActivated = lastActivated;
     }
 
+    public String getLabel() {
+        return label;
+    }
+
+    public void execute() {
+        for (TileAction action : tileActions) {
+            action.execute();
+        }
+    }
+
     public boolean matchesSearch(String search) {
         if (!isActive) return false;
 
@@ -95,8 +105,7 @@ public class Tile {
         if (smartSearch(normalize(id), search)) return true;
         if (smartSearch(normalize(category), search)) return true;
         if (smartSearch(normalize(label), search)) return true;
-        for (String keyword : keywords.split(" "))
-            if (smartSearch(normalize(keyword), search)) return true;
+        for (String keyword : keywords.split(" ")) if (smartSearch(normalize(keyword), search)) return true;
 
         return false;
     }
