@@ -93,6 +93,7 @@ public class Settings {
 
     public void setSetting(String key, Object value) {
         settings.put(key, value);
+        save();
     }
 
     public int getInt(String key) {

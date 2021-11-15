@@ -73,11 +73,12 @@ public class Main {
 
     private void executeTopmostTile() {
         lastTiles.get(currentResultIndex).execute();
+        tileManager.save();
     }
 
     private void onInputEvaluated(List<Tile> tiles) {
         lastTiles = tiles;
         currentResultIndex = 0;
-        barManager.setTiles(tiles, currentResultIndex);
+        barManager.setTiles(lastTiles, currentResultIndex);
     }
 }

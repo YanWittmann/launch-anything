@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
@@ -49,7 +50,12 @@ public class TileManager {
 
     private Future<?> evaluate(String input) {
         return executor.submit(() -> {
-            setEvaluationResults(tiles.stream().filter(tile -> tile.matchesSearch(input)).collect(Collectors.toList()));
+            setEvaluationResults(
+                    tiles.stream()
+                            .filter(tile -> tile.matchesSearch(input))
+                            .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
+                            .collect(Collectors.toList())
+            );
             return null;
         });
     }

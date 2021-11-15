@@ -80,7 +80,12 @@ public class Tile {
         return label;
     }
 
+    public long getLastActivated() {
+        return lastActivated;
+    }
+
     public void execute() {
+        lastActivated = System.currentTimeMillis();
         for (TileAction action : tileActions) {
             action.execute();
         }
