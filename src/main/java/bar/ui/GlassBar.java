@@ -17,7 +17,7 @@ public class GlassBar extends JFrame {
 
     private final static int BORDER_RADIUS = 12;
     private final static int BORDER_THICKNESS = 2;
-    private static final float BACKGROUND_BLEND_FACTOR_FOR_DARK_MODE = 0.3f;
+    private static final float BACKGROUND_BLEND_FACTOR_FOR_DARK_MODE = 0.6f;
     private static final float BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE = 0.7f;
     private final static Color BLUR_COLOR_FOR_DARK_MODE = new Color(45, 48, 52);
     private final static Color BLUR_COLOR_FOR_BRIGHT_MODE = new Color(197, 197, 197);
@@ -132,7 +132,7 @@ public class GlassBar extends JFrame {
 
     public void updateBackground() {
         BufferedImage screenshot = robot.createScreenCapture(barRectangle);
-        screenshot = ImageUtil.saturateImage(screenshot, 0.3f);
+        screenshot = ImageUtil.saturateImage(screenshot, 1.6f);
         BACKGROUND_BLUR_FILTER.filter(screenshot, screenshot);
         Color averageColor = ImageUtil.averageColor(screenshot);
         if (averageColor.getRed() + averageColor.getGreen() + averageColor.getBlue() > 170) {
@@ -160,8 +160,6 @@ public class GlassBar extends JFrame {
     public void addInputListener(InputListener listener) {
         inputListeners.add(listener);
     }
-
-    private int type = -1;
 
     /**
      * Repositions the bar on the screen.<br>

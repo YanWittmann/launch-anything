@@ -3,6 +3,7 @@ package bar.util;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
 
 public abstract class ImageUtil {
 
@@ -25,8 +26,9 @@ public abstract class ImageUtil {
                 int rgb = image.getRGB(x, y);
                 float[] hsb = Color.RGBtoHSB(getRed(rgb), getGreen(rgb), getBlue(rgb), null);
                 float hue = hsb[0];
+                float newSaturation = Math.min(hsb[1] * saturation, 1);
                 float brightness = hsb[2];
-                int rgb2 = Color.HSBtoRGB(hue, saturation, brightness);
+                int rgb2 = Color.HSBtoRGB(hue, newSaturation, brightness);
                 output.setRGB(x, y, rgb2);
             }
         }

@@ -18,37 +18,41 @@ public class TileAction {
     }
 
     public void execute(Main main) {
-        String type = json.optString("type");
-        String param1 = json.optString("param1");
-        String param2 = json.optString("param2");
+        try {
+            String type = json.optString("type");
+            String param1 = json.optString("param1");
+            String param2 = json.optString("param2");
 
-        if (type != null) {
-            switch (type) {
-                case "file":
-                    if (param1 != null) {
-                        try {
-                            Desktop desktop = Desktop.getDesktop();
-                            File myFile = new File(param1);
-                            desktop.open(myFile);
-                        } catch (IOException e) {
-                            e.printStackTrace();
+            if (type != null) {
+                switch (type) {
+                    case "file":
+                        if (param1 != null) {
+                            try {
+                                Desktop desktop = Desktop.getDesktop();
+                                File myFile = new File(param1);
+                                desktop.open(myFile);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                    break;
-                case "url":
-                    if (param1 != null) {
-                        try {
-                            Desktop desktop = Desktop.getDesktop();
-                            desktop.browse(new URI(param1));
-                        } catch (IOException | URISyntaxException e) {
-                            e.printStackTrace();
+                        break;
+                    case "url":
+                        if (param1 != null) {
+                            try {
+                                Desktop desktop = Desktop.getDesktop();
+                                desktop.browse(new URI(param1));
+                            } catch (IOException | URISyntaxException e) {
+                                e.printStackTrace();
+                            }
                         }
-                    }
-                    break;
-                case "settingsWeb":
-                    main.openSettingsWebServer();
-                    break;
+                        break;
+                    case "settingsWeb":
+                        main.openSettingsWebServer();
+                        break;
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

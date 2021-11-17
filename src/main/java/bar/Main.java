@@ -43,7 +43,7 @@ public class Main {
             public void keyPressed(GlobalKeyEvent e) {
                 if (e.getVirtualKeyCode() == settings.getInt(Settings.ACTIVATION_KEY)) {
                     long currentTime = System.currentTimeMillis();
-                    if (currentTime - lastCommandInput[0] < settings.getInt(Settings.ACTIVATION_DELAY)) {
+                    if (currentTime - lastCommandInput[0] < settings.getInt(Settings.ACTIVATION_DELAY) && currentTime - lastCommandInput[0] > 50) {
                         barManager.setInputActive(true);
                     }
                     lastCommandInput[0] = currentTime;
@@ -106,7 +106,7 @@ public class Main {
             }).start();
         }
         Sleep.seconds(2);
-        webserver.openInBrowser();
+        //webserver.openInBrowser();
     }
 
     private void handleSettingsWebServer(BufferedReader in, BufferedWriter out) throws IOException {
