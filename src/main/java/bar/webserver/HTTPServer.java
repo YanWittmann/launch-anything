@@ -4,11 +4,8 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.awt.Desktop.*;
 
 public class HTTPServer {
 
@@ -71,11 +68,7 @@ public class HTTPServer {
         return isOpen;
     }
 
-    public void openInBrowser() {
-        try {
-            getDesktop().browse(new URI("http://localhost:" + port));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public String getUrl() {
+        return "http://localhost:" + port;
     }
 }

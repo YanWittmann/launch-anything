@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.StringJoiner;
 
 public abstract class Util {
 
@@ -20,13 +21,13 @@ public abstract class Util {
     }
 
     public static String readClassResource(String path) {
-        StringBuilder out = new StringBuilder();
+        StringJoiner out = new StringJoiner("\n");
         InputStream inputStream = Main.class.getClassLoader().getResourceAsStream(path);
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                out.append(line);
+                out.add(line);
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -18,15 +18,15 @@ public class GlassBar extends JFrame {
     private final static int BORDER_RADIUS = 12;
     private final static int BORDER_THICKNESS = 2;
     private static final float BACKGROUND_BLEND_FACTOR_FOR_DARK_MODE = 0.6f;
-    private static final float BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE = 0.7f;
+    private static final float BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE = 0.6f;
     private final static Color BLUR_COLOR_FOR_DARK_MODE = new Color(45, 48, 52);
-    private final static Color BLUR_COLOR_FOR_BRIGHT_MODE = new Color(197, 197, 197);
+    private final static Color BLUR_COLOR_FOR_BRIGHT_MODE = new Color(255, 255, 255);
     private final static Color TEXT_COLOR_FOR_DARK_MODE = new Color(220, 220, 220);
     private final static Color TEXT_COLOR_FOR_BRIGHT_MODE = new Color(31, 31, 31);
     private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_DARK_MODE = new TextBubbleBorder(new Color(177, 182, 183), BORDER_THICKNESS, BORDER_RADIUS, 0, false);
     private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE = new TextBubbleBorder(new Color(100, 100, 100), BORDER_THICKNESS, BORDER_RADIUS, 0, false);
     public final static Rectangle SCREEN_RECTANGLE = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-    public final static GaussianFilter BACKGROUND_BLUR_FILTER = new GaussianFilter(30);
+    public final static GaussianFilter BACKGROUND_BLUR_FILTER = new GaussianFilter(20);
 
     private final JPanel contentPane;
     private Rectangle barRectangle;

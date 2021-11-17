@@ -8,15 +8,18 @@ import bar.util.GlobalKeyListener;
 import bar.util.Sleep;
 import bar.util.Util;
 import bar.webserver.HTTPServer;
-import com.sun.tracing.dtrace.StabilityLevel;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.net.URI;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static java.awt.Desktop.getDesktop;
 
 public class Main {
 
@@ -94,10 +97,11 @@ public class Main {
     private HTTPServer webserver;
 
     public void openSettingsWebServer() {
+        int port = 36345;
         if (webserver == null) {
             new Thread(() -> {
                 try {
-                    webserver = new HTTPServer(36345);
+                    webserver = new HTTPServer(port);
                     webserver.addListener(this::handleSettingsWebServer);
                     webserver.open();
                 } catch (IOException e) {
@@ -105,8 +109,14 @@ public class Main {
                 }
             }).start();
         }
-        Sleep.seconds(2);
-        //webserver.openInBrowser();
+        Sleep.milliseconds(300);
+        // FIXME: Reactivate this when the testing is over
+        if (true) return;
+        try {
+            getDesktop().browse(new URI(webserver.getUrl() + "/?p=" + port));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void handleSettingsWebServer(BufferedReader in, BufferedWriter out) throws IOException {
@@ -120,17 +130,63 @@ public class Main {
         }
         System.out.println(request);
 
-        out.write("HTTP/1.0 200 OK\r\n");
+        Map<String, String> getParams = new HashMap<>();
+        for (String line : request) {
+            if (line.startsWith("GET")) {
+                Matcher getMatcher = GET_PATTERN.matcher(line);
+                if (getMatcher.find() && getMatcher.groupCount() > 0) {
+                    for (String get : getMatcher.group(1).split("&")) {
+                        String[] split = get.split("=");
+                        if (split.length == 2) getParams.put(split[0], split[1]);
+                    }
+                }
+            }
+        }
+        System.out.println(getParams);
+
+        if (getParams.containsKey("action")) {
+            try {
+                JSONObject response = new JSONObject();
+                if (getParams.get("action").equals("getAllTiles")) {
+                    response.put("tiles", tileManager.toJSON());
+                }
+
+                out.write("HTTP/1.0 200 OK\r\n");
+                out.write("Date: " + new Date() + "\r\n");
+                out.write("Server: Java/1.0\r\n");
+                out.write("Content-Type: application/json\r\n");
+                out.write("\r\n");
+                out.write(response.toString());
+            } catch (Exception e) {
+                setResponseError(500, "Something went wrong: " + e.getMessage(), out);
+            }
+        } else {
+            out.write("HTTP/1.0 200 OK\r\n");
+            out.write("Date: " + new Date() + "\r\n");
+            out.write("Server: Java/1.0\r\n");
+            out.write("Content-Type: text/html\r\n");
+            out.write("\r\n");
+            out.write(Util.readClassResource("web/settings.html"));
+        }
+    }
+
+    private void setResponseError(int errorCode, String message, BufferedWriter out) throws IOException {
+        switch (errorCode) {
+            case 400:
+            default:
+                out.write("HTTP/1.0 400 Bad Request\r\n");
+                break;
+            case 500:
+                out.write("HTTP/1.0 500 Internal Server Error\r\n");
+                break;
+        }
+
         out.write("Date: " + new Date() + "\r\n");
         out.write("Server: Java/1.0\r\n");
-        out.write("Content-Type: text/html\r\n");
-        //out.write("Content-Type: application/json\r\n");
-        out.write("\r\n");
-        out.write(Util.readClassResource("web/settings.html"));
-
-        /*
-        System.out.println(tileManager.toJSON().toString());
-        out.write(tileManager.toJSON().toString());
-        }*/
+        out.write("Content-Type: application/json\r\n");
+        out.write("\r\n{\"error\":\"" + message + "\"}");
     }
+
+    private final static Pattern GET_PATTERN = Pattern.compile("GET /\\?(.+) HTTP/\\d.+");
+    private final static Pattern POST_PATTERN = Pattern.compile("POST /\\?(.+) HTTP/\\d.+");
 }

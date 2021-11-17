@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class TileManager {
 
-    private Settings settings;
+    private final Settings settings;
     private final List<Tile> tiles = new ArrayList<>();
     private final List<TileGenerator> tileGenerators = new ArrayList<>();
     private final List<InputEvaluatedListener> onInputEvaluatedListeners = new ArrayList<>();
