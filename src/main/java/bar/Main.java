@@ -5,15 +5,18 @@ import bar.logic.Settings;
 import bar.tile.Tile;
 import bar.tile.TileManager;
 import bar.util.GlobalKeyListener;
+import bar.util.Sleep;
 import bar.util.Util;
-import bar.webserver.Webserver;
+import bar.webserver.HTTPServer;
+import com.sun.tracing.dtrace.StabilityLevel;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
-import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 public class Main {
 
@@ -88,32 +91,46 @@ public class Main {
         barManager.setTiles(lastTiles, currentResultIndex);
     }
 
-    private Webserver webserver;
+    private HTTPServer webserver;
 
     public void openSettingsWebServer() {
         if (webserver == null) {
-            try {
-                webserver = new Webserver(36345, "settings");
-                webserver.setHandler(this::handleSettingsWebServer);
-                webserver.open();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            new Thread(() -> {
+                try {
+                    webserver = new HTTPServer(36345);
+                    webserver.addListener(this::handleSettingsWebServer);
+                    webserver.open();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
+        Sleep.seconds(2);
         webserver.openInBrowser();
     }
 
-    private String handleSettingsWebServer(Map<String, String> params) {
-        if (!params.getOrDefault("p", "null").equals("null")) {
-            return Util.readClassResource("web/settings.html");
-        } else if (!params.getOrDefault("t", "null").equals("null")) {
-            String type = params.get("t");
-            switch (type) {
-                case "get_data":
-                    System.out.println(tileManager.toJSON().toString());
-                    return tileManager.toJSON().toString();
+    private void handleSettingsWebServer(BufferedReader in, BufferedWriter out) throws IOException {
+        List<String> request = new ArrayList<>();
+        String s;
+        while ((s = in.readLine()) != null) {
+            request.add(s);
+            if (s.isEmpty()) {
+                break;
             }
         }
-        return new JSONObject().put("error", "no expected value defined").toString();
+        System.out.println(request);
+
+        out.write("HTTP/1.0 200 OK\r\n");
+        out.write("Date: " + new Date() + "\r\n");
+        out.write("Server: Java/1.0\r\n");
+        out.write("Content-Type: text/html\r\n");
+        //out.write("Content-Type: application/json\r\n");
+        out.write("\r\n");
+        out.write(Util.readClassResource("web/settings.html"));
+
+        /*
+        System.out.println(tileManager.toJSON().toString());
+        out.write(tileManager.toJSON().toString());
+        }*/
     }
 }
