@@ -44,6 +44,11 @@
             <artifactId>system-hook</artifactId>
             <version>3.8</version>
         </dependency>
+        <dependency>
+            <groupId>jnafilechooser</groupId>
+            <artifactId>jnafilechooser-api</artifactId>
+            <version>1.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

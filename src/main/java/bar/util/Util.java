@@ -1,12 +1,10 @@
 package bar.util;
 
 import bar.Main;
+import jnafilechooser.api.JnaFileChooser;
 
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.StringJoiner;
 
 public abstract class Util {
@@ -33,5 +31,13 @@ public abstract class Util {
             e.printStackTrace();
         }
         return out.toString();
+    }
+
+    public static File pickFile(String filterName, String... filters) {
+        JnaFileChooser fc = new JnaFileChooser();
+        if (filterName != null && filterName.length() > 0)
+            fc.addFilter(filterName, filters);
+        fc.showOpenDialog(null);
+        return fc.getSelectedFile();
     }
 }

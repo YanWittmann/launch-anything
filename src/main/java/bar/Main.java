@@ -149,6 +149,12 @@ public class Main {
                 JSONObject response = new JSONObject();
                 if (getParams.get("action").equals("getAllTiles")) {
                     response.put("tiles", tileManager.toJSON());
+                } else if (getParams.get("action").equals("inputFile")) {
+                    response.put("file", Util.pickFile(null).getAbsolutePath());
+                } else if (getParams.get("action").equals("createAction")) {
+                    String tileId = getParams.get("tileId");
+                    String value = getParams.get("value");
+                    String type = getParams.get("attributeType");
                 }
 
                 out.write("HTTP/1.0 200 OK\r\n");

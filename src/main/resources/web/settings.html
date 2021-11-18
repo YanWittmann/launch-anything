@@ -132,6 +132,16 @@
             box-sizing: border-box;
         }
 
+        .file-drop {
+            width: 100%;
+            padding: 12px 20px;
+            margin: 8px 0;
+            display: inline-block;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
     </style>
 </head>
 <body>
@@ -193,8 +203,6 @@
     }
 
     function createTileEntryForTable(tileJson) {
-        console.log(tileJson);
-
         // create a new tile row entry as seen in the table 'tile-table' above
         let row = document.createElement('tr');
         let name = document.createElement('td');
@@ -237,7 +245,7 @@
         badge.className = 'badge bg-green';
         badge.innerHTML = '+';
         badge.onclick = function () {
-            editTileValue(tileJson.id, tileJson.label, 'addAction');
+            editTileValue(tileJson.id, tileJson.label, 'tile', 'createAction');
         };
         actions.append(badge);
 
@@ -257,23 +265,76 @@
         return row;
     }
 
-    function editTileValue(tileId, tileName, attribute) {
-        // prompt the user for a new value
-        multipleChoiceInput('Editing clicked ' + tileName + ', ' + attribute + ':', ['test', 'hmm'], 'hmm', {'tileId': tileId, 'tileName': tileName, 'attribute': attribute});
-        //regularTextInput('Editing clicked ' + tileName + ', ' + attribute + ':', 'hmm', {'tileId': tileId, 'tileName': tileName, 'attribute': attribute});
+    const tileCategories = ['URL', 'FILE'];
+
+    function editTileValue(tileId, tileName, editTypeContext, attribute) {
+        let params = {
+            'tileId': tileId,
+            'tileName': tileName,
+            'editTypeContext': editTypeContext,
+            'attribute': attribute
+        };
+        if (editTypeContext == null || editTypeContext === '') {
+            return;
+        } else if (editTypeContext === 'tile') { // user wants to perform some action related to tiles
+            if (attribute === 'createAction') {
+                multipleChoiceInput('What type do you want to create the tile of?', tileCategories, tileCategories[0], params);
+            }
+        }
+        //regularTextInput('Editing clicked ' + tileName + ', ' + attribute + ':', 'hmm', {'tileId': tileId, 'tileName': tileName, 'editType': editType, 'attribute': attribute});
     }
 
     function editTileValueCallback(params, value) {
         if (value == null) return;
         console.log(params);
         console.log(value);
+
+        if (params.editTypeContext === 'tile') {
+            if (params.attribute === 'createAction') {
+                params.attributeType = value;
+                params.attribute = 'createActionFinal';
+                if (value === 'URL') {
+                    regularTextInput('Enter the URL:', '', params);
+                } else if (value === 'FILE') {
+                    fileInput(params);
+                }
+            } else if (params.attribute === 'createActionFinal') {
+                if (params.attributeType === 'URL') {
+                    let parameteters = {
+                        'action': 'createAction',
+                        'tileId': params.tileId,
+                        'attributeType': params.attributeType,
+                        'value': value
+                    };
+                    httpPost(requestUrl, parameteters, null);
+                } else if (params.attributeType === 'FILE') {
+                    let parameteters = {
+                        'action': 'createAction',
+                        'tileId': params.tileId,
+                        'attributeType': params.attributeType,
+                        'value': value.file
+                    };
+                    httpPost(requestUrl, parameteters, null);
+                }
+            }
+        }
+
         refreshTiles();
+    }
+
+    function fileInput(params) {
+        let parameteters = {
+            'action': 'inputFile'
+        };
+        httpPost(requestUrl, parameteters, function (response) {
+            let parsedResponse = JSON.parse(response);
+            editTileValueCallback(params, parsedResponse);
+        });
     }
 
     function regularTextInput(message, pretext, params) {
         // create radio buttons for the options
         let content = document.createElement('div');
-        content.className = 'input-group';
         let label = document.createElement('label');
         label.innerHTML = message;
         content.append(label);
@@ -308,7 +369,7 @@
             radio.name = 'options';
             radio.value = options[i];
             radio.id = 'input-' + options[i];
-            if (options[i] === preselected) {
+            if (preselected != null && options[i] === preselected) {
                 radio.checked = true;
             }
             content.append(radio);
@@ -332,6 +393,12 @@
             if (inputValues != null && inputValues.length > 0) {
                 if (inputValues.length === 1) {
                     editTileValueCallback(params, inputValues[0].value);
+                } else if (inputValues.length === 1) {
+                    if (inputValues[0].value.classList.contains('general-modal-input-field-file')) {
+                        editTileValueCallback(params, inputValues[0].files[0]);
+                    } else {
+                        editTileValueCallback(params, inputValues[0].value);
+                    }
                 } else {
                     for (let i = 0; i < inputValues.length; i++) {
                         if (inputValues[i].checked) {
@@ -368,11 +435,13 @@
         }).join('&');
         xmlHttp.open("GET", theUrl, true);
         xmlHttp.send(null);
-        xmlHttp.onreadystatechange = function () {
-            if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-                callback(xmlHttp.responseText);
-            }
-        };
+        if (callback != null) {
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+                    callback(xmlHttp.responseText);
+                }
+            };
+        }
     }
 
     refreshTiles();
