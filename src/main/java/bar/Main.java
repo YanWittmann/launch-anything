@@ -185,6 +185,9 @@ public class Main {
                                             tile.removeAction(tileAction);
                                         }
                                         break;
+                                    case "deleteTile":
+                                        tileManager.removeTile(tile);
+                                        break;
                                     case "editName":
                                         String name = Util.popupTextInput("Edit Tile Name", "Enter the new name", tile.getLabel());
                                         if (name != null && name.length() > 0 && !name.equals("null")) {
@@ -200,6 +203,21 @@ public class Main {
                                         if (category != null && !category.equals("null")) {
                                             tile.setCategory(category);
                                         }
+                                        break;
+                                    case "addKeyword":
+                                        String keyword = Util.popupTextInput("Add Keyword", "Enter the new keyword", null);
+                                        if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
+                                            tile.addKeyword(keyword);
+                                        }
+                                        break;
+                                    case "editKeyword":
+                                        keyword = Util.popupTextInput("Edit Keyword", "Enter the new keyword", null);
+                                        if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
+                                            tile.editKeyword(additionalValue, keyword);
+                                        }
+                                        break;
+                                    case "deleteKeyword":
+                                        tile.removeKeyword(additionalValue);
                                         break;
                                 }
                             } else {

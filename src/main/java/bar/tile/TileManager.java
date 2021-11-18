@@ -159,6 +159,14 @@ public class TileManager {
         tiles.add(tile);
     }
 
+    public Tile findTile(String tileId) {
+        return tiles.stream().filter(tile -> tile.getId().equals(tileId)).findFirst().orElse(null);
+    }
+
+    public void removeTile(Tile tile) {
+        tiles.remove(tile);
+    }
+
     public void save() {
         try {
             tileFile.getParentFile().mkdirs();
@@ -198,10 +206,6 @@ public class TileManager {
 
     public void addOnInputEvaluatedListener(InputEvaluatedListener listener) {
         onInputEvaluatedListeners.add(listener);
-    }
-
-    public Tile findTile(String tileId) {
-        return tiles.stream().filter(tile -> tile.getId().equals(tileId)).findFirst().orElse(null);
     }
 
     public interface InputEvaluatedListener {

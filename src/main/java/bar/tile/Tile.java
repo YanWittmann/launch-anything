@@ -179,6 +179,25 @@ public class Tile {
         tileActions.remove(tileAction);
     }
 
+    public void addKeyword(String keyword) {
+        keywords = keywords + " " + keyword;
+        normalizeKeywords();
+    }
+
+    public void removeKeyword(String keyword) {
+        keywords = (" " + keywords).replace(" " + keyword, "");
+        normalizeKeywords();
+    }
+
+    public void editKeyword(String keyword, String newKeyword) {
+        keywords = (" " + keywords).replace(" " + keyword, " " + newKeyword);
+        normalizeKeywords();
+    }
+
+    private void normalizeKeywords() {
+        keywords = keywords.replaceAll(" +", " ").trim();
+    }
+
     public TileAction findTileAction(String param1, String param2) {
         for (TileAction action : tileActions) {
             if (isNormalizedTileActionEquals(action.getParam1(), param1) && isNormalizedTileActionEquals(action.getParam2(), param2)) {

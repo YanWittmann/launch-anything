@@ -138,8 +138,10 @@
     const requestUrl = 'http://localhost:' + port;
 
     document.getElementById('add-new-tile').onclick = function () {
-        editTileValue('', '', 'tile', 'createTile');
+        editTileValue('none', 'tile', 'createTile');
     };
+
+    let tileCategories = {};
 
     function refreshTiles() {
         let parameteters = {
@@ -147,6 +149,13 @@
         };
         httpPost(requestUrl, parameteters, function (response) {
             let parsedResponse = JSON.parse(response);
+
+            tileCategories = {};
+            let categoriesJson = parsedResponse.tiles.categories;
+            for (let i = 0; i < categoriesJson.length; i++) {
+                tileCategories[categoriesJson[i].label] = categoriesJson[i].color;
+            }
+
             let tiles = parsedResponse.tiles.tiles;
             let table = document.getElementById('tile-table');
             table.innerHTML = '';
@@ -154,6 +163,17 @@
                 table.appendChild(createTileEntryForTable(tiles[i]));
             }
         });
+    }
+
+    function createColoredCategoryBadge(cat) {
+        let badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.style.backgroundColor = 'rgb(' + tileCategories[cat][0] + ', ' + tileCategories[cat][1] + ', ' + tileCategories[cat][2] + ')';
+        if (tileCategories[cat][0] + tileCategories[cat][1] + tileCategories[cat][2] < 420) {
+            badge.style.color = 'white';
+        }
+        badge.innerHTML = cat;
+        return badge;
     }
 
     function createTileEntryForTable(tileJson) {
@@ -174,11 +194,14 @@
             e.preventDefault();
             editTileValue(tileJson.id, 'tile', 'deleteTile');
         };
-        category.innerHTML = tileJson.category;
-        category.classList.add('clickable');
-        category.onclick = function () {
+
+        let categoryBadge = createColoredCategoryBadge(tileJson.category);
+        categoryBadge.classList.add('clickable');
+        categoryBadge.onclick = function () {
             editTileValue(tileJson.id, 'tile', 'editCategory');
         };
+        category.append(categoryBadge);
+
         let keywordsArray = tileJson.keywords.split(' ');
         for (let i = 0; i < keywordsArray.length; i++) {
             if (keywordsArray[i].length === 0) continue;
@@ -243,9 +266,9 @@
     function editTileValue(tileId, editTypeContext, attribute, additionalValue) {
         let params = {
             'action': 'tileInteraction',
-            'tileId': tileId,
             'editTypeContext': editTypeContext,
-            'attribute': attribute
+            'attribute': attribute,
+            'tileId': tileId,
         };
         if (additionalValue !== undefined && additionalValue != null) {
             params.additionalValue = additionalValue;
