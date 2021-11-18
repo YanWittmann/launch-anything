@@ -115,6 +115,10 @@ public class TileManager {
         }
     }
 
+    public void addTile(Tile tile) {
+        tiles.add(tile);
+    }
+
     public void save() {
         try {
             tileFile.getParentFile().mkdirs();
@@ -148,6 +152,10 @@ public class TileManager {
 
     public void addOnInputEvaluatedListener(InputEvaluatedListener listener) {
         onInputEvaluatedListeners.add(listener);
+    }
+
+    public Tile findTile(String tileId) {
+        return tiles.stream().filter(tile -> tile.getId().equals(tileId)).findFirst().orElse(null);
     }
 
     public interface InputEvaluatedListener {

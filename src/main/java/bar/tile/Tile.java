@@ -34,24 +34,16 @@ public class Tile {
         }
     }
 
-    public boolean isValid() {
-        return lastActivated != -1;
+    public Tile(String label, String keywords, String category, TileAction action) {
+        this.label = label;
+        this.keywords = keywords;
+        this.category = category;
+        tileActions.add(action);
+        id = UUID.randomUUID().toString();
     }
 
-    public JSONObject toJSON() {
-        JSONObject json = new JSONObject();
-        json.put("id", id);
-        json.put("category", category);
-        json.put("label", label);
-        json.put("keywords", keywords);
-        json.put("isActive", isActive);
-        json.put("lastActivated", lastActivated);
-        JSONArray actions = new JSONArray();
-        for (TileAction action : tileActions) {
-            actions.put(action.toJSON());
-        }
-        json.put("actions", actions);
-        return json;
+    public boolean isValid() {
+        return lastActivated != -1;
     }
 
     public void setActive(boolean active) {
@@ -84,6 +76,10 @@ public class Tile {
 
     public boolean isExportable() {
         return exportable;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getLabel() {
@@ -149,6 +145,45 @@ public class Tile {
 
     private String normalize(String s) {
         return s.replaceAll("([A-Z])", " $1").toLowerCase();
+    }
+
+    public void addAction(TileAction action) {
+        tileActions.add(action);
+    }
+
+    public TileAction findTileAction(String param1, String param2) {
+        for (TileAction action : tileActions) {
+            if (isNormalizedTileActionEquals(action.getParam1(), param1) && isNormalizedTileActionEquals(action.getParam2(), param2)) {
+                return action;
+            }
+        }
+        return null;
+    }
+
+    private boolean isNormalizedTileActionEquals(String p1, String p2) {
+        if (p1 == null && p2 == null) return true;
+        if (p1 == null || p2 == null) return false;
+        return normalizeTileActionValue(p1).equals(normalizeTileActionValue(p2));
+    }
+
+    private String normalizeTileActionValue(String s) {
+        return s.replaceAll("\\+", "\\").replace("\\", "/").replaceAll(" +", " ").toLowerCase();
+    }
+
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json.put("id", id);
+        json.put("category", category);
+        json.put("label", label);
+        json.put("keywords", keywords);
+        json.put("isActive", isActive);
+        json.put("lastActivated", lastActivated);
+        JSONArray actions = new JSONArray();
+        for (TileAction action : tileActions) {
+            actions.put(action.toJSON());
+        }
+        json.put("actions", actions);
+        return json;
     }
 
     @Override

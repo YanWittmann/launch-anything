@@ -83,65 +83,6 @@
             width: -moz-fit-content;
         }
 
-        /* The Modal (background) */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
-            padding-top: 100px; /* Location of the box */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgb(0, 0, 0); /* Fallback color */
-            background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
-        }
-
-        /* Modal Content */
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%;
-        }
-
-        /* The Close Button */
-        .close-modal {
-            color: #aaaaaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close-modal:hover,
-        .close-modal:focus {
-            color: #000;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .general-modal-input-field-text {
-            width: 100%;
-            padding: 12px 20px;
-            margin: 8px 0;
-            display: inline-block;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        .file-drop {
-            width: 100%;
-            padding: 12px 20px;
-            margin: 8px 0;
-            display: inline-block;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
     </style>
 </head>
 <body>
@@ -153,7 +94,6 @@
         <th class="bg-green">Category</th>
         <th class="bg-green">Keywords</th>
         <th class="bg-green">Actions</th>
-        <th class="bg-green">Settings</th>
     </tr>
     </thead>
     <tbody id="tile-table"></tbody>
@@ -161,31 +101,11 @@
 
 <button class="add-new-item bg-green">+</button>
 
-<div id="general-input-modal" class="modal">
-    <div class="modal-content">
-        <span id="general-modal-close" class="close-modal">&times;</span>
-        <p id="general-modal-content">Some text in the Modal..</p>
-    </div>
-
-</div>
-
 <script>
 
     const urlParams = new URLSearchParams(window.location.search);
     const port = urlParams.get('p');
     const requestUrl = 'http://localhost:' + port;
-
-    // When the user clicks on <span> (x), close the modal
-    let modal = document.getElementById('general-input-modal');
-    document.getElementById('general-modal-close').onclick = function () {
-        modal.style.display = "none";
-    }
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function (event) {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    }
 
     function refreshTiles() {
         let parameteters = {
@@ -209,22 +129,41 @@
         let category = document.createElement('td');
         let keywords = document.createElement('td');
         let actions = document.createElement('td');
-        let settings = document.createElement('td');
 
         // add the data from the tileJson to the table row
         name.innerHTML = tileJson.label;
+        name.onclick = function () {
+            editTileValue(tileJson.id, tileJson.label, 'tile', 'editName');
+        };
+        name.oncontextmenu = function (e) {
+            e.preventDefault();
+            editTileValue(tileJson.id, tileJson.label, 'tile', 'deleteTile');
+        };
         category.innerHTML = tileJson.category;
+        category.onclick = function () {
+            editTileValue(tileJson.id, tileJson.label, 'tile', 'editCategory');
+        };
         let keywordsArray = tileJson.keywords.split(' ');
         for (let i = 0; i < keywordsArray.length; i++) {
             if (keywordsArray[i].length === 0) continue;
             let badge = document.createElement('span');
             badge.className = 'badge bg-blue';
             badge.innerHTML = keywordsArray[i];
+            badge.onclick = function () {
+                editTileValue(tileJson.id, tileJson.label, 'tile', 'editKeyword', keywordsArray[i]);
+            };
+            badge.oncontextmenu = function (e) {
+                e.preventDefault();
+                editTileValue(tileJson.id, tileJson.label, 'tile', 'deleteKeyword', keywordsArray[i]);
+            };
             keywords.append(badge);
         }
         let badge = document.createElement('span');
         badge.className = 'badge bg-green';
         badge.innerHTML = '+';
+        badge.onclick = function () {
+            editTileValue(tileJson.id, tileJson.label, 'tile', 'addKeyword');
+        };
         keywords.append(badge);
 
         // add the actions to the table row depending on what action type it is
@@ -239,6 +178,13 @@
                 badge.className = 'badge bg-blue';
                 badge.innerText = 'FILE: ' + action.param1;
             }
+            badge.onclick = function () {
+                editTileValue(tileJson.id, tileJson.label, 'tile', 'editAction', action.param1);
+            };
+            badge.oncontextmenu = function (e) {
+                e.preventDefault();
+                editTileValue(tileJson.id, tileJson.label, 'tile', 'deleteAction', action.param1);
+            };
             actions.append(badge);
         }
         badge = document.createElement('span');
@@ -249,183 +195,30 @@
         };
         actions.append(badge);
 
-        // add the required settings badges
-        badge = document.createElement('span');
-        badge.className = 'badge bg-red';
-        badge.innerHTML = 'remove';
-        settings.append(badge);
-
         // add the elements to the row
         row.append(name);
         row.append(category);
         row.append(keywords);
         row.append(actions);
-        row.append(settings);
 
         return row;
     }
 
-    const tileCategories = ['URL', 'FILE'];
-
-    function editTileValue(tileId, tileName, editTypeContext, attribute) {
+    function editTileValue(tileId, tileName, editTypeContext, attribute, additionalValue) {
         let params = {
+            'action': 'tileInteraction',
             'tileId': tileId,
             'tileName': tileName,
             'editTypeContext': editTypeContext,
             'attribute': attribute
         };
-        if (editTypeContext == null || editTypeContext === '') {
-            return;
-        } else if (editTypeContext === 'tile') { // user wants to perform some action related to tiles
-            if (attribute === 'createAction') {
-                multipleChoiceInput('What type do you want to create the tile of?', tileCategories, tileCategories[0], params);
-            }
-        }
-        //regularTextInput('Editing clicked ' + tileName + ', ' + attribute + ':', 'hmm', {'tileId': tileId, 'tileName': tileName, 'editType': editType, 'attribute': attribute});
-    }
-
-    function editTileValueCallback(params, value) {
-        if (value == null) return;
-        console.log(params);
-        console.log(value);
-
-        if (params.editTypeContext === 'tile') {
-            if (params.attribute === 'createAction') {
-                params.attributeType = value;
-                params.attribute = 'createActionFinal';
-                if (value === 'URL') {
-                    regularTextInput('Enter the URL:', '', params);
-                } else if (value === 'FILE') {
-                    fileInput(params);
-                }
-            } else if (params.attribute === 'createActionFinal') {
-                if (params.attributeType === 'URL') {
-                    let parameteters = {
-                        'action': 'createAction',
-                        'tileId': params.tileId,
-                        'attributeType': params.attributeType,
-                        'value': value
-                    };
-                    httpPost(requestUrl, parameteters, null);
-                } else if (params.attributeType === 'FILE') {
-                    let parameteters = {
-                        'action': 'createAction',
-                        'tileId': params.tileId,
-                        'attributeType': params.attributeType,
-                        'value': value.file
-                    };
-                    httpPost(requestUrl, parameteters, null);
-                }
-            }
+        if (additionalValue !== undefined && additionalValue != null) {
+            params.additionalValue = additionalValue;
         }
 
-        refreshTiles();
-    }
-
-    function fileInput(params) {
-        let parameteters = {
-            'action': 'inputFile'
-        };
-        httpPost(requestUrl, parameteters, function (response) {
-            let parsedResponse = JSON.parse(response);
-            editTileValueCallback(params, parsedResponse);
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
         });
-    }
-
-    function regularTextInput(message, pretext, params) {
-        // create radio buttons for the options
-        let content = document.createElement('div');
-        let label = document.createElement('label');
-        label.innerHTML = message;
-        content.append(label);
-        content.append(document.createElement('br'));
-
-        // add the text input with the pretext as pretext
-        let input = document.createElement('input');
-        input.type = 'text';
-        input.classList.add('general-modal-input-field');
-        input.classList.add('general-modal-input-field-text');
-        input.value = pretext;
-        content.append(input);
-        content.append(document.createElement('br'));
-
-        fancyUserInput(content, params);
-    }
-
-    function multipleChoiceInput(message, options, preselected, params) {
-        // create radio buttons for the options
-        let content = document.createElement('div');
-        content.className = 'input-group';
-        let label = document.createElement('label');
-        label.innerHTML = message;
-        content.append(label);
-        content.append(document.createElement('br'));
-        content.append(document.createElement('br'));
-
-        for (let i = 0; i < options.length; i++) {
-            let radio = document.createElement('input');
-            radio.classList.add('general-modal-input-field');
-            radio.type = 'radio';
-            radio.name = 'options';
-            radio.value = options[i];
-            radio.id = 'input-' + options[i];
-            if (preselected != null && options[i] === preselected) {
-                radio.checked = true;
-            }
-            content.append(radio);
-            let label = document.createElement('label');
-            label.innerHTML = options[i];
-            label.setAttribute('for', 'input-' + options[i]);
-            content.append(label);
-            content.append(document.createElement('br'));
-        }
-
-        fancyUserInput(content, params);
-    }
-
-    function fancyUserInput(message, params) {
-        let confirmBadge = document.createElement('span');
-        confirmBadge.className = 'badge bg-green';
-        confirmBadge.innerHTML = 'Confirm';
-        confirmBadge.onclick = function () {
-            modal.style.display = "none";
-            let inputValues = document.getElementsByClassName('general-modal-input-field');
-            if (inputValues != null && inputValues.length > 0) {
-                if (inputValues.length === 1) {
-                    editTileValueCallback(params, inputValues[0].value);
-                } else if (inputValues.length === 1) {
-                    if (inputValues[0].value.classList.contains('general-modal-input-field-file')) {
-                        editTileValueCallback(params, inputValues[0].files[0]);
-                    } else {
-                        editTileValueCallback(params, inputValues[0].value);
-                    }
-                } else {
-                    for (let i = 0; i < inputValues.length; i++) {
-                        if (inputValues[i].checked) {
-                            editTileValueCallback(params, inputValues[i].value);
-                        }
-                    }
-                }
-            } else {
-                console.log('no input field defined');
-            }
-        };
-        let cancelBadge = document.createElement('span');
-        cancelBadge.className = 'badge bg-red';
-        cancelBadge.innerHTML = 'Cancel';
-        cancelBadge.onclick = function () {
-            modal.style.display = "none";
-        };
-
-        let modalContent = document.getElementById('general-modal-content');
-        modalContent.innerHTML = '';
-        modalContent.append(message);
-        modalContent.append(document.createElement('br'));
-        modalContent.append(document.createElement('br'));
-        modalContent.append(confirmBadge);
-        modalContent.append(cancelBadge);
-        modal.style.display = 'block';
-        return '';
     }
 
     function httpPost(theUrl, parameterMap, callback) {

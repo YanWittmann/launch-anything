@@ -17,6 +17,37 @@ public class TileAction {
         this.json = json;
     }
 
+    public TileAction(String type, String param1, String param2) {
+        this.json = new JSONObject();
+        this.json.put("type", type);
+        this.json.put("param1", param1);
+        this.json.put("param2", param2);
+    }
+
+    public String getType() {
+        return json.optString("type", null);
+    }
+
+    public String getParam1() {
+        return json.optString("param1", null);
+    }
+
+    public String getParam2() {
+        return json.optString("param2", null);
+    }
+
+    public void setType(String type) {
+        json.put("type", type);
+    }
+
+    public void setParam1(String param1) {
+        json.put("param1", param1);
+    }
+
+    public void setParam2(String param2) {
+        json.put("param2", param2);
+    }
+
     public void execute(Main main) {
         try {
             String type = json.optString("type");
@@ -59,4 +90,10 @@ public class TileAction {
     public JSONObject toJSON() {
         return json;
     }
+
+    public final static String[] ACTION_TYPES = {
+        "file",
+        "url",
+        "settingsWeb"
+    };
 }

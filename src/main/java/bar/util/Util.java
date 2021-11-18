@@ -3,9 +3,12 @@ package bar.util;
 import bar.Main;
 import jnafilechooser.api.JnaFileChooser;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.StringJoiner;
+
+import static java.net.URLDecoder.*;
 
 public abstract class Util {
 
@@ -39,5 +42,22 @@ public abstract class Util {
             fc.addFilter(filterName, filters);
         fc.showOpenDialog(null);
         return fc.getSelectedFile();
+    }
+
+    public static String popupDropDown(String title, String message, String[] options, String preselected) {
+        if (options == null || options.length == 0) return null;
+        return (String) JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE, null, options, preselected != null ? preselected : options[0]);
+    }
+
+    public static String popupTextInput(String title, String message, String pretext) {
+        return String.valueOf(JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE, null, null, pretext));
+    }
+
+    public static String urlDecode(String url) {
+        try {
+            return decode(url, "UTF-8");
+        } catch (UnsupportedEncodingException ignored) {
+        }
+        return url;
     }
 }

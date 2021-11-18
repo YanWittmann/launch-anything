@@ -3,6 +3,7 @@ package bar;
 import bar.logic.BarManager;
 import bar.logic.Settings;
 import bar.tile.Tile;
+import bar.tile.TileAction;
 import bar.tile.TileManager;
 import bar.util.GlobalKeyListener;
 import bar.util.Sleep;
@@ -11,6 +12,7 @@ import bar.webserver.HTTPServer;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
 import org.json.JSONObject;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -33,6 +35,11 @@ public class Main {
     private TileManager tileManager;
 
     private Main() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
+        }
+
         settings = new Settings();
         barManager = new BarManager(settings);
         tileManager = new TileManager(settings);
@@ -137,7 +144,7 @@ public class Main {
                 if (getMatcher.find() && getMatcher.groupCount() > 0) {
                     for (String get : getMatcher.group(1).split("&")) {
                         String[] split = get.split("=");
-                        if (split.length == 2) getParams.put(split[0], split[1]);
+                        if (split.length == 2) getParams.put(split[0], Util.urlDecode(split[1]));
                     }
                 }
             }
@@ -149,12 +156,45 @@ public class Main {
                 JSONObject response = new JSONObject();
                 if (getParams.get("action").equals("getAllTiles")) {
                     response.put("tiles", tileManager.toJSON());
-                } else if (getParams.get("action").equals("inputFile")) {
-                    response.put("file", Util.pickFile(null).getAbsolutePath());
-                } else if (getParams.get("action").equals("createAction")) {
+                } else if (getParams.get("action").equals("tileInteraction")) {
+                    String editTypeContext = getParams.get("editTypeContext");
+                    String attribute = getParams.get("attribute");
                     String tileId = getParams.get("tileId");
-                    String value = getParams.get("value");
-                    String type = getParams.get("attributeType");
+                    String tileName = getParams.get("tileName");
+                    String additionalValue = getParams.get("additionalValue");
+
+                    if (editTypeContext.equals("tile")) {
+                        Tile tile = tileManager.findTile(tileId);
+                        if (tile != null) {
+                            if (attribute.equals("createAction")) {
+                                String selectedActionType = Util.popupDropDown("Create new Tile Action", "What type of action do you want to create?", TileAction.ACTION_TYPES, null);
+                                if (selectedActionType != null) {
+                                    String param1 = null;
+                                    if (selectedActionType.equals("file")) {
+                                        param1 = Util.pickFile(null).getAbsolutePath();
+                                    } else if (selectedActionType.equals("url")) {
+                                        param1 = Util.popupTextInput("Create new Tile Action", "Enter the URL", null);
+                                    }
+                                    if (param1 != null) {
+                                        tile.addAction(new TileAction(selectedActionType, param1, null));
+                                    }
+                                }
+                            } else if (attribute.equals("editAction")) {
+                                TileAction tileAction = tile.findTileAction(additionalValue, null);
+                                if (tileAction != null) {
+                                    String param1 = null;
+                                    if (tileAction.getType().equals("file")) {
+                                        param1 = Util.pickFile(null).getAbsolutePath();
+                                    } else if (tileAction.getType().equals("url")) {
+                                        param1 = Util.popupTextInput("Edit Tile Action", "Enter the URL", tileAction.getParam1() != null ? tileAction.getParam1() : "");
+                                    }
+                                    if (param1 != null) {
+                                        tileAction.setParam1(param1);
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
 
                 out.write("HTTP/1.0 200 OK\r\n");
