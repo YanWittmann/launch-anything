@@ -21,8 +21,10 @@ public class TileManager {
 
     private final Settings settings;
     private final List<Tile> tiles = new ArrayList<>();
+    private final List<Tile> generatedTiles = new ArrayList<>();
     private final List<TileGenerator> tileGenerators = new ArrayList<>();
     private final List<InputEvaluatedListener> onInputEvaluatedListeners = new ArrayList<>();
+    private final List<TileCategory> categories = new ArrayList<>();
     private File tileFile;
 
     public TileManager(Settings settings) {
@@ -109,10 +111,48 @@ public class TileManager {
                 }
             }
 
-            System.out.println("Loaded " + tiles.size() + " tile(s) and " + tileGenerators.size() + " tile generator(s).");
+            JSONArray categoriesArray = tilesRoot.optJSONArray("categories");
+            if (categoriesArray != null) {
+                for (int i = 0; i < categoriesArray.length(); i++) {
+                    JSONObject categoryJson = categoriesArray.optJSONObject(i);
+                    if (categoryJson == null) continue;
+                    TileCategory category = new TileCategory(categoryJson);
+                    if (category.isValid()) {
+                        categories.add(category);
+                    }
+                }
+            }
+
+            System.out.println("Loaded " + tiles.size() + " tile(s), " + tileGenerators.size() + " tile generator(s) and " + categories.size() + " category/ies.");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public void regenerateGeneratedTiles() {
+        generatedTiles.clear();
+        for (TileGenerator tileGenerator : tileGenerators) {
+            generatedTiles.addAll(tileGenerator.generateTiles());
+        }
+    }
+
+    public void addCategory(TileCategory category) {
+        categories.add(category);
+    }
+
+    public void removeCategory(TileCategory category) {
+        categories.remove(category);
+    }
+
+    public List<TileCategory> getCategories() {
+        return categories;
+    }
+
+    public TileCategory findCategory(String label) {
+        for (TileCategory category : categories) {
+            if (category.getLabel().equals(label)) return category;
+        }
+        return null;
     }
 
     public void addTile(Tile tile) {
@@ -143,9 +183,15 @@ public class TileManager {
             tileGeneratorsArray.put(tileGenerator.toJSON());
         }
 
+        JSONArray categoriesArray = new JSONArray();
+        for (TileCategory category : categories) {
+            categoriesArray.put(category.toJSON());
+        }
+
         JSONObject tilesRoot = new JSONObject();
         tilesRoot.put("tiles", tilesArray);
         tilesRoot.put("tile-generators", tileGeneratorsArray);
+        tilesRoot.put("categories", categoriesArray);
 
         return tilesRoot;
     }

@@ -83,9 +83,39 @@
             width: -moz-fit-content;
         }
 
+        .header-paragraph {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 10px;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 1.5em;
+            color: #36c467;
+        }
+
+        p {
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+
+        .clickable {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+
+<div class="header-paragraph">
+    <h1>LaunchAnything Settings</h1>
+    <p>
+        Here you can add, remove and edit the tiles that you will be able to search for in the bar.<br>
+        <b>Left click</b> any data to edit it and <b>right click</b>
+        to delete it (right click the name to delete a tile)<br>
+    </p>
+</div>
 
 <table class="settings-table">
     <thead>
@@ -99,13 +129,17 @@
     <tbody id="tile-table"></tbody>
 </table>
 
-<button class="add-new-item bg-green">+</button>
+<button id="add-new-tile" class="add-new-item bg-green">+</button>
 
 <script>
 
     const urlParams = new URLSearchParams(window.location.search);
     const port = urlParams.get('p');
     const requestUrl = 'http://localhost:' + port;
+
+    document.getElementById('add-new-tile').onclick = function () {
+        editTileValue('', '', 'tile', 'createTile');
+    };
 
     function refreshTiles() {
         let parameteters = {
@@ -132,16 +166,18 @@
 
         // add the data from the tileJson to the table row
         name.innerHTML = tileJson.label;
+        name.classList.add('clickable');
         name.onclick = function () {
-            editTileValue(tileJson.id, tileJson.label, 'tile', 'editName');
+            editTileValue(tileJson.id, 'tile', 'editName');
         };
         name.oncontextmenu = function (e) {
             e.preventDefault();
-            editTileValue(tileJson.id, tileJson.label, 'tile', 'deleteTile');
+            editTileValue(tileJson.id, 'tile', 'deleteTile');
         };
         category.innerHTML = tileJson.category;
+        category.classList.add('clickable');
         category.onclick = function () {
-            editTileValue(tileJson.id, tileJson.label, 'tile', 'editCategory');
+            editTileValue(tileJson.id, 'tile', 'editCategory');
         };
         let keywordsArray = tileJson.keywords.split(' ');
         for (let i = 0; i < keywordsArray.length; i++) {
@@ -150,11 +186,11 @@
             badge.className = 'badge bg-blue';
             badge.innerHTML = keywordsArray[i];
             badge.onclick = function () {
-                editTileValue(tileJson.id, tileJson.label, 'tile', 'editKeyword', keywordsArray[i]);
+                editTileValue(tileJson.id, 'tile', 'editKeyword', keywordsArray[i]);
             };
             badge.oncontextmenu = function (e) {
                 e.preventDefault();
-                editTileValue(tileJson.id, tileJson.label, 'tile', 'deleteKeyword', keywordsArray[i]);
+                editTileValue(tileJson.id, 'tile', 'deleteKeyword', keywordsArray[i]);
             };
             keywords.append(badge);
         }
@@ -162,7 +198,7 @@
         badge.className = 'badge bg-green';
         badge.innerHTML = '+';
         badge.onclick = function () {
-            editTileValue(tileJson.id, tileJson.label, 'tile', 'addKeyword');
+            editTileValue(tileJson.id, 'tile', 'addKeyword');
         };
         keywords.append(badge);
 
@@ -179,11 +215,11 @@
                 badge.innerText = 'FILE: ' + action.param1;
             }
             badge.onclick = function () {
-                editTileValue(tileJson.id, tileJson.label, 'tile', 'editAction', action.param1);
+                editTileValue(tileJson.id, 'tile', 'editAction', action.param1);
             };
             badge.oncontextmenu = function (e) {
                 e.preventDefault();
-                editTileValue(tileJson.id, tileJson.label, 'tile', 'deleteAction', action.param1);
+                editTileValue(tileJson.id, 'tile', 'deleteAction', action.param1);
             };
             actions.append(badge);
         }
@@ -191,7 +227,7 @@
         badge.className = 'badge bg-green';
         badge.innerHTML = '+';
         badge.onclick = function () {
-            editTileValue(tileJson.id, tileJson.label, 'tile', 'createAction');
+            editTileValue(tileJson.id, 'tile', 'createAction');
         };
         actions.append(badge);
 
@@ -204,11 +240,10 @@
         return row;
     }
 
-    function editTileValue(tileId, tileName, editTypeContext, attribute, additionalValue) {
+    function editTileValue(tileId, editTypeContext, attribute, additionalValue) {
         let params = {
             'action': 'tileInteraction',
             'tileId': tileId,
-            'tileName': tileName,
             'editTypeContext': editTypeContext,
             'attribute': attribute
         };

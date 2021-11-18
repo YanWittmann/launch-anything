@@ -18,8 +18,8 @@ public class Tile {
     public Tile(JSONObject json) {
         try {
             id = json.optString("id", UUID.randomUUID().toString());
-            category = json.optString("category", "unassigned");
             label = json.optString("label", "Unlabeled tile");
+            category = json.optString("category", "unassigned");
             keywords = json.optString("keywords", "");
             isActive = json.optBoolean("isActive", true);
             exportable = json.optBoolean("exportable", true);
@@ -34,12 +34,14 @@ public class Tile {
         }
     }
 
-    public Tile(String label, String keywords, String category, TileAction action) {
+    public Tile(String label) {
+        this.id = UUID.randomUUID().toString();
         this.label = label;
-        this.keywords = keywords;
-        this.category = category;
-        tileActions.add(action);
-        id = UUID.randomUUID().toString();
+        this.category = "";
+        this.keywords = "";
+        this.isActive = true;
+        this.exportable = true;
+        this.lastActivated = 0;
     }
 
     public boolean isValid() {
@@ -90,6 +92,10 @@ public class Tile {
         return lastActivated;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
     public void execute(Main main) {
         lastActivated = System.currentTimeMillis();
         for (TileAction action : tileActions) {
@@ -101,8 +107,20 @@ public class Tile {
         if (!isActive) return false;
 
         // check if the search is directly contained in one of the fields
-        String[] splitted = search.split(" ");
+        String[] splitted = normalizeLowercase(search).split(" ");
         int amountSearchFound = 0;
+        for (String s : splitted) {
+            if (normalizeLowercase(id).contains(s)) amountSearchFound++;
+            else if (normalizeLowercase(category).contains(s)) amountSearchFound++;
+            else if (normalizeLowercase(label).contains(s)) amountSearchFound++;
+            else if (normalizeLowercase(keywords).contains(s)) amountSearchFound++;
+        }
+        if (amountSearchFound >= splitted.length)
+            return true;
+
+        // check if the normalized search is directly contained in one of the fields
+        String[] normalizedSplitted = normalize(search).split(" ");
+        amountSearchFound = 0;
         for (String s : splitted) {
             if (normalize(id).contains(s)) amountSearchFound++;
             else if (normalize(category).contains(s)) amountSearchFound++;
@@ -144,11 +162,21 @@ public class Tile {
     }
 
     private String normalize(String s) {
+        if (s == null) return "";
         return s.replaceAll("([A-Z])", " $1").toLowerCase();
+    }
+
+    private String normalizeLowercase(String s) {
+        if (s == null) return "";
+        return s.toLowerCase();
     }
 
     public void addAction(TileAction action) {
         tileActions.add(action);
+    }
+
+    public void removeAction(TileAction tileAction) {
+        tileActions.remove(tileAction);
     }
 
     public TileAction findTileAction(String param1, String param2) {

@@ -4,6 +4,7 @@ import bar.logic.BarManager;
 import bar.logic.Settings;
 import bar.tile.Tile;
 import bar.tile.TileAction;
+import bar.tile.TileCategory;
 import bar.tile.TileManager;
 import bar.util.GlobalKeyListener;
 import bar.util.Sleep;
@@ -15,6 +16,7 @@ import org.json.JSONObject;
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
@@ -135,7 +137,6 @@ public class Main {
                 break;
             }
         }
-        System.out.println(request);
 
         Map<String, String> getParams = new HashMap<>();
         for (String line : request) {
@@ -149,51 +150,73 @@ public class Main {
                 }
             }
         }
-        System.out.println(getParams);
+        System.out.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
+        getParams.forEach((k, v) -> System.out.println(k + ": " + v));
 
         if (getParams.containsKey("action")) {
             try {
                 JSONObject response = new JSONObject();
+                String action = getParams.getOrDefault("action", null);
+
                 if (getParams.get("action").equals("getAllTiles")) {
                     response.put("tiles", tileManager.toJSON());
-                } else if (getParams.get("action").equals("tileInteraction")) {
-                    String editTypeContext = getParams.get("editTypeContext");
-                    String attribute = getParams.get("attribute");
-                    String tileId = getParams.get("tileId");
-                    String tileName = getParams.get("tileName");
-                    String additionalValue = getParams.get("additionalValue");
 
-                    if (editTypeContext.equals("tile")) {
-                        Tile tile = tileManager.findTile(tileId);
-                        if (tile != null) {
-                            if (attribute.equals("createAction")) {
-                                String selectedActionType = Util.popupDropDown("Create new Tile Action", "What type of action do you want to create?", TileAction.ACTION_TYPES, null);
-                                if (selectedActionType != null) {
-                                    String param1 = null;
-                                    if (selectedActionType.equals("file")) {
-                                        param1 = Util.pickFile(null).getAbsolutePath();
-                                    } else if (selectedActionType.equals("url")) {
-                                        param1 = Util.popupTextInput("Create new Tile Action", "Enter the URL", null);
-                                    }
-                                    if (param1 != null) {
-                                        tile.addAction(new TileAction(selectedActionType, param1, null));
-                                    }
+                } else if (action.equals("tileInteraction")) {
+                    Sleep.milliseconds(200);
+
+                    String editTypeContext = getParams.getOrDefault("editTypeContext", null);
+                    String attribute = getParams.getOrDefault("attribute", null);
+                    String tileId = getParams.getOrDefault("tileId", null);
+                    String tileName = getParams.getOrDefault("tileName", null);
+                    String additionalValue = getParams.getOrDefault("additionalValue", null);
+
+                    if (attribute != null && editTypeContext != null) {
+                        if (editTypeContext.equals("tile")) {
+                            Tile tile = tileManager.findTile(tileId);
+                            if (tile != null) {
+                                switch (attribute) {
+                                    case "createAction":
+                                    case "editAction":
+                                        createOrEditNewTileAction(tile, additionalValue, null);
+                                        break;
+                                    case "deleteAction":
+                                        TileAction tileAction = tile.findTileAction(additionalValue, null);
+                                        if (tileAction != null) {
+                                            tile.removeAction(tileAction);
+                                        }
+                                        break;
+                                    case "editName":
+                                        String name = Util.popupTextInput("Edit Tile Name", "Enter the new name", tile.getLabel());
+                                        if (name != null && name.length() > 0 && !name.equals("null")) {
+                                            tile.setLabel(name);
+                                        }
+                                        break;
+                                    case "editCategory":
+                                        String category = Util.popupDropDown(
+                                                "Edit Tile Category",
+                                                "Select the new category",
+                                                tileManager.getCategories().stream().map(TileCategory::getLabel).toArray(String[]::new),
+                                                tile.getCategory());
+                                        if (category != null && !category.equals("null")) {
+                                            tile.setCategory(category);
+                                        }
+                                        break;
                                 }
-                            } else if (attribute.equals("editAction")) {
-                                TileAction tileAction = tile.findTileAction(additionalValue, null);
-                                if (tileAction != null) {
-                                    String param1 = null;
-                                    if (tileAction.getType().equals("file")) {
-                                        param1 = Util.pickFile(null).getAbsolutePath();
-                                    } else if (tileAction.getType().equals("url")) {
-                                        param1 = Util.popupTextInput("Edit Tile Action", "Enter the URL", tileAction.getParam1() != null ? tileAction.getParam1() : "");
+                            } else {
+                                if (attribute.equals("createTile")) {
+                                    tileName = Util.popupTextInput("Create new Tile", "Enter the name of the new Tile", null);
+                                    Tile newTile = new Tile(tileName);
+                                    if (tileName != null && tileName.length() > 0 && !tileName.equals("null")) {
+                                        TileAction newTileAction = createOrEditNewTileAction(newTile, null, null);
+                                        if (newTileAction != null) {
+                                            newTile.setCategory(newTileAction.getType());
+                                        }
                                     }
-                                    if (param1 != null) {
-                                        tileAction.setParam1(param1);
-                                    }
+                                    tileManager.addTile(newTile);
                                 }
                             }
                         }
+                        tileManager.save();
                     }
                 }
 
@@ -205,6 +228,7 @@ public class Main {
                 out.write(response.toString());
             } catch (Exception e) {
                 setResponseError(500, "Something went wrong: " + e.getMessage(), out);
+                e.printStackTrace();
             }
         } else {
             out.write("HTTP/1.0 200 OK\r\n");
@@ -214,6 +238,53 @@ public class Main {
             out.write("\r\n");
             out.write(Util.readClassResource("web/settings.html"));
         }
+    }
+
+    private TileAction createOrEditNewTileAction(Tile tile, String param1, String param2) {
+        TileAction tileAction;
+        if (param1 == null && param2 == null) {
+            tileAction = null;
+        } else {
+            tileAction = tile.findTileAction(param1, param2);
+            param1 = null;
+            param2 = null;
+        }
+
+        TileAction newTileAction = null;
+
+        if (tileAction != null) {
+            if (tileAction.getType().equals("file")) {
+                File file = Util.pickFile(null);
+                if (file != null) {
+                    param1 = file.getAbsolutePath();
+                }
+            } else if (tileAction.getType().equals("url")) {
+                param1 = Util.popupTextInput("Edit Tile Action", "Enter the URL", tileAction.getParam1() != null ? tileAction.getParam1() : "");
+            }
+            if (param1 != null) {
+                newTileAction = new TileAction(tileAction.getType(), param1, param2);
+                tile.addAction(newTileAction);
+                tile.removeAction(tileAction);
+            }
+        } else {
+            String actionType = Util.popupDropDown("Create new Tile Action", "What type of action do you want to create?", TileAction.ACTION_TYPES, null);
+            if (actionType != null && actionType.length() > 0 && !actionType.equals("null")) {
+                if (actionType.equals("file")) {
+                    File file = Util.pickFile(null);
+                    if (file != null) {
+                        param1 = file.getAbsolutePath();
+                    }
+                } else if (actionType.equals("url")) {
+                    param1 = Util.popupTextInput("Create new Tile Action", "Enter the URL", null);
+                }
+                if (param1 != null) {
+                    newTileAction = new TileAction(actionType, param1, param2);
+                    tile.addAction(newTileAction);
+                }
+            }
+        }
+
+        return newTileAction;
     }
 
     private void setResponseError(int errorCode, String message, BufferedWriter out) throws IOException {

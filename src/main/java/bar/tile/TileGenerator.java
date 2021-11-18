@@ -7,10 +7,12 @@ import java.util.List;
 
 public class TileGenerator {
 
-    private final List<Tile> generatedTiles = new ArrayList<>();
-
     public TileGenerator(JSONObject json, boolean generate) {
 
+    }
+
+    public List<Tile> generateTiles() {
+        return new ArrayList<>();
     }
 
     public boolean isValid() {

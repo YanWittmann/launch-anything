@@ -1,6 +1,7 @@
 package bar.util;
 
 import bar.Main;
+import bar.ui.PopupTextInput;
 import jnafilechooser.api.JnaFileChooser;
 
 import javax.swing.*;
@@ -8,7 +9,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.StringJoiner;
 
-import static java.net.URLDecoder.*;
+import static java.net.URLDecoder.decode;
 
 public abstract class Util {
 
@@ -46,11 +47,16 @@ public abstract class Util {
 
     public static String popupDropDown(String title, String message, String[] options, String preselected) {
         if (options == null || options.length == 0) return null;
-        return (String) JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE, null, options, preselected != null ? preselected : options[0]);
+        Object o = JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE, null, options, preselected != null ? preselected : options[0]);
+        if (o == null) return null;
+        return o.toString();
     }
 
     public static String popupTextInput(String title, String message, String pretext) {
-        return String.valueOf(JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE, null, null, pretext));
+        PopupTextInput dialog = new PopupTextInput(title, message, pretext);
+        if (!dialog.isCancelled())
+            return dialog.getText();
+        return null;
     }
 
     public static String urlDecode(String url) {
