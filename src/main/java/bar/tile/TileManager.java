@@ -141,6 +141,11 @@ public class TileManager {
     }
 
     public void removeCategory(TileCategory category) {
+        for (Tile tile : tiles) {
+            if (tile.getCategory() != null && tile.getCategory().equals(category.getLabel())) {
+                tile.setCategory(null);
+            }
+        }
         categories.remove(category);
     }
 

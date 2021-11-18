@@ -17,6 +17,8 @@ public class GlassBar extends JFrame {
 
     private final static int BORDER_RADIUS = 12;
     private final static int BORDER_THICKNESS = 2;
+    private static final float BACKGROUND_TINT_FACTOR_FOR_DARK_MODE = 0.05f;
+    private static final float BACKGROUND_TINT_FACTOR_FOR_BRIGHT_MODE = 0.1f;
     private static final float BACKGROUND_BLEND_FACTOR_FOR_DARK_MODE = 0.6f;
     private static final float BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE = 0.6f;
     private final static Color BLUR_COLOR_FOR_DARK_MODE = new Color(45, 48, 52);
@@ -130,12 +132,16 @@ public class GlassBar extends JFrame {
         new Thread(this::updateBackground).start();
     }
 
+    private BufferedImage lastBackgroundImage;
+    private boolean isLightMode = true;
+
     public void updateBackground() {
         BufferedImage screenshot = robot.createScreenCapture(barRectangle);
         screenshot = ImageUtil.saturateImage(screenshot, 1.6f);
         BACKGROUND_BLUR_FILTER.filter(screenshot, screenshot);
         Color averageColor = ImageUtil.averageColor(screenshot);
-        if (averageColor.getRed() + averageColor.getGreen() + averageColor.getBlue() > 170) {
+        isLightMode = averageColor.getRed() + averageColor.getGreen() + averageColor.getBlue() > 170;
+        if (isLightMode) {
             frameBorderLabel.setBorder(ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE);
             screenshot = ImageUtil.overlayColor(screenshot, BLUR_COLOR_FOR_BRIGHT_MODE, BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE);
             inputField.setForeground(TEXT_COLOR_FOR_BRIGHT_MODE);
@@ -145,7 +151,20 @@ public class GlassBar extends JFrame {
             inputField.setForeground(TEXT_COLOR_FOR_DARK_MODE);
         }
         screenshot = ImageUtil.makeRoundedCorner(screenshot, BORDER_RADIUS + BORDER_THICKNESS + 5);
+        lastBackgroundImage = screenshot;
         backgroundImageLabel.setIcon(new ImageIcon(screenshot));
+    }
+
+    public void tintBackground(Color color) {
+        if (lastBackgroundImage != null) {
+            BufferedImage tintedImage;
+            if (isLightMode) {
+                tintedImage = ImageUtil.overlayColor(lastBackgroundImage, color, BACKGROUND_TINT_FACTOR_FOR_BRIGHT_MODE);
+            } else {
+                tintedImage = ImageUtil.overlayColor(lastBackgroundImage, color, BACKGROUND_TINT_FACTOR_FOR_DARK_MODE);
+            }
+            backgroundImageLabel.setIcon(new ImageIcon(tintedImage));
+        }
     }
 
     public void setAllowInput(boolean allowInput) {
@@ -200,6 +219,8 @@ public class GlassBar extends JFrame {
             contentPane.setPreferredSize(new Dimension(width, height));
             this.setLocationRelativeTo(null);
             this.setLocation(this.getX(), (SCREEN_RECTANGLE.height / 6) + ((index + 1) * (height + settings.getInt(Settings.RESULT_MARGIN))) + settings.getInt(Settings.INPUT_RESULT_DISTANCE));
+            inputField.setSelectionColor(new Color(0, 0, 0, 0));
+            inputField.setSelectedTextColor(TEXT_COLOR_FOR_DARK_MODE);
             fontSize = 30;
         }
 

@@ -69,10 +69,10 @@ public class Main {
                     }
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.PREVIOUS_RESULT_KEY)) {
                     currentResultIndex = Math.max(0, currentResultIndex - 1);
-                    barManager.setTiles(lastTiles, currentResultIndex);
+                    barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.NEXT_RESULT_KEY)) {
                     currentResultIndex = Math.min(currentResultIndex + 1, lastTiles.size() - 1);
-                    barManager.setTiles(lastTiles, currentResultIndex);
+                    barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
                 }
             }
 
@@ -90,17 +90,23 @@ public class Main {
     }
 
     private List<Tile> lastTiles = new ArrayList<>();
+    private Tile lastExecutedTile;
     private int currentResultIndex = 0;
 
     private void executeTopmostTile() {
-        lastTiles.get(currentResultIndex).execute(this);
-        tileManager.save();
+        if (currentResultIndex < lastTiles.size()) {
+            lastExecutedTile = lastTiles.get(currentResultIndex);
+        }
+        if (lastExecutedTile != null) {
+            lastExecutedTile.execute(this);
+            tileManager.save();
+        }
     }
 
     private void onInputEvaluated(List<Tile> tiles) {
         lastTiles = tiles;
         currentResultIndex = 0;
-        barManager.setTiles(lastTiles, currentResultIndex);
+        barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
     }
 
     private HTTPServer webserver;
