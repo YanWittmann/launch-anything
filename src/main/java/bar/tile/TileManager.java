@@ -1,8 +1,10 @@
 package bar.tile;
 
 import bar.logic.Settings;
+import bar.tile.custom.MathExpressionTile;
 import bar.tile.custom.RuntimeTile;
 import bar.tile.custom.GoWebsiteTile;
+import bar.tile.custom.WikiSearchTile;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -17,6 +19,7 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 public class TileManager {
@@ -41,6 +44,7 @@ public class TileManager {
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private Future<?> currentFuture = null;
+    private final AtomicReference<Long> lastInputEvaluated = new AtomicReference<>(System.currentTimeMillis());
 
     public void evaluateUserInput(String input) {
         if (currentFuture != null) currentFuture.cancel(true);
@@ -56,12 +60,13 @@ public class TileManager {
     }
 
     private Future<?> evaluate(String input) {
+        lastInputEvaluated.set(System.currentTimeMillis());
         return executor.submit(() -> {
             List<Tile> matchingTiles = tiles.stream()
                     .filter(tile -> tile.matchesSearch(input))
                     .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
                     .collect(Collectors.toList());
-            runtimeTiles.stream().map(runtimeTile -> runtimeTile.generateTiles(input)).forEach(matchingTiles::addAll);
+            runtimeTiles.stream().map(runtimeTile -> runtimeTile.generateTiles(input, lastInputEvaluated)).forEach(matchingTiles::addAll);
             setEvaluationResults(matchingTiles);
             return null;
         });
@@ -231,6 +236,8 @@ public class TileManager {
 
     private void createCustomTiles() {
         runtimeTiles.add(new GoWebsiteTile());
+        runtimeTiles.add(new MathExpressionTile());
+        runtimeTiles.add(new WikiSearchTile());
     }
 
     public void cleanUpTileActions() {

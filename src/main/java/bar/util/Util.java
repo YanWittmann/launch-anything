@@ -3,12 +3,16 @@ package bar.util;
 import bar.Main;
 import bar.ui.PopupTextInput;
 import jnafilechooser.api.JnaFileChooser;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.StringJoiner;
 
 import static java.net.URLDecoder.decode;
@@ -82,5 +86,23 @@ public abstract class Util {
         StringSelection stringSelection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, null);
+    }
+
+    public static double evaluateMathematicalExpression(String expression) {
+        Expression expr = new ExpressionBuilder(expression).build();
+        return expr.evaluate();
+    }
+
+    public static String getHttpRequestResult(String url) throws IOException {
+        StringBuilder result = new StringBuilder();
+        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        conn.setRequestMethod("GET");
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(conn.getInputStream()))) {
+            for (String line; (line = reader.readLine()) != null; ) {
+                result.append(line);
+            }
+        }
+        return result.toString();
     }
 }
