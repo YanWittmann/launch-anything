@@ -168,19 +168,17 @@ public class Main {
                     response.put("tiles", tileManager.toJSON());
 
                 } else if (action.equals("tileInteraction")) {
-                    Sleep.milliseconds(200);
 
-                    String editTypeContext = getParams.getOrDefault("editTypeContext", null);
-                    String attribute = getParams.getOrDefault("attribute", null);
+                    String editType = getParams.getOrDefault("editType", null);
+                    String whatToEdit = getParams.getOrDefault("whatToEdit", null);
                     String tileId = getParams.getOrDefault("tileId", null);
-                    String tileName = getParams.getOrDefault("tileName", null);
                     String additionalValue = getParams.getOrDefault("additionalValue", null);
 
-                    if (attribute != null && editTypeContext != null) {
-                        if (editTypeContext.equals("tile")) {
+                    if (whatToEdit != null && editType != null) {
+                        if (editType.equals("tile")) {
                             Tile tile = tileManager.findTile(tileId);
                             if (tile != null) {
-                                switch (attribute) {
+                                switch (whatToEdit) {
                                     case "createAction":
                                     case "editAction":
                                         createOrEditNewTileAction(tile, additionalValue, null);
@@ -227,19 +225,12 @@ public class Main {
                                         break;
                                 }
                             } else {
-                                if (attribute.equals("createTile")) {
-                                    tileName = Util.popupTextInput("Create new Tile", "Enter the name of the new Tile", null);
-                                    Tile newTile = new Tile(tileName);
-                                    if (tileName != null && tileName.length() > 0 && !tileName.equals("null")) {
-                                        TileAction newTileAction = createOrEditNewTileAction(newTile, null, null);
-                                        if (newTileAction != null) {
-                                            newTile.setCategory(newTileAction.getType());
-                                        }
-                                    }
-                                    tileManager.addTile(newTile);
+                                if (whatToEdit.equals("createTile")) {
+                                    createTile();
                                 }
                             }
                         }
+                        tileManager.cleanUpTileActions();
                         tileManager.save();
                     }
                 }
@@ -264,51 +255,58 @@ public class Main {
         }
     }
 
+    public void createTile() {
+        String tileName = Util.popupTextInput("Create new Tile", "Enter the name of the new Tile", null);
+        if (tileName != null && tileName.length() > 0 && !tileName.equals("null")) {
+            Tile newTile = new Tile(tileName);
+            TileAction newTileAction = createOrEditNewTileAction(newTile, null, null);
+            if (newTileAction != null) {
+                newTile.setCategory(newTileAction.getType());
+                tileManager.addTile(newTile);
+                tileManager.save();
+            }
+        }
+    }
+
     private TileAction createOrEditNewTileAction(Tile tile, String param1, String param2) {
         TileAction tileAction;
         if (param1 == null && param2 == null) {
             tileAction = null;
         } else {
             tileAction = tile.findTileAction(param1, param2);
+            tile.removeAction(tileAction);
             param1 = null;
             param2 = null;
         }
 
-        TileAction newTileAction = null;
+        TileAction newTileAction;
+        String actionType = tileAction != null ? tileAction.getType() : Util.popupDropDown("Tile Action", "What type of action do you want to create?", TileAction.ACTION_TYPES, null);
 
-        if (tileAction != null) {
-            if (tileAction.getType().equals("file")) {
-                File file = Util.pickFile(null);
-                if (file != null) {
-                    param1 = file.getAbsolutePath();
-                }
-            } else if (tileAction.getType().equals("url")) {
-                param1 = Util.popupTextInput("Edit Tile Action", "Enter the URL", tileAction.getParam1() != null ? tileAction.getParam1() : "");
-            }
-            if (param1 != null) {
-                newTileAction = new TileAction(tileAction.getType(), param1, param2);
-                tile.addAction(newTileAction);
-                tile.removeAction(tileAction);
-            }
-        } else {
-            String actionType = Util.popupDropDown("Create new Tile Action", "What type of action do you want to create?", TileAction.ACTION_TYPES, null);
-            if (actionType != null && actionType.length() > 0 && !actionType.equals("null")) {
-                if (actionType.equals("file")) {
+        if (actionType != null) {
+            String previousValue = tileAction != null && tileAction.getParam1() != null ? tileAction.getParam1() : "";
+            switch (actionType) {
+                case "file":
                     File file = Util.pickFile(null);
                     if (file != null) {
                         param1 = file.getAbsolutePath();
                     }
-                } else if (actionType.equals("url")) {
-                    param1 = Util.popupTextInput("Create new Tile Action", "Enter the URL", null);
-                }
-                if (param1 != null) {
-                    newTileAction = new TileAction(actionType, param1, param2);
-                    tile.addAction(newTileAction);
-                }
+                    break;
+                case "url":
+                    param1 = Util.popupTextInput("Tile Action", "Enter the URL", previousValue);
+                    break;
+                case "copy":
+                    param1 = Util.popupTextInput("Tile Action", "Enter the text to copy", previousValue);
+                    break;
+            }
+
+            if (param1 != null) {
+                newTileAction = new TileAction(actionType, param1, param2);
+                tile.addAction(newTileAction);
+                return newTileAction;
             }
         }
 
-        return newTileAction;
+        return null;
     }
 
     private void setResponseError(int errorCode, String message, BufferedWriter out) throws IOException {

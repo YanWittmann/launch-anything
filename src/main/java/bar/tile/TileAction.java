@@ -1,6 +1,7 @@
 package bar.tile;
 
 import bar.Main;
+import bar.util.Util;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -22,6 +23,20 @@ public class TileAction {
         this.json.put("type", type);
         this.json.put("param1", param1);
         this.json.put("param2", param2);
+    }
+
+    public TileAction(String type, String param1) {
+        this.json = new JSONObject();
+        this.json.put("type", type);
+        this.json.put("param1", param1);
+        this.json.put("param2", (Object) null);
+    }
+
+    public TileAction(String type) {
+        this.json = new JSONObject();
+        this.json.put("type", type);
+        this.json.put("param1", (Object) null);
+        this.json.put("param2", (Object) null);
     }
 
     public String getType() {
@@ -77,8 +92,24 @@ public class TileAction {
                             }
                         }
                         break;
-                    case "settingsWeb":
-                        main.openSettingsWebServer();
+                    case "copy":
+                        if (param1 != null) {
+                            Util.copyToClipboard(param1);
+                        }
+                        break;
+                    case "settings":
+                        if (param1 != null) {
+                            switch (param1) {
+                                case "webeditor":
+                                    main.openSettingsWebServer();
+                                    break;
+                                case "createTile":
+                                    main.createTile();
+                                    break;
+                                case "exit":
+                                    System.exit(0);
+                            }
+                        }
                         break;
                 }
             }
@@ -92,8 +123,9 @@ public class TileAction {
     }
 
     public final static String[] ACTION_TYPES = {
-        "file",
-        "url",
-        "settingsWeb"
+            "file",
+            "url",
+            "copy",
+            "settings"
     };
 }

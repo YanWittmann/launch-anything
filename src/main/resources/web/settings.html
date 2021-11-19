@@ -67,6 +67,11 @@
             color: white;
         }
 
+        .bg-yellow {
+            background-color: #f5ca38;
+            color: black;
+        }
+
         .bg-green {
             background-color: #36c467;
             color: white;
@@ -138,7 +143,7 @@
     const requestUrl = 'http://localhost:' + port;
 
     document.getElementById('add-new-tile').onclick = function () {
-        editTileValue('none', 'tile', 'createTile');
+        editTileIntent('none', 'createTile');
     };
 
     let tileCategories = {};
@@ -188,17 +193,17 @@
         name.innerHTML = tileJson.label;
         name.classList.add('clickable');
         name.onclick = function () {
-            editTileValue(tileJson.id, 'tile', 'editName');
+            editTileIntent(tileJson.id, 'editName');
         };
         name.oncontextmenu = function (e) {
             e.preventDefault();
-            editTileValue(tileJson.id, 'tile', 'deleteTile');
+            editTileIntent(tileJson.id, 'deleteTile');
         };
 
         let categoryBadge = createColoredCategoryBadge(tileJson.category);
         categoryBadge.classList.add('clickable');
         categoryBadge.onclick = function () {
-            editTileValue(tileJson.id, 'tile', 'editCategory');
+            editTileIntent(tileJson.id, 'editCategory');
         };
         category.append(categoryBadge);
 
@@ -209,11 +214,11 @@
             badge.className = 'badge bg-blue';
             badge.innerHTML = keywordsArray[i];
             badge.onclick = function () {
-                editTileValue(tileJson.id, 'tile', 'editKeyword', keywordsArray[i]);
+                editTileIntent(tileJson.id, 'editKeyword', keywordsArray[i]);
             };
             badge.oncontextmenu = function (e) {
                 e.preventDefault();
-                editTileValue(tileJson.id, 'tile', 'deleteKeyword', keywordsArray[i]);
+                editTileIntent(tileJson.id, 'deleteKeyword', keywordsArray[i]);
             };
             keywords.append(badge);
         }
@@ -221,7 +226,7 @@
         badge.className = 'badge bg-green';
         badge.innerHTML = '+';
         badge.onclick = function () {
-            editTileValue(tileJson.id, 'tile', 'addKeyword');
+            editTileIntent(tileJson.id, 'addKeyword');
         };
         keywords.append(badge);
 
@@ -236,13 +241,16 @@
             } else if (action.type === 'file') {
                 badge.className = 'badge bg-blue';
                 badge.innerText = 'FILE: ' + action.param1;
+            } else if (action.type === 'copy') {
+                badge.className = 'badge bg-yellow';
+                badge.innerText = 'COPY: ' + action.param1;
             }
             badge.onclick = function () {
-                editTileValue(tileJson.id, 'tile', 'editAction', action.param1);
+                editTileIntent(tileJson.id, 'editAction', action.param1);
             };
             badge.oncontextmenu = function (e) {
                 e.preventDefault();
-                editTileValue(tileJson.id, 'tile', 'deleteAction', action.param1);
+                editTileIntent(tileJson.id, 'deleteAction', action.param1);
             };
             actions.append(badge);
         }
@@ -250,7 +258,7 @@
         badge.className = 'badge bg-green';
         badge.innerHTML = '+';
         badge.onclick = function () {
-            editTileValue(tileJson.id, 'tile', 'createAction');
+            editTileIntent(tileJson.id, 'createAction');
         };
         actions.append(badge);
 
@@ -263,11 +271,11 @@
         return row;
     }
 
-    function editTileValue(tileId, editTypeContext, attribute, additionalValue) {
+    function editTileIntent(tileId, whatToEdit, additionalValue) {
         let params = {
             'action': 'tileInteraction',
-            'editTypeContext': editTypeContext,
-            'attribute': attribute,
+            'whatToEdit': whatToEdit,
+            'editType': 'tile',
             'tileId': tileId,
         };
         if (additionalValue !== undefined && additionalValue != null) {

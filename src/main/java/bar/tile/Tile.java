@@ -198,6 +198,16 @@ public class Tile {
         keywords = keywords.replaceAll(" +", " ").trim();
     }
 
+    public void cleanUpTileActions() {
+        for (int i = tileActions.size() - 1; i >= 0; i--) {
+            boolean p1IsNull = tileActions.get(i).getParam1() == null || tileActions.get(i).getParam1().length() == 0;
+            boolean p2IsNull = tileActions.get(i).getParam2() == null || tileActions.get(i).getParam2().length() == 0;
+            if (p1IsNull && p2IsNull) {
+                tileActions.remove(i);
+            }
+        }
+    }
+
     public TileAction findTileAction(String param1, String param2) {
         for (TileAction action : tileActions) {
             if (isNormalizedTileActionEquals(action.getParam1(), param1) && isNormalizedTileActionEquals(action.getParam2(), param2)) {

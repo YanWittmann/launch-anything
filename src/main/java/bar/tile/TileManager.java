@@ -1,6 +1,8 @@
 package bar.tile;
 
 import bar.logic.Settings;
+import bar.tile.custom.RuntimeTile;
+import bar.tile.custom.GoWebsiteTile;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,6 +23,7 @@ public class TileManager {
 
     private final Settings settings;
     private final List<Tile> tiles = new ArrayList<>();
+    private final List<RuntimeTile> runtimeTiles = new ArrayList<>();
     private final List<Tile> generatedTiles = new ArrayList<>();
     private final List<TileGenerator> tileGenerators = new ArrayList<>();
     private final List<InputEvaluatedListener> onInputEvaluatedListeners = new ArrayList<>();
@@ -32,7 +35,8 @@ public class TileManager {
         findSettingsFile();
         if (tileFile == null) tileFile = new File("res/tiles.json");
         else readTilesFromFile();
-        tiles.add(new Tile(new JSONObject("{\"exportable\":false,\"keywords\":\"edit\",\"id\":\"settingsWeb\",\"label\":\"LaunchAnything Settings\",\"category\":\"settings\",\"isActive\":true,\"actions\":[{\"type\":\"settingsWeb\"}]}")));
+        createTemplateTiles();
+        createCustomTiles();
     }
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -53,12 +57,12 @@ public class TileManager {
 
     private Future<?> evaluate(String input) {
         return executor.submit(() -> {
-            setEvaluationResults(
-                    tiles.stream()
-                            .filter(tile -> tile.matchesSearch(input))
-                            .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
-                            .collect(Collectors.toList())
-            );
+            List<Tile> matchingTiles = tiles.stream()
+                    .filter(tile -> tile.matchesSearch(input))
+                    .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
+                    .collect(Collectors.toList());
+            runtimeTiles.stream().map(runtimeTile -> runtimeTile.generateTiles(input)).forEach(matchingTiles::addAll);
+            setEvaluationResults(matchingTiles);
             return null;
         });
     }
@@ -207,6 +211,32 @@ public class TileManager {
         tilesRoot.put("categories", categoriesArray);
 
         return tilesRoot;
+    }
+
+    private void createTemplateTiles() {
+        addSettingsTile("LaunchAnything Settings", "tile option editor", "webeditor");
+        addSettingsTile("Create Tile", "add new", "createTile");
+        addSettingsTile("Exit LaunchAnything", "leave quit", "exit");
+    }
+
+    private void addSettingsTile(String label, String keywords, String action) {
+        Tile tile = new Tile(label);
+        tile.setCategory("settings");
+        tile.setActive(true);
+        tile.setExportable(false);
+        tile.setKeywords(keywords);
+        tile.addAction(new TileAction("settings", action));
+        tiles.add(tile);
+    }
+
+    private void createCustomTiles() {
+        runtimeTiles.add(new GoWebsiteTile());
+    }
+
+    public void cleanUpTileActions() {
+        for (Tile tile : tiles) {
+            tile.cleanUpTileActions();
+        }
     }
 
     public void addOnInputEvaluatedListener(InputEvaluatedListener listener) {

@@ -6,10 +6,13 @@ import jnafilechooser.api.JnaFileChooser;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.util.StringJoiner;
 
 import static java.net.URLDecoder.decode;
+import static java.net.URLEncoder.encode;
 
 public abstract class Util {
 
@@ -65,5 +68,19 @@ public abstract class Util {
         } catch (UnsupportedEncodingException ignored) {
         }
         return url;
+    }
+
+    public static String urlEncode(String url) {
+        try {
+            return encode(url, "UTF-8");
+        } catch (UnsupportedEncodingException ignored) {
+        }
+        return url;
+    }
+
+    public static void copyToClipboard(String text) {
+        StringSelection stringSelection = new StringSelection(text);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(stringSelection, null);
     }
 }
