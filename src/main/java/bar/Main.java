@@ -251,7 +251,7 @@ public class Main {
             out.write("Server: Java/1.0\r\n");
             out.write("Content-Type: text/html\r\n");
             out.write("\r\n");
-            out.write(Util.readClassResource("web/settings.html"));
+            out.write(Util.readClassResource("web/testing.html"));
         }
     }
 

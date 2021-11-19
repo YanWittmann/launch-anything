@@ -2,139 +2,170 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>LaunchAnything Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --main-container-margin: 20px;
+            --glass-bar-padding-vertical: 15px;
+            --glass-bar-padding-horizontal: 20px;
+            --main-text-color: #dedede;
+        }
 
         html, body {
-            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Share Tech Mono', monospace;
+            overflow: hidden;
+            background-color: #2B2B2B;
+        }
+
+        .main-content-container {
+            height: calc(100vh - var(--main-container-margin) * 2 - var(--glass-bar-padding-vertical) * 2);
+            margin: var(--main-container-margin);
+        }
+
+        .glass-bar {
+            padding: var(--glass-bar-padding-vertical) var(--glass-bar-padding-horizontal);
+            border-radius: 3px;
+            box-shadow: 0 0 0 2px #B1B6B7, inset 0 0 5px 0 #B1B6B7;
+            background: radial-gradient(at 88% 100%, hsl(220, 4%, 15%) 0, transparent 42%),
+            radial-gradient(at 9% 12%, hsl(135, 4%, 20%) 0, transparent 47%),
+            radial-gradient(at 24% 68%, hsla(193, 5%, 23%, 1) 0, transparent 49%),
+            radial-gradient(at 80% 30%, hsl(195, 6%, 26%) 0, transparent 48%),
+            #272d34;
             overflow-x: hidden;
-            font-family: 'Roboto', sans-serif;
+            overflow-y: scroll;
+            -ms-overflow-style: none;
         }
 
-        .settings-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .settings-table td, .settings-table th {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
-        }
-
-        .settings-table tr:nth-child(even) {
-            background-color: #eeeeee;
-        }
-
-        .settings-table tr:nth-child(odd) {
-            background-color: #ffffff;
-        }
-
-        .settings-table tr:hover {
-            background-color: #dddddd;
-        }
-
-        .settings-table th {
-            color: white;
-        }
-
-        .add-new-item {
-            color: white;
-            border: none;
-            padding: 2px 7px;
-            text-align: center;
-            text-decoration: none;
+        .glass-bar-small {
             display: inline-block;
-            margin: 10px 2px 4px 49vw;
-            cursor: pointer;
-            font-size: 24px;
-            border-radius: 10px;
-            transition: 0.3s background-color;
-        }
-
-        .add-new-item:hover {
-            background-color: #2e9f5e;
-        }
-
-        .bg-red {
-            background-color: #ff3e3e;
-            color: white;
-        }
-
-        .bg-blue {
-            background-color: #3c96c7;
-            color: white;
-        }
-
-        .bg-yellow {
-            background-color: #f5ca38;
-            color: black;
-        }
-
-        .bg-green {
-            background-color: #36c467;
-            color: white;
-        }
-
-        .badge {
-            padding: 3px 5px;
-            border-radius: 2px;
-            font-size: 14px;
-            margin-right: 4px;
-            margin-bottom: 6px;
-            cursor: pointer;
-            width: fit-content;
-            width: -moz-fit-content;
-        }
-
-        .header-paragraph {
-            margin-top: 10px;
             margin-bottom: 10px;
-            margin-left: 10px;
+            padding: calc(var(--glass-bar-padding-vertical) / 2) var(--glass-bar-padding-horizontal);
+            margin-right: 10px;
+            border-radius: 3px;
+            box-shadow: 0 0 0 2px #B1B6B7, inset 0 0 3px 0 #B1B6B7;
+            background: radial-gradient(at 88% 100%, hsl(220, 3%, 23%) 0, transparent 42%),
+            radial-gradient(at 9% 12%, hsl(135, 4%, 20%) 0, transparent 47%),
+            radial-gradient(at 24% 68%, hsla(193, 5%, 23%, 1) 0, transparent 49%),
+            radial-gradient(at 80% 30%, hsl(195, 6%, 26%) 0, transparent 48%),
+            #272d34;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            -ms-overflow-style: none;
         }
 
-        h1 {
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.5em;
-            color: #36c467;
-        }
-
-        p {
-            margin-top: 6px;
-            margin-bottom: 6px;
+        .glass-bar-small.selected {
+            box-shadow: 0 0 0 2px #ece2a2, inset 0 0 5px 0 #ffcc00;
         }
 
         .clickable {
             cursor: pointer;
         }
+
+        .clickable:hover {
+            text-decoration: underline;
+        }
+
+        .fit-content {
+            width: fit-content;
+            width: -moz-fit-content;
+        }
+
+        .hide-scrollbar {
+            overflow: hidden;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            scrollbar-color: transparent transparent;
+        }
+
+        .main-text-color {
+            color: var(--main-text-color);
+        }
+
+        h1 {
+            font-size: 40px;
+            margin: 0 0 15px;
+            padding: 0;
+        }
+
+        .editor-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .editor-table th {
+            padding: 5px;
+            text-align: left;
+            font-size: 20px;
+        }
+
+        .editor-table td {
+            padding: 5px;
+        }
+
+        .editor-table > thead > tr > td,
+        .editor-table > tbody > tr > th,
+        .editor-table > tbody > tr > td,
+        .editor-table > tfoot > tr > th,
+        .editor-table > tfoot > tr > td {
+            border-bottom: 2px solid #dedede;
+            border-right: 2px solid #dedede;
+        }
+
+        .editor-table > thead > tr > th {
+            border-bottom: 2px solid #dedede;
+        }
+
+        .editor-table > thead > tr > :last-child,
+        .editor-table > tbody > tr > :last-child,
+        .editor-table > tfoot > tr > :last-child {
+            border-right: 0;
+        }
+
+        .editor-table > :last-child > tr:last-child > td,
+        .editor-table > :last-child > tr:last-child > th {
+            border-bottom: 0;
+        }
     </style>
 </head>
 <body>
 
-<div class="header-paragraph">
+<div class="main-content-container glass-bar main-text-color hide-scrollbar">
     <h1>LaunchAnything Settings</h1>
-    <p>
-        Here you can add, remove and edit the tiles that you will be able to search for in the bar.<br>
-        <b>Left click</b> any data to edit it and <b>right click</b>
-        to delete it (right click the name to delete a tile)<br>
-    </p>
+    <span class="glass-bar-small selected fit-content hide-scrollbar clickable">Tiles</span>
+    <span class="glass-bar-small fit-content hide-scrollbar clickable">Generators</span>
+    <span class="glass-bar-small fit-content hide-scrollbar clickable">Runtime Tiles</span>
+    <span class="glass-bar-small fit-content hide-scrollbar clickable">Categories</span>
+    <span class="glass-bar-small fit-content hide-scrollbar clickable">Settings</span>
+
+    <table class="editor-table">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Keywords</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody id="tile-table">
+        <tr>
+            <td>Tile Name</td>
+            <td>Tile Category</td>
+            <td>Tile Keywords</td>
+            <td>Tile Actions</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <span id="add-new-tile"></span>
 </div>
-
-<table class="settings-table">
-    <thead>
-    <tr>
-        <th class="bg-green">Name</th>
-        <th class="bg-green">Category</th>
-        <th class="bg-green">Keywords</th>
-        <th class="bg-green">Actions</th>
-    </tr>
-    </thead>
-    <tbody id="tile-table"></tbody>
-</table>
-
-<button id="add-new-tile" class="add-new-item bg-green">+</button>
 
 <script>
 

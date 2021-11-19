@@ -59,8 +59,6 @@ public class GlassBar extends JFrame {
         inputField.setBackground(new Color(0, 0, 0, 0));
         inputField.setForeground(new Color(255, 255, 255));
         inputField.setCaretColor(new Color(0, 0, 0, 0));
-        inputField.setSelectionColor(new Color(71, 76, 82));
-        inputField.setSelectedTextColor(new Color(255, 255, 255));
         inputField.setBorder(null);
         inputField.setVisible(true);
         inputField.setOpaque(false);
@@ -219,8 +217,6 @@ public class GlassBar extends JFrame {
             contentPane.setPreferredSize(new Dimension(width, height));
             this.setLocationRelativeTo(null);
             this.setLocation(this.getX(), (SCREEN_RECTANGLE.height / 6) + ((index + 1) * (height + settings.getInt(Settings.RESULT_MARGIN))) + settings.getInt(Settings.INPUT_RESULT_DISTANCE));
-            inputField.setSelectionColor(new Color(0, 0, 0, 0));
-            inputField.setSelectedTextColor(TEXT_COLOR_FOR_DARK_MODE);
             fontSize = 30;
         }
 
