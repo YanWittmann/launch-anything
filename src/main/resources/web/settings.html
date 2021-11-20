@@ -24,6 +24,7 @@
             margin: 0;
             padding: 0;
             font-family: 'Share Tech Mono', monospace;
+            font-size: 16px;
             overflow: hidden;
             background-color: #2B2B2B;
         }
@@ -240,7 +241,9 @@
     </section>
 
     <section id="settings" class="hidden">
-        Coming soon!
+        <br>Thank you for using the LaunchAnything Bar!
+        <ul id="settings-selection">
+        </ul>
     </section>
 
 
@@ -250,6 +253,8 @@
     const urlParams = new URLSearchParams(window.location.search);
     const port = urlParams.get('p');
     const requestUrl = 'http://localhost:' + port;
+
+    switchSection('settings', document.getElementById('settings'));
 
     function switchSection(section, menuItem) {
         const sections = document.querySelectorAll('section');
@@ -330,6 +335,32 @@
                 list.appendChild(li);
                 list.appendChild(document.createElement('br'));
             }
+
+            let settings = parsedResponse.tiles['settings'];
+            list = document.getElementById('settings-selection');
+            list.innerHTML = '';
+            let keys = Object.keys(settings);
+            for (let i = 0; i < keys.length; i++) {
+                let li = document.createElement('li');
+                li.innerText = keys[i] + ' = ' + settings[keys[i]];
+                li.classList.add('badge');
+                li.classList.add('clickable');
+                li.onclick = function () {
+                    editSettingIntent(keys[i]);
+                };
+                list.appendChild(li);
+                list.appendChild(document.createElement('br'));
+            }
+            let badge = document.createElement('span');
+            badge.classList.add('badge');
+            badge.classList.add('clickable');
+            badge.classList.add('bg-red');
+            badge.innerText = 'Reset to default values';
+            badge.onclick = function () {
+                editSettingIntent('resetSettings');
+            };
+            list.appendChild(document.createElement('br'));
+            list.appendChild(badge);
         });
     }
 
@@ -400,7 +431,7 @@
                 let badge = document.createElement('div');
                 if (action.type === 'file') {
                     badge.className = 'badge bo-blue clickable';
-                    if(action.param2 !== undefined && action.param2 !== null) {
+                    if (action.param2 !== undefined && action.param2 !== null) {
                         badge.innerText = 'FILE: ' + action.param1 + ', ' + action.param2;
                     } else {
                         badge.innerText = 'FILE: ' + action.param1;
@@ -558,6 +589,20 @@
         if (additionalValue !== undefined && additionalValue != null) {
             params.additionalValue = additionalValue;
         }
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+
+        checkFirstLoad();
+    }
+
+    function editSettingIntent(whatToEdit) {
+        let params = {
+            'action': 'tileInteraction',
+            'editType': 'setting',
+            'whatToEdit': whatToEdit,
+        };
 
         httpPost(requestUrl, params, function (response) {
             refreshTiles();

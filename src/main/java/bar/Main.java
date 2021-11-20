@@ -31,9 +31,11 @@ public class Main {
         new Main();
     }
 
-    private Settings settings;
-    private BarManager barManager;
-    private TileManager tileManager;
+    private final Settings settings;
+    private final BarManager barManager;
+    private final TileManager tileManager;
+    private int currentlyPressedKey = -1;
+    private int lastPressedKey = -1;
 
     private Main() {
         try {
@@ -52,6 +54,8 @@ public class Main {
         keyListener.addListener(new GlobalKeyListener.KeyListener() {
             @Override
             public void keyPressed(GlobalKeyEvent e) {
+                currentlyPressedKey = e.getVirtualKeyCode();
+                lastPressedKey = e.getVirtualKeyCode();
                 if (e.getVirtualKeyCode() == settings.getInt(Settings.ACTIVATION_KEY)) {
                     long currentTime = System.currentTimeMillis();
                     if (currentTime - lastCommandInput[0] < settings.getInt(Settings.ACTIVATION_DELAY) && currentTime - lastCommandInput[0] > 50) {
@@ -77,6 +81,7 @@ public class Main {
 
             @Override
             public void keyReleased(GlobalKeyEvent e) {
+                currentlyPressedKey = -1;
             }
         });
         keyListener.activate();
@@ -164,7 +169,11 @@ public class Main {
                 String action = getParams.getOrDefault("action", null);
 
                 if (getParams.get("action").equals("getAllTiles")) {
-                    response.put("tiles", tileManager.toJSON().put("runtime-tiles", TileManager.RUNTIME_TILES));
+                    response.put(
+                            "tiles",
+                            tileManager.toJSON()
+                                    .put("runtime-tiles", TileManager.RUNTIME_TILES)
+                                    .put("settings", settings.toJSON()));
 
                 } else if (action.equals("tileInteraction")) {
 
@@ -309,6 +318,29 @@ public class Main {
                             String runtimeId = getParams.getOrDefault("tileId", null);
                             if (runtimeId != null) {
                                 tileManager.toggleRuntimeTile(runtimeId);
+                            }
+                        } else if (editType.equals("setting")) {
+                            if (whatToEdit.equals("resetSettings")) {
+                                String confirmation = Util.popupTextInput("Reset Settings", "Are you sure you want to reset all settings?\nEnter 'confirm' to delete the settings:", "");
+                                if (confirmation != null && confirmation.equals("confirm")) {
+                                    settings.reset();
+                                    settings.save();
+                                }
+                            } else {
+                                Object newValue;
+                                if (whatToEdit.toLowerCase().contains("key")) {
+                                    Util.popupMessage("Edit Key", "After closing this popup, press any key you want to assign this action to.");
+                                    lastPressedKey = -1;
+                                    while (lastPressedKey == -1) {
+                                        Sleep.milliseconds(100);
+                                    }
+                                    newValue = lastPressedKey;
+                                } else {
+                                    newValue = Util.popupTextInput("Edit Setting", "Enter the new value for the setting:", settings.getString(whatToEdit));
+                                }
+                                if (newValue != null && (newValue + "").length() > 0 && !newValue.equals("null")) {
+                                    settings.setSetting(whatToEdit, newValue);
+                                }
                             }
                         }
                         tileManager.cleanUpTileActions();

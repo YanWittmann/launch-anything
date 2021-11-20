@@ -4,7 +4,6 @@ import bar.tile.Tile;
 import bar.tile.TileCategory;
 import bar.ui.GlassBar;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,12 +11,9 @@ public class BarManager {
 
     private final GlassBar inputGlassBar;
     private final List<GlassBar> resultGlassBars = new ArrayList<>();
-    private final Settings settings;
     private boolean isInputActive = false;
 
     public BarManager(Settings settings) {
-        this.settings = settings;
-
         // create the main input bar
         inputGlassBar = new GlassBar();
         inputGlassBar.setType(-1, settings);

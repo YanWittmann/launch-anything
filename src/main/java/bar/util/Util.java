@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.net.URLDecoder.decode;
 import static java.net.URLEncoder.encode;
+import static javax.swing.JOptionPane.*;
 
 public abstract class Util {
 
@@ -83,7 +84,7 @@ public abstract class Util {
 
     public static String popupDropDown(String title, String message, String[] options, String preselected) {
         if (options == null || options.length == 0) return null;
-        Object o = JOptionPane.showInputDialog(null, message, title, JOptionPane.PLAIN_MESSAGE, null, options, preselected != null ? preselected : options[0]);
+        Object o = showInputDialog(null, message, title, PLAIN_MESSAGE, null, options, preselected != null ? preselected : options[0]);
         if (o == null) return null;
         return o.toString();
     }
@@ -93,6 +94,10 @@ public abstract class Util {
         if (!dialog.isCancelled())
             return dialog.getText();
         return null;
+    }
+
+    public static void popupMessage(String title, String message) {
+        showMessageDialog(null, message, title, PLAIN_MESSAGE);
     }
 
     public static String urlDecode(String url) {

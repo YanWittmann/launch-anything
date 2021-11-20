@@ -1,6 +1,7 @@
 package bar.logic;
 
 import bar.util.Util;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -23,9 +24,6 @@ public class Settings {
         else readSettingsFromFile();
 
         Util.setSettings(this);
-
-        // FIXME: This is only for testing, since the settings file is not yet in real use
-        reset();
     }
 
     private final static String[] possibleSettingsFiles = {
@@ -58,6 +56,10 @@ public class Settings {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    public JSONObject toJSON() {
+        return new JSONObject(settings);
     }
 
     public void save() {
@@ -106,16 +108,7 @@ public class Settings {
             if (settings.get(key) instanceof Long) return (int) settings.get(key);
             if (settings.get(key) instanceof Double) return (int) settings.get(key);
             if (settings.get(key) instanceof Float) return (int) settings.get(key);
-        }
-        return -1;
-    }
-
-    public double getDouble(String key) {
-        if (settings.containsKey(key)) {
-            if (settings.get(key) instanceof Integer) return (double) settings.get(key);
-            if (settings.get(key) instanceof Long) return (double) settings.get(key);
-            if (settings.get(key) instanceof Double) return (double) settings.get(key);
-            if (settings.get(key) instanceof Float) return (double) settings.get(key);
+            if (settings.get(key) instanceof String) return Integer.parseInt(settings.get(key) + "");
         }
         return -1;
     }
