@@ -14,6 +14,10 @@
             --glass-bar-padding-vertical: 15px;
             --glass-bar-padding-horizontal: 20px;
             --main-text-color: #dedede;
+            --dark-text-color: #212121;
+            --file-action-color: rgb(60, 150, 199);
+            --url-action-color: rgb(227, 101, 73);
+            --copy-action-color: rgb(252, 186, 3);
         }
 
         html, body {
@@ -58,6 +62,7 @@
             overflow-x: hidden;
             overflow-y: scroll;
             -ms-overflow-style: none;
+            transition: all 0.2s ease-in-out;
         }
 
         .glass-bar-small.selected {
@@ -78,10 +83,12 @@
         }
 
         .hide-scrollbar {
-            overflow: hidden;
-            -ms-overflow-style: none;
             scrollbar-width: none;
             scrollbar-color: transparent transparent;
+        }
+
+        .hidden {
+            display: none;
         }
 
         .main-text-color {
@@ -133,49 +140,108 @@
         .editor-table > :last-child > tr:last-child > th {
             border-bottom: 0;
         }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.4em;
+            margin: 0 0.25em 0.25em;
+            border-radius: 0.25rem;
+            background-color: #212529;
+            color: #fff;
+            box-shadow: 2px 2px 2px 1px #212529;
+        }
+
+        .bg-green {
+            background-color: #50d36c;
+            color: var(--dark-text-color);
+        }
+
+        .bo-blue {
+            border: 1px solid var(--file-action-color);
+        }
+
+        .bo-red {
+            border: 1px solid var(--url-action-color);
+        }
+
+        .bo-yellow {
+            border: 1px solid var(--copy-action-color);
+        }
     </style>
 </head>
 <body>
 
 <div class="main-content-container glass-bar main-text-color hide-scrollbar">
     <h1>LaunchAnything Settings</h1>
-    <span class="glass-bar-small selected fit-content hide-scrollbar clickable">Tiles</span>
-    <span class="glass-bar-small fit-content hide-scrollbar clickable">Generators</span>
-    <span class="glass-bar-small fit-content hide-scrollbar clickable">Runtime Tiles</span>
-    <span class="glass-bar-small fit-content hide-scrollbar clickable">Categories</span>
-    <span class="glass-bar-small fit-content hide-scrollbar clickable">Settings</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable selected"
+          onclick="switchSection('tiles', this);">Tiles</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+          onclick="switchSection('generators', this);">Generators</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+          onclick="switchSection('runtime', this);">Runtime Tiles</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+          onclick="switchSection('categories', this);">Categories</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+          onclick="switchSection('settings', this);">Settings & Help</span>
 
-    <table class="editor-table">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>Category</th>
-            <th>Keywords</th>
-            <th>Actions</th>
-        </tr>
-        </thead>
-        <tbody id="tile-table">
-        <tr>
-            <td>Tile Name</td>
-            <td>Tile Category</td>
-            <td>Tile Keywords</td>
-            <td>Tile Actions</td>
-        </tr>
-        </tbody>
-    </table>
+    <section id="tiles">
+        <table class="editor-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Keywords</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="tile-table"></tbody>
+        </table>
+    </section>
 
-    <span id="add-new-tile"></span>
+    <section id="generators" class="hidden">
+        Coming soon!
+        <table class="editor-table">
+            <thead>
+            <tr>
+            </tr>
+            </thead>
+            <tbody id="generators-table"></tbody>
+        </table>
+    </section>
+
+    <section id="runtime" class="hidden">
+        Coming soon!
+    </section>
+
+    <section id="categories" class="hidden">
+        Coming soon!
+    </section>
+
+    <section id="settings" class="hidden">
+        Coming soon!
+    </section>
+
+
 </div>
 
 <script>
-
     const urlParams = new URLSearchParams(window.location.search);
     const port = urlParams.get('p');
     const requestUrl = 'http://localhost:' + port;
 
-    document.getElementById('add-new-tile').onclick = function () {
-        editTileIntent('none', 'createTile');
-    };
+    function switchSection(section, menuItem) {
+        const sections = document.querySelectorAll('section');
+        for (let i = 0; i < sections.length; i++) {
+            sections[i].classList.add('hidden');
+        }
+        document.getElementById(section).classList.remove('hidden');
+
+        const sectionSelection = document.getElementsByClassName('section-selection');
+        for (let i = 0; i < sectionSelection.length; i++) {
+            sectionSelection[i].classList.remove('selected');
+        }
+        menuItem.classList.add('selected');
+    }
 
     let tileCategories = {};
 
@@ -195,6 +261,7 @@
             let tiles = parsedResponse.tiles.tiles;
             let table = document.getElementById('tile-table');
             table.innerHTML = '';
+            table.appendChild(htmlToElement('<tr><td><span id="add-new-tile" class="clickable badge bg-green">Create Tile</span></td><td></td><td></td><td>You can also use the <span class="badge">Create Tile</span> tile to create a tile</td></tr>'))
             for (let i = 0; i < tiles.length; i++) {
                 table.appendChild(createTileEntryForTable(tiles[i]));
             }
@@ -204,9 +271,14 @@
     function createColoredCategoryBadge(cat) {
         let badge = document.createElement('span');
         badge.className = 'badge';
-        badge.style.backgroundColor = 'rgb(' + tileCategories[cat][0] + ', ' + tileCategories[cat][1] + ', ' + tileCategories[cat][2] + ')';
-        if (tileCategories[cat][0] + tileCategories[cat][1] + tileCategories[cat][2] < 420) {
-            badge.style.color = 'white';
+        try {
+            badge.style.backgroundColor = 'rgb(' + tileCategories[cat][0] + ', ' + tileCategories[cat][1] + ', ' + tileCategories[cat][2] + ')';
+            if (tileCategories[cat][0] + tileCategories[cat][1] + tileCategories[cat][2] > 420) {
+                badge.style.color = 'black';
+            }
+        } catch (e) {
+            console.log(cat + ' does not exist');
+            console.log(e);
         }
         badge.innerHTML = cat;
         return badge;
@@ -221,7 +293,7 @@
         let actions = document.createElement('td');
 
         // add the data from the tileJson to the table row
-        name.innerHTML = tileJson.label;
+        name.innerHTML = '<b>' + tileJson.label + '</b>';
         name.classList.add('clickable');
         name.onclick = function () {
             editTileIntent(tileJson.id, 'editName');
@@ -242,7 +314,7 @@
         for (let i = 0; i < keywordsArray.length; i++) {
             if (keywordsArray[i].length === 0) continue;
             let badge = document.createElement('span');
-            badge.className = 'badge bg-blue';
+            badge.className = 'badge clickable';
             badge.innerHTML = keywordsArray[i];
             badge.onclick = function () {
                 editTileIntent(tileJson.id, 'editKeyword', keywordsArray[i]);
@@ -254,7 +326,7 @@
             keywords.append(badge);
         }
         let badge = document.createElement('span');
-        badge.className = 'badge bg-green';
+        badge.className = 'badge bg-green clickable';
         badge.innerHTML = '+';
         badge.onclick = function () {
             editTileIntent(tileJson.id, 'addKeyword');
@@ -267,13 +339,13 @@
             let action = actionsArray[i];
             let badge = document.createElement('div');
             if (action.type === 'url') {
-                badge.className = 'badge bg-red';
+                badge.className = 'badge bo-red clickable';
                 badge.innerText = 'URL: ' + action.param1;
             } else if (action.type === 'file') {
-                badge.className = 'badge bg-blue';
+                badge.className = 'badge bo-blue clickable';
                 badge.innerText = 'FILE: ' + action.param1;
             } else if (action.type === 'copy') {
-                badge.className = 'badge bg-yellow';
+                badge.className = 'badge bo-yellow clickable';
                 badge.innerText = 'COPY: ' + action.param1;
             }
             badge.onclick = function () {
@@ -286,7 +358,7 @@
             actions.append(badge);
         }
         badge = document.createElement('span');
-        badge.className = 'badge bg-green';
+        badge.className = 'badge bg-green clickable';
         badge.innerHTML = '+';
         badge.onclick = function () {
             editTileIntent(tileJson.id, 'createAction');
@@ -298,6 +370,10 @@
         row.append(category);
         row.append(keywords);
         row.append(actions);
+
+        document.getElementById('add-new-tile').onclick = function () {
+            editTileIntent('none', 'createTile');
+        };
 
         return row;
     }
@@ -325,6 +401,13 @@
                 'This is an issue with java popups not grabbing the focus on the first time they open, so you will ' +
                 'only have to do this once per session.');
         }
+    }
+
+    function htmlToElement(html) {
+        let template = document.createElement('template');
+        html = html.trim();
+        template.innerHTML = html;
+        return template.content.firstChild;
     }
 
     function httpPost(theUrl, parameterMap, callback) {
