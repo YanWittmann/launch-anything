@@ -1,5 +1,6 @@
 package bar.logic;
 
+import bar.util.Util;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -20,6 +21,8 @@ public class Settings {
         findSettingsFile();
         if (settingsFile == null) reset();
         else readSettingsFromFile();
+
+        Util.setSettings(this);
 
         // FIXME: This is only for testing, since the settings file is not yet in real use
         reset();
@@ -84,6 +87,7 @@ public class Settings {
         settings.put(CONFIRM_KEY, 13);
         settings.put(NEXT_RESULT_KEY, 40);
         settings.put(PREVIOUS_RESULT_KEY, 38);
+        settings.put(RECURSION_LIMIT, 100);
         settingsFile = new File("res/settings.json");
     }
 
@@ -138,4 +142,5 @@ public class Settings {
     public final static String CONFIRM_KEY = "confirmKey";
     public final static String NEXT_RESULT_KEY = "nextResultKey";
     public final static String PREVIOUS_RESULT_KEY = "previousResultKey";
+    public final static String RECURSION_LIMIT = "recursionLimit";
 }

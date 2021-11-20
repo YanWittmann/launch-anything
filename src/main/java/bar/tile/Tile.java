@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class Tile {
 
-    private boolean isActive, exportable;
+    private boolean isActive = true, exportable;
     private String id, category, label, keywords;
     private long lastActivated = -1;
     private final List<TileAction> tileActions = new ArrayList<>();
@@ -92,6 +92,10 @@ public class Tile {
         return lastActivated;
     }
 
+    public String getKeywords() {
+        return keywords;
+    }
+
     public String getCategory() {
         return category;
     }
@@ -107,34 +111,34 @@ public class Tile {
         if (!isActive) return false;
 
         // check if the search is directly contained in one of the fields
-        String[] splitted = normalizeLowercase(search).split(" ");
+        String[] lowercasedSplitted = normalizeLowercase(search).split(" ");
         int amountSearchFound = 0;
-        for (String s : splitted) {
-            if (normalizeLowercase(id).contains(s)) amountSearchFound++;
-            else if (normalizeLowercase(category).contains(s)) amountSearchFound++;
-            else if (normalizeLowercase(label).contains(s)) amountSearchFound++;
-            else if (normalizeLowercase(keywords).contains(s)) amountSearchFound++;
+        for (String s : lowercasedSplitted) {
+            if (normalizeLowercase(label).contains(s) || normalizeLowercase(category).contains(s) || normalizeLowercase(keywords).contains(s)) {
+                amountSearchFound++;
+            }
         }
-        if (amountSearchFound >= splitted.length)
+        if (amountSearchFound >= lowercasedSplitted.length)
             return true;
 
         // check if the normalized search is directly contained in one of the fields
         String[] normalizedSplitted = normalize(search).split(" ");
         amountSearchFound = 0;
-        for (String s : splitted) {
-            if (normalize(id).contains(s)) amountSearchFound++;
-            else if (normalize(category).contains(s)) amountSearchFound++;
-            else if (normalize(label).contains(s)) amountSearchFound++;
-            else if (normalize(keywords).contains(s)) amountSearchFound++;
+        for (String s : normalizedSplitted) {
+            if (normalize(label).contains(s) || normalize(category).contains(s) || normalize(keywords).contains(s)) {
+                amountSearchFound++;
+            }
         }
-        if (amountSearchFound >= splitted.length)
+        if (amountSearchFound >= lowercasedSplitted.length)
             return true;
 
         // use smart search to check if the search is contained in one of the fields
         if (smartSearch(normalize(id), search)) return true;
         if (smartSearch(normalize(category), search)) return true;
         if (smartSearch(normalize(label), search)) return true;
-        for (String keyword : keywords.split(" ")) if (smartSearch(normalize(keyword), search)) return true;
+        if (keywords != null)
+            for (String keyword : keywords.split(" "))
+                if (smartSearch(normalize(keyword), search)) return true;
 
         return false;
     }

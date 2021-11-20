@@ -122,6 +122,13 @@ public class TileAction {
         return json;
     }
 
+    @Override
+    public String toString() {
+        return "TileAction{" +
+               json +
+               '}';
+    }
+
     public final static String[] ACTION_TYPES = {
             "file",
             "url",

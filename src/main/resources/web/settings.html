@@ -199,10 +199,12 @@
     </section>
 
     <section id="generators" class="hidden">
-        Coming soon!
         <table class="editor-table">
             <thead>
             <tr>
+                <th>Category</th>
+                <th>Keywords</th>
+                <th>Generate</th>
             </tr>
             </thead>
             <tbody id="generators-table"></tbody>
@@ -286,6 +288,17 @@
             for (let i = 0; i < categories.length; i++) {
                 table.appendChild(createCategoryEntryForTable(categories[i]));
             }
+
+            let tileGenerators = parsedResponse.tiles['tile-generators'];
+            table = document.getElementById('generators-table');
+            table.innerHTML = '';
+            table.appendChild(htmlToElement('<tr><td><span id="add-new-generator" class="clickable badge bg-green">Create Generator</span></td><td></td><td></td></tr>'));
+            document.getElementById('add-new-generator').onclick = function () {
+                editTileGeneratorIntent('', 'createGenerator');
+            };
+            for (let i = 0; i < tileGenerators.length; i++) {
+                table.appendChild(createGeneratorEntryForTable(tileGenerators[i]));
+            }
         });
     }
 
@@ -303,6 +316,85 @@
         }
         badge.innerHTML = cat;
         return badge;
+    }
+
+    function createGeneratorEntryForTable(generatorJson) {
+        let row = document.createElement('tr');
+
+        let color = document.createElement('td');
+        let badge = createColoredCategoryBadge(generatorJson.category);
+        badge.classList.add('clickable');
+        badge.onclick = function () {
+            editTileGeneratorIntent(generatorJson.id, 'editCategory');
+        };
+        badge.oncontextmenu = function (e) {
+            e.preventDefault();
+            editTileGeneratorIntent(generatorJson.id, 'deleteGenerator');
+        };
+        color.appendChild(badge);
+        row.appendChild(color);
+
+        let keywords = document.createElement('td');
+        if (generatorJson.keywords !== undefined && generatorJson.keywords !== null) {
+            let keywordsArray = generatorJson.keywords.split(' ');
+            for (let i = 0; i < keywordsArray.length; i++) {
+                if (keywordsArray[i].length === 0) continue;
+                let badge = document.createElement('span');
+                badge.className = 'badge clickable';
+                badge.innerHTML = keywordsArray[i];
+                badge.onclick = function () {
+                    editTileGeneratorIntent(generatorJson.id, 'editKeyword', keywordsArray[i]);
+                };
+                badge.oncontextmenu = function (e) {
+                    e.preventDefault();
+                    editTileGeneratorIntent(generatorJson.id, 'deleteKeyword', keywordsArray[i]);
+                };
+                keywords.append(badge);
+            }
+        }
+        badge = document.createElement('span');
+        badge.className = 'badge bg-green clickable';
+        badge.innerHTML = '+';
+        badge.onclick = function () {
+            editTileGeneratorIntent(generatorJson.id, 'addKeyword');
+        };
+        keywords.append(badge);
+        row.appendChild(keywords);
+
+        let actions = document.createElement('td');
+        if (generatorJson.generators !== undefined && generatorJson.generators !== null) {
+            let actionsArray = generatorJson.generators;
+            for (let i = 0; i < actionsArray.length; i++) {
+                let action = actionsArray[i];
+                let badge = document.createElement('div');
+                if (action.type === 'file') {
+                    badge.className = 'badge bo-blue clickable';
+                    if(action.param2 !== undefined && action.param2 !== null) {
+                        badge.innerText = 'FILE: ' + action.param1 + ', ' + action.param2;
+                    } else {
+                        badge.innerText = 'FILE: ' + action.param1;
+                    }
+                }
+                badge.onclick = function () {
+                    editTileGeneratorIntent(generatorJson.id, 'editAction', action.id);
+                };
+                badge.oncontextmenu = function (e) {
+                    e.preventDefault();
+                    editTileGeneratorIntent(generatorJson.id, 'deleteAction', action.id);
+                };
+                actions.append(badge);
+            }
+        }
+        badge = document.createElement('span');
+        badge.className = 'badge bg-green clickable';
+        badge.innerHTML = '+';
+        badge.onclick = function () {
+            editTileGeneratorIntent(tileJson.id, 'createAction');
+        };
+        actions.append(badge);
+        row.appendChild(actions);
+
+        return row;
     }
 
     function createCategoryEntryForTable(categoryJson) {
@@ -430,6 +522,24 @@
             'action': 'tileInteraction',
             'whatToEdit': whatToEdit,
             'editType': 'tile',
+            'tileId': tileId,
+        };
+        if (additionalValue !== undefined && additionalValue != null) {
+            params.additionalValue = additionalValue;
+        }
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+
+        checkFirstLoad();
+    }
+
+    function editTileGeneratorIntent(tileId, whatToEdit, additionalValue) {
+        let params = {
+            'action': 'tileInteraction',
+            'whatToEdit': whatToEdit,
+            'editType': 'generator',
             'tileId': tileId,
         };
         if (additionalValue !== undefined && additionalValue != null) {

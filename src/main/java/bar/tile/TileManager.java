@@ -1,9 +1,8 @@
 package bar.tile;
 
-import bar.logic.Settings;
+import bar.tile.custom.GoWebsiteTile;
 import bar.tile.custom.MathExpressionTile;
 import bar.tile.custom.RuntimeTile;
-import bar.tile.custom.GoWebsiteTile;
 import bar.tile.custom.WikiSearchTile;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 
 public class TileManager {
 
-    private final Settings settings;
     private final List<Tile> tiles = new ArrayList<>();
     private final List<RuntimeTile> runtimeTiles = new ArrayList<>();
     private final List<Tile> generatedTiles = new ArrayList<>();
@@ -33,8 +31,7 @@ public class TileManager {
     private final List<TileCategory> categories = new ArrayList<>();
     private File tileFile;
 
-    public TileManager(Settings settings) {
-        this.settings = settings;
+    public TileManager() {
         findSettingsFile();
         if (tileFile == null) tileFile = new File("res/tiles.json");
         else readTilesFromFile();
@@ -47,7 +44,9 @@ public class TileManager {
     private final AtomicReference<Long> lastInputEvaluated = new AtomicReference<>(System.currentTimeMillis());
 
     public void evaluateUserInput(String input) {
-        if (currentFuture != null) currentFuture.cancel(true);
+        if (currentFuture != null) {
+            currentFuture.cancel(true);
+        }
         if (input.length() <= 1) {
             setEvaluationResults(new ArrayList<>());
         } else {
@@ -66,7 +65,14 @@ public class TileManager {
                     .filter(tile -> tile.matchesSearch(input))
                     .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
                     .collect(Collectors.toList());
+
+            generatedTiles.stream()
+                    .filter(tile -> tile.matchesSearch(input))
+                    .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
+                    .forEach(matchingTiles::add);
+
             runtimeTiles.stream().map(runtimeTile -> runtimeTile.generateTiles(input, lastInputEvaluated)).forEach(matchingTiles::addAll);
+
             setEvaluationResults(matchingTiles);
             return null;
         });
@@ -115,7 +121,7 @@ public class TileManager {
                 for (int i = 0; i < tileGeneratorsArray.length(); i++) {
                     JSONObject tileGeneratorJson = tileGeneratorsArray.optJSONObject(i);
                     if (tileGeneratorJson == null) continue;
-                    TileGenerator tileGenerator = new TileGenerator(tileGeneratorJson, true);
+                    TileGenerator tileGenerator = new TileGenerator(tileGeneratorJson);
                     if (tileGenerator.isValid()) tileGenerators.add(tileGenerator);
                 }
             }
@@ -132,6 +138,7 @@ public class TileManager {
                 }
             }
 
+            regenerateGeneratedTiles();
             System.out.println("Loaded " + tiles.size() + " tile(s), " + tileGenerators.size() + " tile generator(s) and " + categories.size() + " category/ies.");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -139,10 +146,12 @@ public class TileManager {
     }
 
     public void regenerateGeneratedTiles() {
-        generatedTiles.clear();
-        for (TileGenerator tileGenerator : tileGenerators) {
-            generatedTiles.addAll(tileGenerator.generateTiles());
-        }
+        new Thread(() -> {
+            generatedTiles.clear();
+            for (TileGenerator tileGenerator : tileGenerators) {
+                generatedTiles.addAll(tileGenerator.generateTiles());
+            }
+        }).start();
     }
 
     public void addCategory(TileCategory category) {
@@ -167,6 +176,23 @@ public class TileManager {
             if (category.getLabel().equals(label)) return category;
         }
         return null;
+    }
+
+    public TileGenerator findTileGenerator(String id) {
+        for (TileGenerator tileGenerator : tileGenerators) {
+            if (tileGenerator.getId().equals(id)) return tileGenerator;
+        }
+        return null;
+    }
+
+    public void addTileGenerator(TileGenerator tileGenerator) {
+        tileGenerators.add(tileGenerator);
+        regenerateGeneratedTiles();
+    }
+
+    public void removeTileGenerator(TileGenerator tileGenerator) {
+        tileGenerators.remove(tileGenerator);
+        regenerateGeneratedTiles();
     }
 
     public void addTile(Tile tile) {

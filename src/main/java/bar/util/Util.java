@@ -1,6 +1,7 @@
 package bar.util;
 
 import bar.Main;
+import bar.logic.Settings;
 import bar.ui.PopupTextInput;
 import jnafilechooser.api.JnaFileChooser;
 import net.objecthunter.exp4j.Expression;
@@ -13,12 +14,20 @@ import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.StringJoiner;
+import java.util.List;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.net.URLDecoder.decode;
 import static java.net.URLEncoder.encode;
 
 public abstract class Util {
+
+    private static Settings settings = null;
+
+    public static void setSettings(Settings settings) {
+        Util.settings = settings;
+    }
 
     public static void registerFont(String path) {
         try {
@@ -45,11 +54,31 @@ public abstract class Util {
     }
 
     public static File pickFile(String filterName, String... filters) {
+        // FIXME: this only works on windows, make backup picking method for other OSes
         JnaFileChooser fc = new JnaFileChooser();
         if (filterName != null && filterName.length() > 0)
             fc.addFilter(filterName, filters);
         fc.showOpenDialog(null);
         return fc.getSelectedFile();
+    }
+
+    private static File previousFile = null;
+
+    public static File pickDirectory() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        if (previousFile != null) fileChooser.setCurrentDirectory(previousFile);
+        else fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        int result = fileChooser.showOpenDialog(null);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            if (fileChooser.getSelectedFile() != null) {
+                previousFile = fileChooser.getSelectedFile();
+                return fileChooser.getSelectedFile();
+            }
+        }
+
+        return null;
     }
 
     public static String popupDropDown(String title, String message, String[] options, String preselected) {
@@ -104,5 +133,48 @@ public abstract class Util {
             }
         }
         return result.toString();
+    }
+
+    public static List<File> recursivelyListFiles(File directory) {
+        AtomicInteger amount = new AtomicInteger();
+        return recursivelyListFiles(directory, amount);
+    }
+
+    private static List<File> recursivelyListFiles(File directory, AtomicInteger amount) {
+        if (amount.incrementAndGet() > (settings != null ? settings.getInt("recursionLimit") : 100)) {
+            System.out.println("Recursion limit reached");
+            return new ArrayList<>();
+        }
+        if (directory.exists() && directory.isDirectory()) {
+            List<File> files = new ArrayList<>();
+            for (File file : directory.listFiles()) {
+                if (file.isDirectory()) files.addAll(recursivelyListFiles(file, amount));
+                else files.add(file);
+            }
+            return files;
+        }
+        return Collections.emptyList();
+    }
+
+    public static List<File> recursivelyListFiles(File directory, String... extension) {
+        AtomicInteger amount = new AtomicInteger();
+        return recursivelyListFiles(directory, amount, extension);
+    }
+
+    private static List<File> recursivelyListFiles(File directory, AtomicInteger amount, String... extension) {
+        if (amount.incrementAndGet() > (settings != null ? settings.getInt("recursionLimit") : 100)) {
+            System.out.println("Recursion limit reached");
+            return new ArrayList<>();
+        }
+        if (directory.exists() && directory.isDirectory()) {
+            List<File> files = new ArrayList<>();
+            for (File file : directory.listFiles()) {
+                if (file.isDirectory()) files.addAll(recursivelyListFiles(file, extension));
+                else if (extension == null || extension.length == 0 || Arrays.stream(extension).anyMatch(file.getName()::endsWith))
+                    files.add(file);
+            }
+            return files;
+        }
+        return Collections.emptyList();
     }
 }

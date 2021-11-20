@@ -2,10 +2,7 @@ package bar;
 
 import bar.logic.BarManager;
 import bar.logic.Settings;
-import bar.tile.Tile;
-import bar.tile.TileAction;
-import bar.tile.TileCategory;
-import bar.tile.TileManager;
+import bar.tile.*;
 import bar.util.GlobalKeyListener;
 import bar.util.Sleep;
 import bar.util.Util;
@@ -46,7 +43,7 @@ public class Main {
 
         settings = new Settings();
         barManager = new BarManager(settings);
-        tileManager = new TileManager(settings);
+        tileManager = new TileManager();
         barManager.addInputListener(this::userInput);
         tileManager.addOnInputEvaluatedListener(this::onInputEvaluated);
 
@@ -234,7 +231,6 @@ public class Main {
                         } else if (editType.equals("category")) {
                             String categoryId = getParams.getOrDefault("categoryName", null);
                             TileCategory category = tileManager.findCategory(categoryId);
-                            System.out.println(category);
                             if (category != null) {
                                 switch (whatToEdit) {
                                     case "editColor":
@@ -255,6 +251,57 @@ public class Main {
                                         if (color != null) {
                                             tileManager.addCategory(new TileCategory(categoryName, color));
                                         }
+                                    }
+                                }
+                            }
+                        } else if (editType.equals("generator")) {
+                            String generatorId = getParams.getOrDefault("tileId", null);
+                            TileGenerator generator = tileManager.findTileGenerator(generatorId);
+                            if (generator != null) {
+                                switch (whatToEdit) {
+                                    case "editCategory":
+                                        String category = Util.popupDropDown(
+                                                "Edit Generator Category",
+                                                "Select the new category",
+                                                tileManager.getCategories().stream().map(TileCategory::getLabel).toArray(String[]::new),
+                                                generator.getCategory());
+                                        if (category != null && !category.equals("null")) {
+                                            generator.setCategory(category);
+                                        }
+                                        break;
+                                    case "deleteGenerator":
+                                        tileManager.removeTileGenerator(generator);
+                                        break;
+                                    case "addKeyword":
+                                        String keyword = Util.popupTextInput("Add Keyword", "Enter the new keyword", null);
+                                        if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
+                                            generator.addKeyword(keyword);
+                                        }
+                                        break;
+                                    case "editKeyword":
+                                        keyword = Util.popupTextInput("Edit Keyword", "Enter the new keyword", null);
+                                        if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
+                                            generator.editKeyword(additionalValue, keyword);
+                                        }
+                                        break;
+                                    case "deleteKeyword":
+                                        generator.removeKeyword(additionalValue);
+                                        break;
+                                    case "editAction":
+                                        break;
+                                    case "deleteAction":
+                                        break;
+                                    case "createAction":
+                                        break;
+                                }
+                            } else {
+                                if (whatToEdit.equals("createGenerator")) {
+                                    generator = new TileGenerator();
+                                    TileGeneratorGenerator gen = createOrEditTileGeneratorGenerator(generator, generatorId);
+                                    if (gen != null) {
+                                        generator.setCategory(gen.getType());
+                                        generator.setKeywords(gen.getType());
+                                        tileManager.addTileGenerator(generator);
                                     }
                                 }
                             }
@@ -284,17 +331,35 @@ public class Main {
         }
     }
 
-    public void createTile() {
-        String tileName = Util.popupTextInput("Create new Tile", "Enter the name of the new Tile", null);
-        if (tileName != null && tileName.length() > 0 && !tileName.equals("null")) {
-            Tile newTile = new Tile(tileName);
-            TileAction newTileAction = createOrEditNewTileAction(newTile, null, null);
-            if (newTileAction != null) {
-                newTile.setCategory(newTileAction.getType());
-                tileManager.addTile(newTile);
-                tileManager.save();
+    private TileGeneratorGenerator createOrEditTileGeneratorGenerator(TileGenerator generator, String id) {
+        TileGeneratorGenerator tileGeneratorGenerator;
+        if (id == null) {
+            tileGeneratorGenerator = null;
+        } else {
+            tileGeneratorGenerator = generator.findGenerator(id);
+            generator.removeGenerator(tileGeneratorGenerator);
+        }
+
+        String generatorType = Util.popupDropDown("Generator", "Select the generator type", TileGeneratorGenerator.GENERATOR_TYPES, tileGeneratorGenerator != null ? tileGeneratorGenerator.getType() : null);
+
+        if (generatorType != null) {
+            switch (generatorType) {
+                case "file":
+                    File file = Util.pickDirectory();
+                    if (file != null) {
+                        String filter = Util.popupTextInput("Generator", "Leave empty or enter file extensions", tileGeneratorGenerator != null ? tileGeneratorGenerator.getParam2() : null);
+                        if (filter != null) {
+                            tileGeneratorGenerator = new TileGeneratorGenerator(generatorType, file.getAbsolutePath(), filter.length() > 0 ? filter : null);
+                        }
+                    }
+                    break;
+            }
+            if (tileGeneratorGenerator != null) {
+                generator.addGenerator(tileGeneratorGenerator);
+                return tileGeneratorGenerator;
             }
         }
+        return null;
     }
 
     private TileAction createOrEditNewTileAction(Tile tile, String param1, String param2) {
@@ -336,6 +401,19 @@ public class Main {
         }
 
         return null;
+    }
+
+    public void createTile() {
+        String tileName = Util.popupTextInput("Create new Tile", "Enter the name of the new Tile", null);
+        if (tileName != null && tileName.length() > 0 && !tileName.equals("null")) {
+            Tile newTile = new Tile(tileName);
+            TileAction newTileAction = createOrEditNewTileAction(newTile, null, null);
+            if (newTileAction != null) {
+                newTile.setCategory(newTileAction.getType());
+                tileManager.addTile(newTile);
+                tileManager.save();
+            }
+        }
     }
 
     private void setResponseError(int errorCode, String message, BufferedWriter out) throws IOException {
