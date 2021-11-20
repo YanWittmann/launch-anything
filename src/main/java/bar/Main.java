@@ -86,7 +86,7 @@ public class Main {
         });
         keyListener.activate();
 
-        openSettingsWebServer();
+        openSettingsWebServer(false);
     }
 
     private void userInput(String input) {
@@ -115,7 +115,7 @@ public class Main {
 
     private HTTPServer webserver;
 
-    public void openSettingsWebServer() {
+    public void openSettingsWebServer(boolean openWebpage) {
         int port = 36345;
         if (webserver == null) {
             new Thread(() -> {
@@ -128,243 +128,249 @@ public class Main {
                 }
             }).start();
         }
-        Sleep.milliseconds(300);
-        // FIXME: Reactivate this when the testing is over
-        if (true) return;
-        try {
-            getDesktop().browse(new URI(webserver.getUrl() + "/?p=" + port));
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (openWebpage) {
+            Sleep.milliseconds(300);
+            try {
+                getDesktop().browse(new URI(webserver.getUrl() + "/?p=" + port));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private void handleSettingsWebServer(BufferedReader in, BufferedWriter out) throws IOException {
-        List<String> request = new ArrayList<>();
-        String s;
-        while ((s = in.readLine()) != null) {
-            request.add(s);
-            if (s.isEmpty()) {
-                break;
-            }
-        }
-
-        Map<String, String> getParams = new HashMap<>();
-        for (String line : request) {
-            if (line.startsWith("GET")) {
-                Matcher getMatcher = GET_PATTERN.matcher(line);
-                if (getMatcher.find() && getMatcher.groupCount() > 0) {
-                    for (String get : getMatcher.group(1).split("&")) {
-                        String[] split = get.split("=");
-                        if (split.length == 2) getParams.put(split[0], Util.urlDecode(split[1]));
-                    }
+        try {
+            List<String> request = new ArrayList<>();
+            String s;
+            while ((s = in.readLine()) != null) {
+                request.add(s);
+                if (s.isEmpty()) {
+                    break;
                 }
             }
-        }
-        System.out.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
-        getParams.forEach((k, v) -> System.out.println(k + ": " + v));
 
-        if (getParams.containsKey("action")) {
-            try {
-                JSONObject response = new JSONObject();
-                String action = getParams.getOrDefault("action", null);
-
-                if (getParams.get("action").equals("getAllTiles")) {
-                    response.put(
-                            "tiles",
-                            tileManager.toJSON()
-                                    .put("runtime-tiles", TileManager.RUNTIME_TILES)
-                                    .put("settings", settings.toJSON()));
-
-                } else if (action.equals("tileInteraction")) {
-
-                    String editType = getParams.getOrDefault("editType", null);
-                    String whatToEdit = getParams.getOrDefault("whatToEdit", null);
-                    String additionalValue = getParams.getOrDefault("additionalValue", null);
-
-                    if (whatToEdit != null && editType != null) {
-                        if (editType.equals("tile")) {
-                            String tileId = getParams.getOrDefault("tileId", null);
-                            Tile tile = tileManager.findTile(tileId);
-                            if (tile != null) {
-                                switch (whatToEdit) {
-                                    case "createAction":
-                                    case "editAction":
-                                        createOrEditNewTileAction(tile, additionalValue, null);
-                                        break;
-                                    case "deleteAction":
-                                        TileAction tileAction = tile.findTileAction(additionalValue, null);
-                                        if (tileAction != null) {
-                                            tile.removeAction(tileAction);
-                                        }
-                                        break;
-                                    case "deleteTile":
-                                        tileManager.removeTile(tile);
-                                        break;
-                                    case "editName":
-                                        String name = Util.popupTextInput("Edit Tile Name", "Enter the new name", tile.getLabel());
-                                        if (name != null && name.length() > 0 && !name.equals("null")) {
-                                            tile.setLabel(name);
-                                        }
-                                        break;
-                                    case "editCategory":
-                                        String category = Util.popupDropDown(
-                                                "Edit Tile Category",
-                                                "Select the new category",
-                                                tileManager.getCategories().stream().map(TileCategory::getLabel).toArray(String[]::new),
-                                                tile.getCategory());
-                                        if (category != null && !category.equals("null")) {
-                                            tile.setCategory(category);
-                                        }
-                                        break;
-                                    case "addKeyword":
-                                        String keyword = Util.popupTextInput("Add Keyword", "Enter the new keyword", null);
-                                        if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
-                                            tile.addKeyword(keyword);
-                                        }
-                                        break;
-                                    case "editKeyword":
-                                        keyword = Util.popupTextInput("Edit Keyword", "Enter the new keyword", null);
-                                        if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
-                                            tile.editKeyword(additionalValue, keyword);
-                                        }
-                                        break;
-                                    case "deleteKeyword":
-                                        tile.removeKeyword(additionalValue);
-                                        break;
-                                }
-                            } else {
-                                if (whatToEdit.equals("createTile")) {
-                                    createTile();
-                                }
-                            }
-                        } else if (editType.equals("category")) {
-                            String categoryId = getParams.getOrDefault("categoryName", null);
-                            TileCategory category = tileManager.findCategory(categoryId);
-                            if (category != null) {
-                                switch (whatToEdit) {
-                                    case "editColor":
-                                        Color color = JColorChooser.showDialog(null, "Choose a color", Color.RED);
-                                        if (color != null) {
-                                            category.setColor(color);
-                                        }
-                                        break;
-                                    case "deleteCategory":
-                                        tileManager.removeCategory(category);
-                                        break;
-                                }
-                            } else {
-                                if (whatToEdit.equals("createCategory")) {
-                                    String categoryName = Util.popupTextInput("Create Category", "Enter the new category name", null);
-                                    if (categoryName != null && categoryName.length() > 0 && !categoryName.equals("null")) {
-                                        Color color = JColorChooser.showDialog(null, "Choose a color", Color.RED);
-                                        if (color != null) {
-                                            tileManager.addCategory(new TileCategory(categoryName, color));
-                                        }
-                                    }
-                                }
-                            }
-                        } else if (editType.equals("generator")) {
-                            String generatorId = getParams.getOrDefault("tileId", null);
-                            TileGenerator generator = tileManager.findTileGenerator(generatorId);
-                            if (generator != null) {
-                                switch (whatToEdit) {
-                                    case "editCategory":
-                                        String category = Util.popupDropDown(
-                                                "Edit Generator Category",
-                                                "Select the new category",
-                                                tileManager.getCategories().stream().map(TileCategory::getLabel).toArray(String[]::new),
-                                                generator.getCategory());
-                                        if (category != null && !category.equals("null")) {
-                                            generator.setCategory(category);
-                                        }
-                                        break;
-                                    case "deleteGenerator":
-                                        tileManager.removeTileGenerator(generator);
-                                        break;
-                                    case "addKeyword":
-                                        String keyword = Util.popupTextInput("Add Keyword", "Enter the new keyword", null);
-                                        if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
-                                            generator.addKeyword(keyword);
-                                        }
-                                        break;
-                                    case "editKeyword":
-                                        keyword = Util.popupTextInput("Edit Keyword", "Enter the new keyword", null);
-                                        if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
-                                            generator.editKeyword(additionalValue, keyword);
-                                        }
-                                        break;
-                                    case "deleteKeyword":
-                                        generator.removeKeyword(additionalValue);
-                                        break;
-                                    case "editAction":
-                                        break;
-                                    case "deleteAction":
-                                        break;
-                                    case "createAction":
-                                        break;
-                                }
-                            } else {
-                                if (whatToEdit.equals("createGenerator")) {
-                                    generator = new TileGenerator();
-                                    TileGeneratorGenerator gen = createOrEditTileGeneratorGenerator(generator, generatorId);
-                                    if (gen != null) {
-                                        generator.setCategory(gen.getType());
-                                        generator.setKeywords(gen.getType());
-                                        tileManager.addTileGenerator(generator);
-                                    }
-                                }
-                            }
-                        } else if (editType.equals("runtime")) {
-                            String runtimeId = getParams.getOrDefault("tileId", null);
-                            if (runtimeId != null) {
-                                tileManager.toggleRuntimeTile(runtimeId);
-                            }
-                        } else if (editType.equals("setting")) {
-                            if (whatToEdit.equals("resetSettings")) {
-                                String confirmation = Util.popupTextInput("Reset Settings", "Are you sure you want to reset all settings?\nEnter 'confirm' to delete the settings:", "");
-                                if (confirmation != null && confirmation.equals("confirm")) {
-                                    settings.reset();
-                                    settings.save();
-                                }
-                            } else {
-                                Object newValue;
-                                if (whatToEdit.toLowerCase().contains("key")) {
-                                    Util.popupMessage("Edit Key", "After closing this popup, press any key you want to assign this action to.");
-                                    lastPressedKey = -1;
-                                    while (lastPressedKey == -1) {
-                                        Sleep.milliseconds(100);
-                                    }
-                                    newValue = lastPressedKey;
-                                } else {
-                                    newValue = Util.popupTextInput("Edit Setting", "Enter the new value for the setting:", settings.getString(whatToEdit));
-                                }
-                                if (newValue != null && (newValue + "").length() > 0 && !newValue.equals("null")) {
-                                    settings.setSetting(whatToEdit, newValue);
-                                }
-                            }
+            Map<String, String> getParams = new HashMap<>();
+            for (String line : request) {
+                if (line.startsWith("GET")) {
+                    Matcher getMatcher = GET_PATTERN.matcher(line);
+                    if (getMatcher.find() && getMatcher.groupCount() > 0) {
+                        for (String get : getMatcher.group(1).split("&")) {
+                            String[] split = get.split("=");
+                            if (split.length == 2) getParams.put(split[0], Util.urlDecode(split[1]));
                         }
-                        tileManager.cleanUpTileActions();
-                        tileManager.save();
                     }
                 }
+            }
+            System.out.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
+            getParams.forEach((k, v) -> System.out.println(k + ": " + v));
 
+            if (getParams.containsKey("action")) {
+                try {
+                    JSONObject response = new JSONObject();
+                    String action = getParams.getOrDefault("action", null);
+
+                    if (getParams.get("action").equals("getAllTiles")) {
+                        response.put(
+                                "tiles",
+                                tileManager.toJSON()
+                                        .put("runtime-tiles", TileManager.RUNTIME_TILES)
+                                        .put("settings", settings.toJSON()));
+
+                    } else if (action.equals("tileInteraction")) {
+
+                        String editType = getParams.getOrDefault("editType", null);
+                        String whatToEdit = getParams.getOrDefault("whatToEdit", null);
+                        String additionalValue = getParams.getOrDefault("additionalValue", null);
+
+                        if (whatToEdit != null && editType != null) {
+                            if (editType.equals("tile")) {
+                                String tileId = getParams.getOrDefault("tileId", null);
+                                Tile tile = tileManager.findTile(tileId);
+                                if (tile != null) {
+                                    switch (whatToEdit) {
+                                        case "createAction":
+                                        case "editAction":
+                                            createOrEditNewTileAction(tile, additionalValue, null);
+                                            break;
+                                        case "deleteAction":
+                                            TileAction tileAction = tile.findTileAction(additionalValue, null);
+                                            if (tileAction != null) {
+                                                tile.removeAction(tileAction);
+                                            }
+                                            break;
+                                        case "deleteTile":
+                                            tileManager.removeTile(tile);
+                                            break;
+                                        case "editName":
+                                            String name = Util.popupTextInput("Edit Tile Name", "Enter the new name", tile.getLabel());
+                                            if (name != null && name.length() > 0 && !name.equals("null")) {
+                                                tile.setLabel(name);
+                                            }
+                                            break;
+                                        case "editCategory":
+                                            String category = Util.popupDropDown(
+                                                    "Edit Tile Category",
+                                                    "Select the new category",
+                                                    tileManager.getCategories().stream().map(TileCategory::getLabel).toArray(String[]::new),
+                                                    tile.getCategory());
+                                            if (category != null && !category.equals("null")) {
+                                                tile.setCategory(category);
+                                            }
+                                            break;
+                                        case "addKeyword":
+                                            String keyword = Util.popupTextInput("Add Keyword", "Enter the new keyword", null);
+                                            if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
+                                                tile.addKeyword(keyword);
+                                            }
+                                            break;
+                                        case "editKeyword":
+                                            keyword = Util.popupTextInput("Edit Keyword", "Enter the new keyword", null);
+                                            if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
+                                                tile.editKeyword(additionalValue, keyword);
+                                            }
+                                            break;
+                                        case "deleteKeyword":
+                                            tile.removeKeyword(additionalValue);
+                                            break;
+                                    }
+                                } else {
+                                    if (whatToEdit.equals("createTile")) {
+                                        createTile();
+                                    }
+                                }
+                            } else if (editType.equals("category")) {
+                                String categoryId = getParams.getOrDefault("categoryName", null);
+                                TileCategory category = tileManager.findCategory(categoryId);
+                                if (category != null) {
+                                    switch (whatToEdit) {
+                                        case "editColor":
+                                            Color color = JColorChooser.showDialog(null, "Choose a color", Color.RED);
+                                            if (color != null) {
+                                                category.setColor(color);
+                                            }
+                                            break;
+                                        case "deleteCategory":
+                                            tileManager.removeCategory(category);
+                                            break;
+                                    }
+                                } else {
+                                    if (whatToEdit.equals("createCategory")) {
+                                        String categoryName = Util.popupTextInput("Create Category", "Enter the new category name", null);
+                                        if (categoryName != null && categoryName.length() > 0 && !categoryName.equals("null")) {
+                                            Color color = JColorChooser.showDialog(null, "Choose a color", Color.RED);
+                                            if (color != null) {
+                                                tileManager.addCategory(new TileCategory(categoryName, color));
+                                            }
+                                        }
+                                    }
+                                }
+                            } else if (editType.equals("generator")) {
+                                String generatorId = getParams.getOrDefault("tileId", null);
+                                TileGenerator generator = tileManager.findTileGenerator(generatorId);
+                                if (generator != null) {
+                                    switch (whatToEdit) {
+                                        case "editCategory":
+                                            String category = Util.popupDropDown(
+                                                    "Edit Generator Category",
+                                                    "Select the new category",
+                                                    tileManager.getCategories().stream().map(TileCategory::getLabel).toArray(String[]::new),
+                                                    generator.getCategory());
+                                            if (category != null && !category.equals("null")) {
+                                                generator.setCategory(category);
+                                            }
+                                            break;
+                                        case "deleteGenerator":
+                                            tileManager.removeTileGenerator(generator);
+                                            break;
+                                        case "addKeyword":
+                                            String keyword = Util.popupTextInput("Add Keyword", "Enter the new keyword", null);
+                                            if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
+                                                generator.addKeyword(keyword);
+                                            }
+                                            break;
+                                        case "editKeyword":
+                                            keyword = Util.popupTextInput("Edit Keyword", "Enter the new keyword", null);
+                                            if (keyword != null && keyword.length() > 0 && !keyword.equals("null")) {
+                                                generator.editKeyword(additionalValue, keyword);
+                                            }
+                                            break;
+                                        case "deleteKeyword":
+                                            generator.removeKeyword(additionalValue);
+                                            break;
+                                        case "editAction":
+                                            break;
+                                        case "deleteAction":
+                                            break;
+                                        case "createAction":
+                                            break;
+                                    }
+                                } else {
+                                    if (whatToEdit.equals("createGenerator")) {
+                                        generator = new TileGenerator();
+                                        TileGeneratorGenerator gen = createOrEditTileGeneratorGenerator(generator, generatorId);
+                                        if (gen != null) {
+                                            generator.setCategory(gen.getType());
+                                            generator.setKeywords(gen.getType());
+                                            tileManager.addTileGenerator(generator);
+                                        }
+                                    }
+                                }
+                            } else if (editType.equals("runtime")) {
+                                String runtimeId = getParams.getOrDefault("tileId", null);
+                                if (runtimeId != null) {
+                                    tileManager.toggleRuntimeTile(runtimeId);
+                                }
+                            } else if (editType.equals("setting")) {
+                                if (whatToEdit.equals("resetSettings")) {
+                                    String confirmation = Util.popupTextInput("Reset Settings", "Are you sure you want to reset all settings?\nEnter 'confirm' to delete the settings:", "");
+                                    if (confirmation != null && confirmation.equals("confirm")) {
+                                        settings.reset();
+                                        settings.save();
+                                    }
+                                } else {
+                                    Object newValue;
+                                    if (whatToEdit.toLowerCase().contains("key")) {
+                                        Util.popupMessage("Edit Key", "After closing this popup, press any key you want to assign this action to.");
+                                        lastPressedKey = -1;
+                                        while (lastPressedKey == -1) {
+                                            Sleep.milliseconds(100);
+                                        }
+                                        newValue = lastPressedKey;
+                                    } else {
+                                        newValue = Util.popupTextInput("Edit Setting", "Enter the new value for the setting:", settings.getString(whatToEdit));
+                                    }
+                                    if (newValue != null && (newValue + "").length() > 0 && !newValue.equals("null")) {
+                                        settings.setSetting(whatToEdit, newValue);
+                                    }
+                                }
+                            }
+                            tileManager.cleanUpTileActions();
+                            tileManager.save();
+                        }
+                    }
+
+                    out.write("HTTP/1.0 200 OK\r\n");
+                    out.write("Date: " + new Date() + "\r\n");
+                    out.write("Server: Java/1.0\r\n");
+                    out.write("Content-Type: application/json\r\n");
+                    out.write("\r\n");
+                    out.write(response.toString());
+                } catch (Exception e) {
+                    setResponseError(500, "Something went wrong: " + e.getMessage() + ", " + Arrays.toString(e.getStackTrace()), out);
+                    e.printStackTrace();
+                }
+            } else {
                 out.write("HTTP/1.0 200 OK\r\n");
                 out.write("Date: " + new Date() + "\r\n");
                 out.write("Server: Java/1.0\r\n");
-                out.write("Content-Type: application/json\r\n");
+                out.write("Content-Type: text/html\r\n");
                 out.write("\r\n");
-                out.write(response.toString());
-            } catch (Exception e) {
-                setResponseError(500, "Something went wrong: " + e.getMessage(), out);
-                e.printStackTrace();
+                out.write(Util.readClassResource("web/settings.html"));
             }
-        } else {
-            out.write("HTTP/1.0 200 OK\r\n");
-            out.write("Date: " + new Date() + "\r\n");
-            out.write("Server: Java/1.0\r\n");
-            out.write("Content-Type: text/html\r\n");
-            out.write("\r\n");
-            out.write(Util.readClassResource("web/settings.html"));
+        } catch (Exception e) {
+            System.out.println("Something went wrong while answering to the client: " + e.getMessage());
+            e.printStackTrace();
+            openSettingsWebServer(false);
         }
     }
 

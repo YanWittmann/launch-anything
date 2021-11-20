@@ -101,7 +101,7 @@ public class TileAction {
                         if (param1 != null) {
                             switch (param1) {
                                 case "webeditor":
-                                    main.openSettingsWebServer();
+                                    main.openSettingsWebServer(true);
                                     break;
                                 case "createTile":
                                     main.createTile();

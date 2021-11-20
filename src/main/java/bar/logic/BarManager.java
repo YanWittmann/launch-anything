@@ -51,21 +51,25 @@ public class BarManager {
     }
 
     public void setTiles(List<Tile> tiles, int index, List<TileCategory> categories) {
-        if (!isInputActive) return;
-        for (int i = 0; i < resultGlassBars.size(); i++) {
-            if (tiles.size() > i + index) {
-                resultGlassBars.get(i).setText(tiles.get(i + index).getLabel());
-                String category = tiles.get(i + index).getCategory();
-                if (category != null) {
-                    TileCategory cat = findCategory(category, categories);
-                    if (cat != null) {
-                        resultGlassBars.get(i).tintBackground(cat.getColor());
+        try {
+            if (!isInputActive) return;
+            for (int i = 0; i < resultGlassBars.size(); i++) {
+                if (tiles.size() > i + index) {
+                    resultGlassBars.get(i).setText(tiles.get(i + index).getLabel());
+                    String category = tiles.get(i + index).getCategory();
+                    if (category != null) {
+                        TileCategory cat = findCategory(category, categories);
+                        if (cat != null) {
+                            resultGlassBars.get(i).tintBackground(cat.getColor());
+                        }
                     }
+                    resultGlassBars.get(i).setOpacity(1.0f);
+                } else {
+                    resultGlassBars.get(i).setOpacity(0.0f);
                 }
-                resultGlassBars.get(i).setOpacity(1.0f);
-            } else {
-                resultGlassBars.get(i).setOpacity(0.0f);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

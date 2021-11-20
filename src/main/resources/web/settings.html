@@ -254,8 +254,6 @@
     const port = urlParams.get('p');
     const requestUrl = 'http://localhost:' + port;
 
-    switchSection('settings', document.getElementById('settings'));
-
     function switchSection(section, menuItem) {
         const sections = document.querySelectorAll('section');
         for (let i = 0; i < sections.length; i++) {
@@ -571,7 +569,7 @@
     let firstLoad = true;
 
     function checkFirstLoad() {
-        if (firstLoad) {
+        if (false && firstLoad) { // this is temporarily disabled
             firstLoad = false;
             alert('If you don\'t see a popup right now, use alt-tab to switch through the active windows!\n' +
                 'This is an issue with java popups not grabbing the focus on the first time they open, so you will ' +

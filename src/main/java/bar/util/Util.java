@@ -2,7 +2,6 @@ package bar.util;
 
 import bar.Main;
 import bar.logic.Settings;
-import bar.ui.PopupTextInput;
 import jnafilechooser.api.JnaFileChooser;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
@@ -90,10 +89,8 @@ public abstract class Util {
     }
 
     public static String popupTextInput(String title, String message, String pretext) {
-        PopupTextInput dialog = new PopupTextInput(title, message, pretext);
-        if (!dialog.isCancelled())
-            return dialog.getText();
-        return null;
+        Object o = showInputDialog(null, message, title, PLAIN_MESSAGE, null, null, pretext);
+        return o == null ? null : o.toString();
     }
 
     public static void popupMessage(String title, String message) {

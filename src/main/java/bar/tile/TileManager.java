@@ -40,18 +40,22 @@ public class TileManager {
         createCustomTiles();
     }
 
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private Future<?> currentFuture = null;
     private final AtomicReference<Long> lastInputEvaluated = new AtomicReference<>(System.currentTimeMillis());
 
     public void evaluateUserInput(String input) {
-        if (currentFuture != null) {
-            currentFuture.cancel(true);
-        }
-        if (input.length() <= 1) {
-            setEvaluationResults(new ArrayList<>());
-        } else {
-            currentFuture = evaluate(input);
+        try {
+            if (currentFuture != null) {
+                currentFuture.cancel(true);
+            }
+            if (input.length() <= 1) {
+                setEvaluationResults(new ArrayList<>());
+            } else {
+                currentFuture = evaluate(input);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
