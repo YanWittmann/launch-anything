@@ -25,4 +25,12 @@ public class MathExpressionTile implements RuntimeTile {
             return Collections.emptyList();
         }
     }
+
+    public static String getTitle() {
+        return "Math Expression";
+    }
+
+    public static String getDescription() {
+        return "Enter any mathematical expression";
+    }
 }

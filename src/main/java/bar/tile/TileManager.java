@@ -29,6 +29,7 @@ public class TileManager {
     private final List<TileGenerator> tileGenerators = new ArrayList<>();
     private final List<InputEvaluatedListener> onInputEvaluatedListeners = new ArrayList<>();
     private final List<TileCategory> categories = new ArrayList<>();
+    private final List<String> disabledRuntimeTiles = new ArrayList<>();
     private File tileFile;
 
     public TileManager() {
@@ -138,6 +139,14 @@ public class TileManager {
                 }
             }
 
+            JSONArray disabledRuntimeTilesArray = tilesRoot.optJSONArray("disabled-runtime-tiles");
+            if (disabledRuntimeTilesArray != null) {
+                for (int i = 0; i < disabledRuntimeTilesArray.length(); i++) {
+                    String tile = disabledRuntimeTilesArray.optString(i);
+                    disabledRuntimeTiles.add(tile);
+                }
+            }
+
             regenerateGeneratedTiles();
             System.out.println("Loaded " + tiles.size() + " tile(s), " + tileGenerators.size() + " tile generator(s) and " + categories.size() + " category/ies.");
         } catch (FileNotFoundException e) {
@@ -240,6 +249,7 @@ public class TileManager {
         tilesRoot.put("tiles", tilesArray);
         tilesRoot.put("tile-generators", tileGeneratorsArray);
         tilesRoot.put("categories", categoriesArray);
+        tilesRoot.put("disabled-runtime-tiles", disabledRuntimeTiles);
 
         return tilesRoot;
     }
@@ -261,10 +271,29 @@ public class TileManager {
     }
 
     private void createCustomTiles() {
-        runtimeTiles.add(new GoWebsiteTile());
-        runtimeTiles.add(new MathExpressionTile());
-        runtimeTiles.add(new WikiSearchTile());
+        runtimeTiles.clear();
+        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[0]))
+            runtimeTiles.add(new GoWebsiteTile());
+        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[1]))
+            runtimeTiles.add(new MathExpressionTile());
+        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[2]))
+            runtimeTiles.add(new WikiSearchTile());
     }
+
+    public void toggleRuntimeTile(String tileId) {
+        if (disabledRuntimeTiles.contains(tileId)) {
+            disabledRuntimeTiles.remove(tileId);
+        } else {
+            disabledRuntimeTiles.add(tileId);
+        }
+        createCustomTiles();
+    }
+
+    public final static String[] RUNTIME_TILES = {
+            GoWebsiteTile.getTitle() + " (" + GoWebsiteTile.getDescription() + ")",
+            MathExpressionTile.getTitle() + " (" + MathExpressionTile.getDescription() + ")",
+            WikiSearchTile.getTitle() + " (" + WikiSearchTile.getDescription() + ")"
+    };
 
     public void cleanUpTileActions() {
         for (Tile tile : tiles) {

@@ -22,4 +22,12 @@ public class GoWebsiteTile implements RuntimeTile {
         }
         return Collections.emptyList();
     }
+
+    public static String getTitle() {
+        return "Go Website";
+    }
+
+    public static String getDescription() {
+        return "Enter 'go' and any search term";
+    }
 }

@@ -151,6 +151,11 @@
             box-shadow: 2px 2px 2px 1px #212529;
         }
 
+        .bg-red {
+            background-color: #ea3939;
+            color: var(--main-text-color);
+        }
+
         .bg-green {
             background-color: #50d36c;
             color: var(--dark-text-color);
@@ -185,6 +190,9 @@
           onclick="switchSection('settings', this);">Settings & Help</span>
 
     <section id="tiles">
+        <br>
+        <span id="add-new-tile" class="clickable badge bg-green">Create Tile</span>
+        (You can also use the <span class="badge">Create Tile</span> tile to create a tile)<br><br>
         <table class="editor-table">
             <thead>
             <tr>
@@ -199,6 +207,8 @@
     </section>
 
     <section id="generators" class="hidden">
+        <br>
+        <span id="add-new-generator" class="clickable badge bg-green">Create Generator</span><br><br>
         <table class="editor-table">
             <thead>
             <tr>
@@ -212,10 +222,13 @@
     </section>
 
     <section id="runtime" class="hidden">
-        Coming soon!
+        <ul id="runtime-tile-selection">
+        </ul>
     </section>
 
     <section id="categories" class="hidden">
+        <br>
+        <span id="add-new-category" class="clickable badge bg-green">Create Category</span><br><br>
         <table class="editor-table">
             <thead>
             <tr>
@@ -270,7 +283,6 @@
             let tiles = parsedResponse.tiles.tiles;
             let table = document.getElementById('tile-table');
             table.innerHTML = '';
-            table.appendChild(htmlToElement('<tr><td><span id="add-new-tile" class="clickable badge bg-green">Create Tile</span></td><td></td><td></td><td>You can also use the <span class="badge">Create Tile</span> tile to create a tile</td></tr>'))
             document.getElementById('add-new-tile').onclick = function () {
                 editTileIntent('none', 'createTile');
             };
@@ -281,7 +293,6 @@
             let categories = parsedResponse.tiles.categories;
             table = document.getElementById('categories-table');
             table.innerHTML = '';
-            table.appendChild(htmlToElement('<tr><td><span id="add-new-category" class="clickable badge bg-green">Create Category</span></td></tr>'));
             document.getElementById('add-new-category').onclick = function () {
                 editCategoryIntent('', 'createCategory');
             };
@@ -292,12 +303,32 @@
             let tileGenerators = parsedResponse.tiles['tile-generators'];
             table = document.getElementById('generators-table');
             table.innerHTML = '';
-            table.appendChild(htmlToElement('<tr><td><span id="add-new-generator" class="clickable badge bg-green">Create Generator</span></td><td></td><td></td></tr>'));
             document.getElementById('add-new-generator').onclick = function () {
                 editTileGeneratorIntent('', 'createGenerator');
             };
             for (let i = 0; i < tileGenerators.length; i++) {
                 table.appendChild(createGeneratorEntryForTable(tileGenerators[i]));
+            }
+
+            let runtimeTiles = parsedResponse.tiles['runtime-tiles'];
+            let disabledRuntimeTiles = parsedResponse.tiles['disabled-runtime-tiles'];
+            let list = document.getElementById('runtime-tile-selection');
+            list.innerHTML = '';
+            for (let i = 0; i < runtimeTiles.length; i++) {
+                let li = document.createElement('li');
+                li.innerText = runtimeTiles[i];
+                li.classList.add('badge');
+                li.classList.add('clickable');
+                if (disabledRuntimeTiles.indexOf(runtimeTiles[i]) !== -1) {
+                    li.classList.add('bg-red');
+                } else {
+                    li.classList.add('bg-green');
+                }
+                li.onclick = function () {
+                    editRuntimeTileIntent(runtimeTiles[i], 'toggleActive');
+                };
+                list.appendChild(li);
+                list.appendChild(document.createElement('br'));
             }
         });
     }
@@ -520,8 +551,8 @@
     function editTileIntent(tileId, whatToEdit, additionalValue) {
         let params = {
             'action': 'tileInteraction',
-            'whatToEdit': whatToEdit,
             'editType': 'tile',
+            'whatToEdit': whatToEdit,
             'tileId': tileId,
         };
         if (additionalValue !== undefined && additionalValue != null) {
@@ -535,11 +566,24 @@
         checkFirstLoad();
     }
 
+    function editRuntimeTileIntent(tileId, whatToEdit) {
+        let params = {
+            'action': 'tileInteraction',
+            'editType': 'runtime',
+            'whatToEdit': whatToEdit,
+            'tileId': tileId,
+        };
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+    }
+
     function editTileGeneratorIntent(tileId, whatToEdit, additionalValue) {
         let params = {
             'action': 'tileInteraction',
-            'whatToEdit': whatToEdit,
             'editType': 'generator',
+            'whatToEdit': whatToEdit,
             'tileId': tileId,
         };
         if (additionalValue !== undefined && additionalValue != null) {
@@ -556,8 +600,8 @@
     function editCategoryIntent(categoryName, whatToEdit) {
         let params = {
             'action': 'tileInteraction',
-            'categoryName': categoryName,
             'editType': 'category',
+            'categoryName': categoryName,
             'whatToEdit': whatToEdit,
         };
 

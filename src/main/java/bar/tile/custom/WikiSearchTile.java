@@ -38,4 +38,12 @@ public class WikiSearchTile implements RuntimeTile {
         }
         return Collections.emptyList();
     }
+
+    public static String getTitle() {
+        return "Wiki Search";
+    }
+
+    public static String getDescription() {
+        return "Enter 'wiki' and any search term";
+    }
 }

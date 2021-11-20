@@ -164,7 +164,7 @@ public class Main {
                 String action = getParams.getOrDefault("action", null);
 
                 if (getParams.get("action").equals("getAllTiles")) {
-                    response.put("tiles", tileManager.toJSON());
+                    response.put("tiles", tileManager.toJSON().put("runtime-tiles", TileManager.RUNTIME_TILES));
 
                 } else if (action.equals("tileInteraction")) {
 
@@ -304,6 +304,11 @@ public class Main {
                                         tileManager.addTileGenerator(generator);
                                     }
                                 }
+                            }
+                        } else if (editType.equals("runtime")) {
+                            String runtimeId = getParams.getOrDefault("tileId", null);
+                            if (runtimeId != null) {
+                                tileManager.toggleRuntimeTile(runtimeId);
                             }
                         }
                         tileManager.cleanUpTileActions();
