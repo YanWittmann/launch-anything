@@ -23,7 +23,7 @@ public class WikiSearchTile implements RuntimeTile {
             try {
                 JSONObject response = new JSONObject(Util.getHttpRequestResult("https://en.wikipedia.org/api/rest_v1/page/summary/" + search.replaceAll("wiki *", "")));
                 Tile tile = new Tile(response.optString("description"));
-                tile.setCategory("custom");
+                tile.setCategory("runtime");
                 JSONObject contentUrls = response.optJSONObject("content_urls");
                 if (contentUrls != null) {
                     JSONObject desktop = contentUrls.optJSONObject("desktop");

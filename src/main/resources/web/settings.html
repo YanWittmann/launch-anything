@@ -214,7 +214,14 @@
     </section>
 
     <section id="categories" class="hidden">
-        Coming soon!
+        <table class="editor-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+            </thead>
+            <tbody id="categories-table"></tbody>
+        </table>
     </section>
 
     <section id="settings" class="hidden">
@@ -262,8 +269,22 @@
             let table = document.getElementById('tile-table');
             table.innerHTML = '';
             table.appendChild(htmlToElement('<tr><td><span id="add-new-tile" class="clickable badge bg-green">Create Tile</span></td><td></td><td></td><td>You can also use the <span class="badge">Create Tile</span> tile to create a tile</td></tr>'))
+            document.getElementById('add-new-tile').onclick = function () {
+                editTileIntent('none', 'createTile');
+            };
             for (let i = 0; i < tiles.length; i++) {
                 table.appendChild(createTileEntryForTable(tiles[i]));
+            }
+
+            let categories = parsedResponse.tiles.categories;
+            table = document.getElementById('categories-table');
+            table.innerHTML = '';
+            table.appendChild(htmlToElement('<tr><td><span id="add-new-category" class="clickable badge bg-green">Create Category</span></td></tr>'));
+            document.getElementById('add-new-category').onclick = function () {
+                editCategoryIntent('', 'createCategory');
+            };
+            for (let i = 0; i < categories.length; i++) {
+                table.appendChild(createCategoryEntryForTable(categories[i]));
             }
         });
     }
@@ -273,7 +294,7 @@
         badge.className = 'badge';
         try {
             badge.style.backgroundColor = 'rgb(' + tileCategories[cat][0] + ', ' + tileCategories[cat][1] + ', ' + tileCategories[cat][2] + ')';
-            if (tileCategories[cat][0] + tileCategories[cat][1] + tileCategories[cat][2] > 420) {
+            if (tileCategories[cat][0] + tileCategories[cat][1] + tileCategories[cat][2] > 310) {
                 badge.style.color = 'black';
             }
         } catch (e) {
@@ -282,6 +303,25 @@
         }
         badge.innerHTML = cat;
         return badge;
+    }
+
+    function createCategoryEntryForTable(categoryJson) {
+        let row = document.createElement('tr');
+
+        let color = document.createElement('td');
+        let badge = createColoredCategoryBadge(categoryJson.label);
+        badge.classList.add('clickable');
+        badge.onclick = function () {
+            editCategoryIntent(categoryJson.label, 'editColor');
+        };
+        badge.oncontextmenu = function (e) {
+            e.preventDefault();
+            editCategoryIntent(categoryJson.label, 'deleteCategory');
+        };
+        color.appendChild(badge);
+        row.appendChild(color);
+
+        return row;
     }
 
     function createTileEntryForTable(tileJson) {
@@ -371,14 +411,19 @@
         row.append(keywords);
         row.append(actions);
 
-        document.getElementById('add-new-tile').onclick = function () {
-            editTileIntent('none', 'createTile');
-        };
-
         return row;
     }
 
     let firstLoad = true;
+
+    function checkFirstLoad() {
+        if (firstLoad) {
+            firstLoad = false;
+            alert('If you don\'t see a popup right now, use alt-tab to switch through the active windows!\n' +
+                'This is an issue with java popups not grabbing the focus on the first time they open, so you will ' +
+                'only have to do this once per session.');
+        }
+    }
 
     function editTileIntent(tileId, whatToEdit, additionalValue) {
         let params = {
@@ -395,12 +440,22 @@
             refreshTiles();
         });
 
-        if (firstLoad) {
-            firstLoad = false;
-            alert('If you don\'t see a popup right now, use alt-tab to switch through the active windows!\n' +
-                'This is an issue with java popups not grabbing the focus on the first time they open, so you will ' +
-                'only have to do this once per session.');
-        }
+        checkFirstLoad();
+    }
+
+    function editCategoryIntent(categoryName, whatToEdit) {
+        let params = {
+            'action': 'tileInteraction',
+            'categoryName': categoryName,
+            'editType': 'category',
+            'whatToEdit': whatToEdit,
+        };
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+
+        checkFirstLoad();
     }
 
     function htmlToElement(html) {

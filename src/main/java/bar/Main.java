@@ -14,11 +14,13 @@ import lc.kra.system.keyboard.event.GlobalKeyEvent;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -171,11 +173,11 @@ public class Main {
 
                     String editType = getParams.getOrDefault("editType", null);
                     String whatToEdit = getParams.getOrDefault("whatToEdit", null);
-                    String tileId = getParams.getOrDefault("tileId", null);
                     String additionalValue = getParams.getOrDefault("additionalValue", null);
 
                     if (whatToEdit != null && editType != null) {
                         if (editType.equals("tile")) {
+                            String tileId = getParams.getOrDefault("tileId", null);
                             Tile tile = tileManager.findTile(tileId);
                             if (tile != null) {
                                 switch (whatToEdit) {
@@ -229,6 +231,33 @@ public class Main {
                                     createTile();
                                 }
                             }
+                        } else if (editType.equals("category")) {
+                            String categoryId = getParams.getOrDefault("categoryName", null);
+                            TileCategory category = tileManager.findCategory(categoryId);
+                            System.out.println(category);
+                            if (category != null) {
+                                switch (whatToEdit) {
+                                    case "editColor":
+                                        Color color = JColorChooser.showDialog(null, "Choose a color", Color.RED);
+                                        if (color != null) {
+                                            category.setColor(color);
+                                        }
+                                        break;
+                                    case "deleteCategory":
+                                        tileManager.removeCategory(category);
+                                        break;
+                                }
+                            } else {
+                                if (whatToEdit.equals("createCategory")) {
+                                    String categoryName = Util.popupTextInput("Create Category", "Enter the new category name", null);
+                                    if (categoryName != null && categoryName.length() > 0 && !categoryName.equals("null")) {
+                                        Color color = JColorChooser.showDialog(null, "Choose a color", Color.RED);
+                                        if (color != null) {
+                                            tileManager.addCategory(new TileCategory(categoryName, color));
+                                        }
+                                    }
+                                }
+                            }
                         }
                         tileManager.cleanUpTileActions();
                         tileManager.save();
@@ -251,7 +280,7 @@ public class Main {
             out.write("Server: Java/1.0\r\n");
             out.write("Content-Type: text/html\r\n");
             out.write("\r\n");
-            out.write(Util.readClassResource("web/testing.html"));
+            out.write(Util.readClassResource("web/settings.html"));
         }
     }
 

@@ -17,7 +17,7 @@ public class MathExpressionTile implements RuntimeTile {
             String result = Util.evaluateMathematicalExpression(search) + "";
             if (result.endsWith(".0")) result = result.replace(".0", "");
             Tile tile = new Tile(result);
-            tile.setCategory("custom");
+            tile.setCategory("runtime");
             TileAction action = new TileAction("copy", result);
             tile.addAction(action);
             return Collections.singletonList(tile);

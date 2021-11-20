@@ -14,7 +14,7 @@ public class GoWebsiteTile implements RuntimeTile {
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
         if (search.startsWith("go") && search.length() > 2) {
             Tile tile = new Tile("I'm Feeling Lucky!");
-            tile.setCategory("custom");
+            tile.setCategory("runtime");
             String searchTerm = search.replaceAll("^go *", "");
             TileAction action = new TileAction("url", "https://duckduckgo.com/?q=!ducky+" + Util.urlEncode(searchTerm));
             tile.addAction(action);
