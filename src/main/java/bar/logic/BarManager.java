@@ -9,22 +9,36 @@ import java.util.List;
 
 public class BarManager {
 
+    private final Settings settings;
     private final GlassBar inputGlassBar;
     private final List<GlassBar> resultGlassBars = new ArrayList<>();
     private boolean isInputActive = false;
 
     public BarManager(Settings settings) {
+        this.settings = settings;
+
         // create the main input bar
         inputGlassBar = new GlassBar();
         inputGlassBar.setType(-1, settings);
         inputGlassBar.setAllowInput(true);
 
         // create the result bars
-        for (int i = 0; i < settings.getInt(Settings.AMOUNT_RESULTS); i++) {
-            GlassBar resultGlassBar = new GlassBar();
-            resultGlassBar.setType(i, settings);
-            resultGlassBar.setAllowInput(false);
-            resultGlassBars.add(resultGlassBar);
+        setAmountResultBars(settings.getInt(Settings.AMOUNT_RESULTS));
+    }
+
+    private void setAmountResultBars(int amount) {
+        if (resultGlassBars.size() < amount) {
+            for (int i = resultGlassBars.size(); i < amount; i++) {
+                GlassBar resultGlassBar = new GlassBar();
+                resultGlassBar.setType(i, settings);
+                resultGlassBar.setAllowInput(false);
+                resultGlassBar.prepareUpdateBackground();
+                resultGlassBars.add(resultGlassBar);
+            }
+        } else if (resultGlassBars.size() > amount) {
+            for (int i = resultGlassBars.size() - 1; i >= amount && i > 0; i--) {
+                resultGlassBars.remove(i);
+            }
         }
     }
 
@@ -53,6 +67,7 @@ public class BarManager {
     public void setTiles(List<Tile> tiles, int index, List<TileCategory> categories) {
         try {
             if (!isInputActive) return;
+            setAmountResultBars(settings.getInt(Settings.AMOUNT_RESULTS));
             for (int i = 0; i < resultGlassBars.size(); i++) {
                 if (tiles.size() > i + index) {
                     resultGlassBars.get(i).setText(tiles.get(i + index).getLabel());
