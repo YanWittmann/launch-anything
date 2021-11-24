@@ -280,10 +280,13 @@
         Some of these settings require a restart of the bar to take effect. Click here or use the
         <span id="restart-bar" class="clickable badge bg-red">Restart LaunchAnything</span>
         tile to quickly restart it.
-        <br><br>
+        <br>
         <ul id="settings-selection">
         </ul>
         <br>
+        Set whether LaunchAnything should run on system startup:
+        <span id="autostart-active" class="clickable badge bg-green">Add autostart</span>
+        <span id="autostart-inactive" class="clickable badge bg-red">Remove autostart</span><br><br>
         Check out the <a href="https://github.com/Skyball2000/launch-anything">GitHub Repository</a> for help on how to
         use LaunchAnything!<br><br>
     </section>
@@ -298,14 +301,13 @@
     const requestUrl = 'http://localhost:' + port;
 
     document.getElementById('restart-bar').onclick = function () {
-        let params = {
-            'action': 'metaInteraction',
-            'editType': 'restartBar'
-        };
-        httpPost(requestUrl, params, function (response) {
-            refreshTiles();
-            firstLoad = true;
-        });
+        metaInteraction('restartBar');
+    };
+    document.getElementById('autostart-active').onclick = function () {
+        metaInteraction('activateAutostart');
+    };
+    document.getElementById('autostart-inactive').onclick = function () {
+        metaInteraction('deactivateAutostart');
     };
 
     function switchSection(section, menuItem) {
@@ -649,6 +651,17 @@
                 content.remove();
             }, 1000);
         }, 10000);
+    }
+
+    function metaInteraction(interactionType) {
+        let params = {
+            'action': 'metaInteraction',
+            'editType': interactionType
+        };
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+            firstLoad = true;
+        });
     }
 
     function editTileIntent(tileId, whatToEdit, additionalValue) {

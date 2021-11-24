@@ -2,7 +2,9 @@ package bar.util;
 
 import bar.Main;
 import bar.logic.Settings;
+import bar.ui.TrayUtil;
 import jnafilechooser.api.JnaFileChooser;
+import mslinks.ShellLink;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
@@ -222,5 +224,30 @@ public abstract class Util {
             return files;
         }
         return Collections.emptyList();
+    }
+
+    public static void setAutostartActive(boolean active) {
+        final String startupPath = "/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup";
+        File file = new File(System.getProperty("user.home") + startupPath + "/launch-anything.lnk");
+        if (active) {
+            try {
+                final File currentJar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                if (!currentJar.getName().endsWith(".jar")) {
+                    TrayUtil.showError("Unable to add autostart feature: Application is not run from a jar.");
+                    return;
+                }
+                ShellLink.createLink(currentJar.getAbsolutePath(), file.getAbsolutePath());
+                TrayUtil.showMessage("Application will run on system startup");
+            } catch (IOException | URISyntaxException e) {
+                TrayUtil.showError("Unable to add autostart feature: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            if (file.delete()) {
+                TrayUtil.showMessage("Application will not run on system startup");
+            } else {
+                TrayUtil.showError("Unable to remove autostart feature");
+            }
+        }
     }
 }

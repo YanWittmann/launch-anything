@@ -91,7 +91,7 @@ public class Main {
         });
         keyListener.activate();
 
-        TrayUtil.showMessage("LaunchAnything", "LaunchAnything is now active");
+        TrayUtil.showMessage("LaunchAnything is now active");
 
         Sleep.milliseconds(4000);
         for (String arg : args) {
@@ -198,8 +198,16 @@ public class Main {
                         String editType = getParams.getOrDefault("editType", null);
 
                         if (editType != null) {
-                            if (editType.equals("restartBar")) {
-                                Util.restartApplication(isWebserverOpen());
+                            switch (editType) {
+                                case "restartBar":
+                                    Util.restartApplication(isWebserverOpen());
+                                    break;
+                                case "activateAutostart":
+                                    Util.setAutostartActive(true);
+                                    break;
+                                case "deactivateAutostart":
+                                    Util.setAutostartActive(false);
+                                    break;
                             }
                         }
 
@@ -508,7 +516,7 @@ public class Main {
         } else {
             System.out.println("Disabling input for " + duration + " minute(s)");
             timeoutUntil = System.currentTimeMillis() + ((long) duration * 60 * 1000);
-            TrayUtil.showMessage("LaunchAnything", "LaunchBar is now disabled for " + duration + " minute" + (duration == 1 ? "" : "s"));
+            TrayUtil.showMessage("LaunchBar is now disabled for " + duration + " minute" + (duration == 1 ? "" : "s"));
             TrayUtil.setMenuItemActive(0, true);
         }
     }

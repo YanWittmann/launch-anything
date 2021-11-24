@@ -13,8 +13,12 @@ public abstract class TrayUtil {
     private static PopupMenu trayMenu;
     private static MenuItem resetTimeoutIcon;
 
-    public static void showMessage(String title, String message) {
-        trayIcon.displayMessage(title, message, TrayIcon.MessageType.INFO);
+    public static void showMessage(String message) {
+        trayIcon.displayMessage("LaunchAnything", message, TrayIcon.MessageType.INFO);
+    }
+
+    public static void showError(String message) {
+        trayIcon.displayMessage("LaunchAnything Error", message, TrayIcon.MessageType.ERROR);
     }
 
     private static PopupMenu createTrayMenu() {

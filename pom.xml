@@ -54,6 +54,11 @@
             <artifactId>exp4j</artifactId>
             <version>0.4.8</version>
         </dependency>
+        <dependency>
+        <groupId>com.github.vatbub</groupId>
+        <artifactId>mslinks</artifactId>
+        <version>1.0.2</version>
+    </dependency>
     </dependencies>
 
     <build>
