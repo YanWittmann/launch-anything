@@ -262,6 +262,15 @@ public class TileManager {
     private void createTemplateTiles() {
         addSettingsTile("LaunchAnything Settings", "tile option editor help", "webeditor");
         addSettingsTile("Create Tile", "add new", "createTile");
+
+        Tile selfDir = new Tile("LaunchAnything Directory");
+        selfDir.setCategory("settings");
+        selfDir.setActive(true);
+        selfDir.setExportable(false);
+        selfDir.setKeywords("");
+        selfDir.addAction(new TileAction("file", System.getProperty("user.dir")));
+        tiles.add(selfDir);
+
         addSettingsTile("Restart LaunchAnything", "relaunch", "restartBar");
         addSettingsTile("Exit LaunchAnything", "leave quit stop", "exit");
     }

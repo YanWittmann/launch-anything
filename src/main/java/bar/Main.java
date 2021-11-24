@@ -29,7 +29,7 @@ public class Main {
 
     public static void main(String[] args) {
         Util.registerFont("font/Comfortaa-Regular.ttf");
-        Main main = new Main(args);
+        new Main(args);
     }
 
     private final Settings settings;

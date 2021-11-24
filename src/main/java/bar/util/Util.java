@@ -189,15 +189,17 @@ public abstract class Util {
     }
 
     private static List<File> recursivelyListFiles(File directory, AtomicInteger amount) {
-        if (amount.incrementAndGet() > (settings != null ? settings.getInt("recursionLimit") : 100)) {
-            System.out.println("Recursion limit reached");
-            return new ArrayList<>();
-        }
         if (directory.exists() && directory.isDirectory()) {
             List<File> files = new ArrayList<>();
             for (File file : directory.listFiles()) {
-                if (file.isDirectory()) files.addAll(recursivelyListFiles(file, amount));
-                else files.add(file);
+                if (file.isDirectory()) {
+                    files.addAll(recursivelyListFiles(file, amount));
+                } else {
+                    files.add(file);
+                    if (amount.incrementAndGet() > (settings != null ? settings.getInt("recursionLimit") : 200)) {
+                        return files;
+                    }
+                }
             }
             return files;
         }
@@ -210,16 +212,17 @@ public abstract class Util {
     }
 
     private static List<File> recursivelyListFiles(File directory, AtomicInteger amount, String... extension) {
-        if (amount.incrementAndGet() > (settings != null ? settings.getInt("recursionLimit") : 100)) {
-            System.out.println("Recursion limit reached");
-            return new ArrayList<>();
-        }
         if (directory.exists() && directory.isDirectory()) {
             List<File> files = new ArrayList<>();
             for (File file : directory.listFiles()) {
-                if (file.isDirectory()) files.addAll(recursivelyListFiles(file, extension));
-                else if (extension == null || extension.length == 0 || Arrays.stream(extension).anyMatch(file.getName()::endsWith))
+                if (file.isDirectory()) {
+                    files.addAll(recursivelyListFiles(file, extension));
+                } else if (extension == null || extension.length == 0 || Arrays.stream(extension).anyMatch(file.getName()::endsWith)) {
                     files.add(file);
+                    if (amount.incrementAndGet() > (settings != null ? settings.getInt("recursionLimit") : 200)) {
+                        return files;
+                    }
+                }
             }
             return files;
         }

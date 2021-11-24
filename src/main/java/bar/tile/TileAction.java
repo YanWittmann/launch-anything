@@ -112,6 +112,9 @@ public class TileAction {
                                 case "timeout":
                                     main.timeout(Integer.parseInt(param2));
                                     break;
+                                case "selfDirectory":
+
+                                    break;
                                 case "restartBar":
                                     try {
                                         Util.restartApplication(main.isWebserverOpen());

@@ -81,10 +81,23 @@ public class TileGeneratorGenerator {
                     } else {
                         files = Util.recursivelyListFiles(new File(getParam1()));
                     }
+                    for (int i = files.size() - 1; i >= 0; i--) {
+                        String name = files.get(i).getName();
+                        if (name.contains(".")) {
+                            String extension = name.substring(name.lastIndexOf(".") + 1);
+                            if (extension.length() > 10) {
+                                files.remove(i);
+                            }
+                        } else {
+                            files.remove(i);
+                        }
+                    }
                     if (files.size() > 0) {
                         for (File file : files) {
                             if (file != null) {
-                                Tile tile = new Tile(file.getName().replaceAll("(.+)\\.[^.]+", "$1"));
+                                String filename = file.getName().replaceAll("(.+)\\.[^.]+", "$1");
+                                String extension = file.getName().replaceAll(".+\\.([^.]+)", "$1").toUpperCase();
+                                Tile tile = new Tile(filename + " (" + extension + ")");
                                 tile.addAction(new TileAction("file", file.getAbsolutePath()));
                                 for (String s : file.getAbsolutePath().replaceAll("[A-Z]:", "").replaceAll("[/\\\\.]+", " ").replaceAll(" +", " ").trim().split(" ")) {
                                     tile.addKeyword(s);

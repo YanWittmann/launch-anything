@@ -23,7 +23,7 @@ public class GlassBar extends JFrame {
     private static final float BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE = 0.6f;
     private final static Color BLUR_COLOR_FOR_DARK_MODE = new Color(45, 48, 52);
     private final static Color BLUR_COLOR_FOR_BRIGHT_MODE = new Color(255, 255, 255);
-    private final static Color TEXT_COLOR_FOR_DARK_MODE = new Color(220, 220, 220);
+    private final static Color TEXT_COLOR_FOR_DARK_MODE = new Color(241, 241, 241);
     private final static Color TEXT_COLOR_FOR_BRIGHT_MODE = new Color(31, 31, 31);
     private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_DARK_MODE = new TextBubbleBorder(new Color(177, 182, 183), BORDER_THICKNESS, BORDER_RADIUS, 0, false);
     private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE = new TextBubbleBorder(new Color(100, 100, 100), BORDER_THICKNESS, BORDER_RADIUS, 0, false);
