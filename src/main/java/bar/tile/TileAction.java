@@ -111,7 +111,7 @@ public class TileAction {
                                     break;
                                 case "restartBar":
                                     try {
-                                        Util.restartApplication();
+                                        Util.restartApplication(main.isWebserverOpen());
                                         System.exit(0);
                                     } catch (IOException | URISyntaxException e) {
                                         System.out.println("Unable to restart application: " + e.getMessage());

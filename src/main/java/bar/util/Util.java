@@ -86,7 +86,7 @@ public abstract class Util {
         return getOS().contains("win");
     }
 
-    public static void restartApplication() throws URISyntaxException, IOException {
+    public static void restartApplication(boolean withWebserver) throws URISyntaxException, IOException {
         final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
         final File currentJar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 
@@ -95,10 +95,11 @@ public abstract class Util {
             return;
 
         /* Build command: java -jar application.jar */
-        final ArrayList<String> command = new ArrayList<String>();
+        final ArrayList<String> command = new ArrayList<>();
         command.add(javaBin);
         command.add("-jar");
         command.add(currentJar.getPath());
+        if (withWebserver) command.add("-ws");
 
         final ProcessBuilder builder = new ProcessBuilder(command);
         builder.start();

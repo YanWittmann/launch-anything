@@ -29,7 +29,7 @@ public class Main {
 
     public static void main(String[] args) {
         Util.registerFont("font/Comfortaa-Regular.ttf");
-        new Main();
+        Main main = new Main(args);
     }
 
     private final Settings settings;
@@ -38,7 +38,7 @@ public class Main {
     private int currentlyPressedKey = -1;
     private int lastPressedKey = -1;
 
-    private Main() {
+    private Main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
@@ -92,6 +92,14 @@ public class Main {
         keyListener.activate();
 
         TrayUtil.showMessage("LaunchAnything", "LaunchAnything is now active");
+
+        Sleep.milliseconds(4000);
+        for (String arg : args) {
+            if (arg.equals("-ws")) {
+                openSettingsWebServer(false);
+                break;
+            }
+        }
     }
 
     private void userInput(String input) {
@@ -122,7 +130,7 @@ public class Main {
 
     public void openSettingsWebServer(boolean openWebpage) {
         int port = 36345;
-        if (webserver == null) {
+        if (!isWebserverOpen()) {
             new Thread(() -> {
                 try {
                     webserver = new HTTPServer(port);
@@ -141,6 +149,10 @@ public class Main {
                 e.printStackTrace();
             }
         }
+    }
+
+    public boolean isWebserverOpen() {
+        return webserver != null;
     }
 
     private void handleSettingsWebServer(BufferedReader in, BufferedWriter out) throws IOException {
@@ -180,6 +192,16 @@ public class Main {
                                 tileManager.toJSON()
                                         .put("runtime-tiles", TileManager.RUNTIME_TILES)
                                         .put("settings", settings.toJSON()));
+
+                    } else if (action.equals("metaInteraction")) {
+
+                        String editType = getParams.getOrDefault("editType", null);
+
+                        if (editType != null) {
+                            if (editType.equals("restartBar")) {
+                                Util.restartApplication(isWebserverOpen());
+                            }
+                        }
 
                     } else if (action.equals("tileInteraction")) {
 

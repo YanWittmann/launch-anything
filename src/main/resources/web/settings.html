@@ -203,6 +203,10 @@
             opacity: 0;
             transition: all 0.2s ease-in-out;
         }
+
+        a {
+            color: var(--file-action-color);
+        }
     </style>
 </head>
 <body>
@@ -223,7 +227,8 @@
     <section id="tiles">
         <br>
         <span id="add-new-tile" class="clickable badge bg-green">Create Tile</span>
-        (You can also use the <span class="badge">Create Tile</span> tile to create a tile)<br><br>
+        (You can also use the <span id="add-new-tile-2" class="badge clickable bg-red">Create Tile</span> tile to create
+        a tile)<br><br>
         <table class="editor-table">
             <thead>
             <tr>
@@ -272,11 +277,15 @@
 
     <section id="settings" class="hidden">
         <br>Thank you for using the LaunchAnything Bar!<br>
-        Some of these settings require a restart of the bar to take effect.<br><br>
+        Some of these settings require a restart of the bar to take effect. Click here or use the
+        <span id="restart-bar" class="clickable badge bg-red">Restart LaunchAnything</span>
+        tile to quickly restart it.
+        <br><br>
         <ul id="settings-selection">
         </ul>
         <br>
-        Test
+        Check out the <a href="https://github.com/Skyball2000/launch-anything">GitHub Repository</a> for help on how to
+        use LaunchAnything!<br><br>
     </section>
 
     <span id="notifications"></span>
@@ -287,6 +296,17 @@
     const urlParams = new URLSearchParams(window.location.search);
     const port = urlParams.get('p');
     const requestUrl = 'http://localhost:' + port;
+
+    document.getElementById('restart-bar').onclick = function () {
+        let params = {
+            'action': 'metaInteraction',
+            'editType': 'restartBar'
+        };
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+            firstLoad = true;
+        });
+    };
 
     function switchSection(section, menuItem) {
         const sections = document.querySelectorAll('section');
@@ -321,6 +341,9 @@
             let table = document.getElementById('tile-table');
             table.innerHTML = '';
             document.getElementById('add-new-tile').onclick = function () {
+                editTileIntent('none', 'createTile');
+            };
+            document.getElementById('add-new-tile-2').onclick = function () {
                 editTileIntent('none', 'createTile');
             };
             for (let i = 0; i < tiles.length; i++) {
