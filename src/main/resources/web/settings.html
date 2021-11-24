@@ -483,7 +483,7 @@
         badge.className = 'badge bg-green clickable';
         badge.innerHTML = '+';
         badge.onclick = function () {
-            editTileGeneratorIntent(tileJson.id, 'createAction');
+            editTileGeneratorIntent(generatorJson.id, 'createAction');
         };
         actions.append(badge);
         row.appendChild(actions);
@@ -605,7 +605,7 @@
     function checkFirstLoad() {
         if (firstLoad) {
             firstLoad = false;
-            showNotification('If you don\'t see a popup right now, use alt-tab to switch through the active windows!\n' +
+            showNotification('If you expect but don\'t see a popup right now, use alt-tab to switch through the active windows!\n' +
                 'This is an issue with java popups not grabbing the focus on the first time they open, so you will ' +
                 'only have to do this once per session.');
         }

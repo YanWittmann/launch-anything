@@ -297,11 +297,21 @@ public class Main {
                                         case "deleteKeyword":
                                             generator.removeKeyword(additionalValue);
                                             break;
+                                        case "createAction":
+                                            createOrEditTileGeneratorGenerator(generator, null);
+                                            break;
                                         case "editAction":
+                                            String generatorGeneratorId = getParams.getOrDefault("additionalValue", null);
+                                            createOrEditTileGeneratorGenerator(generator, generatorGeneratorId);
                                             break;
                                         case "deleteAction":
-                                            break;
-                                        case "createAction":
+                                            generatorGeneratorId = getParams.getOrDefault("additionalValue", null);
+                                            TileGeneratorGenerator tileGeneratorGenerator = generator.findGenerator(generatorGeneratorId);
+                                            TileGenerator tileGenerator = tileManager.findTileGenerator(generatorId);
+                                            if (tileGenerator != null && tileGeneratorGenerator != null) {
+                                                tileGenerator.removeGenerator(tileGeneratorGenerator);
+                                                tileManager.regenerateGeneratedTiles();
+                                            }
                                             break;
                                     }
                                 } else {
@@ -399,9 +409,12 @@ public class Main {
             }
             if (tileGeneratorGenerator != null) {
                 generator.addGenerator(tileGeneratorGenerator);
+                tileManager.regenerateGeneratedTiles();
                 return tileGeneratorGenerator;
             }
         }
+
+        tileManager.regenerateGeneratedTiles();
         return null;
     }
 

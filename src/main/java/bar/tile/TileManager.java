@@ -164,6 +164,7 @@ public class TileManager {
             for (TileGenerator tileGenerator : tileGenerators) {
                 generatedTiles.addAll(tileGenerator.generateTiles());
             }
+            System.out.println("Done generating " + generatedTiles.size() + " tile(s).");
         }).start();
     }
 
