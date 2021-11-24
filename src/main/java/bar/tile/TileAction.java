@@ -1,6 +1,7 @@
 package bar.tile;
 
 import bar.Main;
+import bar.ui.TrayUtil;
 import bar.util.Util;
 import org.json.JSONObject;
 
@@ -78,6 +79,7 @@ public class TileAction {
                                 File myFile = new File(param1);
                                 desktop.open(myFile);
                             } catch (IOException e) {
+                                TrayUtil.showError("Tile action failure: unable to open file: " + e.getMessage());
                                 e.printStackTrace();
                             }
                         }
@@ -88,6 +90,7 @@ public class TileAction {
                                 Desktop desktop = Desktop.getDesktop();
                                 desktop.browse(new URI(param1));
                             } catch (IOException | URISyntaxException e) {
+                                TrayUtil.showError("Tile action failure: unable to open url: " + e.getMessage());
                                 e.printStackTrace();
                             }
                         }
@@ -114,6 +117,7 @@ public class TileAction {
                                         Util.restartApplication(main.isWebserverOpen());
                                         System.exit(0);
                                     } catch (IOException | URISyntaxException e) {
+                                        TrayUtil.showError("Tile action failure: unable to restart application: " + e.getMessage());
                                         System.out.println("Unable to restart application: " + e.getMessage());
                                     }
                                     break;
@@ -125,6 +129,7 @@ public class TileAction {
                 }
             }
         } catch (Exception e) {
+            TrayUtil.showError("Tile action failure: " + e.getMessage());
             e.printStackTrace();
         }
     }

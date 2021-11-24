@@ -137,6 +137,7 @@ public class Main {
                     webserver.addListener(this::handleSettingsWebServer);
                     webserver.open();
                 } catch (IOException e) {
+                    TrayUtil.showError("Unable to start settings webserver on port " + port);
                     e.printStackTrace();
                 }
             }).start();
@@ -146,6 +147,7 @@ public class Main {
             try {
                 getDesktop().browse(new URI(webserver.getUrl() + "/?p=" + port));
             } catch (Exception e) {
+                TrayUtil.showError("Unable to open url " + webserver.getUrl() + "/?p=" + port);
                 e.printStackTrace();
             }
         }
@@ -401,6 +403,7 @@ public class Main {
                     out.write("\r\n");
                     out.write(response.toString());
                 } catch (Exception e) {
+                    TrayUtil.showError("Something went wrong: " + e.getMessage());
                     setResponseError(500, "Something went wrong: " + e.getMessage() + ", " + Arrays.toString(e.getStackTrace()), out);
                     e.printStackTrace();
                 }

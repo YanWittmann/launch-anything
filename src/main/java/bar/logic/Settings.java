@@ -1,5 +1,6 @@
 package bar.logic;
 
+import bar.ui.TrayUtil;
 import bar.util.Util;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -54,6 +55,7 @@ public class Settings {
             reader.close();
             settings.putAll(new JSONObject(fileContent.toString()).toMap());
         } catch (FileNotFoundException e) {
+            TrayUtil.showError("Unable to read settings file: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -69,6 +71,7 @@ public class Settings {
             myWriter.write(new JSONObject(settings).toString());
             myWriter.close();
         } catch (IOException e) {
+            TrayUtil.showError("Unable to save settings file: " + e.getMessage());
             e.printStackTrace();
         }
     }

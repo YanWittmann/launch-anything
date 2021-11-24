@@ -1,6 +1,7 @@
 package bar.tile;
 
 import bar.tile.custom.*;
+import bar.ui.TrayUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -151,6 +152,7 @@ public class TileManager {
             regenerateGeneratedTiles();
             System.out.println("Loaded " + tiles.size() + " tile(s), " + tileGenerators.size() + " tile generator(s) and " + categories.size() + " category/ies.");
         } catch (FileNotFoundException e) {
+            TrayUtil.showError("Something went wrong while reading the tiles: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -226,6 +228,7 @@ public class TileManager {
             myWriter.write(toJSON().toString());
             myWriter.close();
         } catch (IOException e) {
+            TrayUtil.showError("Unable to save tiles: " + e.getMessage());
             e.printStackTrace();
         }
     }
