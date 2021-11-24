@@ -7,11 +7,13 @@ import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -54,12 +56,53 @@ public abstract class Util {
     }
 
     public static File pickFile(String filterName, String... filters) {
-        // FIXME: this only works on windows, make backup picking method for other OSes
-        JnaFileChooser fc = new JnaFileChooser();
-        if (filterName != null && filterName.length() > 0)
-            fc.addFilter(filterName, filters);
-        fc.showOpenDialog(null);
-        return fc.getSelectedFile();
+        if (isOsWindows()) {
+            JnaFileChooser fc = new JnaFileChooser();
+            if (filterName != null && filterName.length() > 0)
+                fc.addFilter(filterName, filters);
+            fc.showOpenDialog(null);
+            return fc.getSelectedFile();
+        } else {
+            // use the default java file chooser and return the file
+            JFileChooser fileChooser = new JFileChooser();
+            if (filterName != null && filterName.length() > 0)
+                fileChooser.setFileFilter(new FileNameExtensionFilter(filterName, filters));
+            if (previousFile != null) fileChooser.setCurrentDirectory(previousFile);
+            else fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+            boolean result = fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION;
+            if (result) {
+                previousFile = fileChooser.getSelectedFile();
+                return fileChooser.getSelectedFile();
+            }
+        }
+        return null;
+    }
+
+    public static String getOS() {
+        return System.getProperty("os.name").toLowerCase();
+    }
+
+    public static boolean isOsWindows() {
+        return getOS().contains("win");
+    }
+
+    public static void restartApplication() throws URISyntaxException, IOException {
+        final String javaBin = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+        final File currentJar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+
+        /* is it a jar file? */
+        if (!currentJar.getName().endsWith(".jar"))
+            return;
+
+        /* Build command: java -jar application.jar */
+        final ArrayList<String> command = new ArrayList<String>();
+        command.add(javaBin);
+        command.add("-jar");
+        command.add(currentJar.getPath());
+
+        final ProcessBuilder builder = new ProcessBuilder(command);
+        builder.start();
+        System.exit(0);
     }
 
     private static File previousFile = null;

@@ -1,9 +1,6 @@
 package bar.tile;
 
-import bar.tile.custom.GoWebsiteTile;
-import bar.tile.custom.MathExpressionTile;
-import bar.tile.custom.RuntimeTile;
-import bar.tile.custom.WikiSearchTile;
+import bar.tile.custom.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -262,7 +259,8 @@ public class TileManager {
     private void createTemplateTiles() {
         addSettingsTile("LaunchAnything Settings", "tile option editor", "webeditor");
         addSettingsTile("Create Tile", "add new", "createTile");
-        addSettingsTile("Exit LaunchAnything", "leave quit", "exit");
+        addSettingsTile("Restart LaunchAnything", "relaunch", "restartBar");
+        addSettingsTile("Exit LaunchAnything", "leave quit stop", "exit");
     }
 
     private void addSettingsTile(String label, String keywords, String action) {
@@ -283,6 +281,8 @@ public class TileManager {
             runtimeTiles.add(new MathExpressionTile());
         if (!disabledRuntimeTiles.contains(RUNTIME_TILES[2]))
             runtimeTiles.add(new WikiSearchTile());
+        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[3]))
+            runtimeTiles.add(new TimeoutTile());
     }
 
     public void toggleRuntimeTile(String tileId) {
@@ -297,7 +297,8 @@ public class TileManager {
     public final static String[] RUNTIME_TILES = {
             GoWebsiteTile.getTitle() + " (" + GoWebsiteTile.getDescription() + ")",
             MathExpressionTile.getTitle() + " (" + MathExpressionTile.getDescription() + ")",
-            WikiSearchTile.getTitle() + " (" + WikiSearchTile.getDescription() + ")"
+            WikiSearchTile.getTitle() + " (" + WikiSearchTile.getDescription() + ")",
+            TimeoutTile.getTitle() + " (" + TimeoutTile.getDescription() + ")"
     };
 
     public void cleanUpTileActions() {

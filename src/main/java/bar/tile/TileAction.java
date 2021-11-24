@@ -106,6 +106,17 @@ public class TileAction {
                                 case "createTile":
                                     main.createTile();
                                     break;
+                                case "timeout":
+                                    main.timeout(Integer.parseInt(param2));
+                                    break;
+                                case "restartBar":
+                                    try {
+                                        Util.restartApplication();
+                                        System.exit(0);
+                                    } catch (IOException | URISyntaxException e) {
+                                        System.out.println("Unable to restart application: " + e.getMessage());
+                                    }
+                                    break;
                                 case "exit":
                                     System.exit(0);
                             }

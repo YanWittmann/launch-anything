@@ -17,6 +17,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -43,6 +44,8 @@ public class Main {
         } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
         }
 
+        System.out.println("Launching application on OS " + Util.getOS());
+
         settings = new Settings();
         barManager = new BarManager(settings);
         tileManager = new TileManager();
@@ -58,7 +61,7 @@ public class Main {
                 lastPressedKey = e.getVirtualKeyCode();
                 if (e.getVirtualKeyCode() == settings.getInt(Settings.ACTIVATION_KEY)) {
                     long currentTime = System.currentTimeMillis();
-                    if (currentTime - lastCommandInput[0] < settings.getInt(Settings.ACTIVATION_DELAY) && currentTime - lastCommandInput[0] > 50) {
+                    if (timeoutUntil < currentTime && currentTime - lastCommandInput[0] < settings.getInt(Settings.ACTIVATION_DELAY) && currentTime - lastCommandInput[0] > 50) {
                         barManager.setInputActive(true);
                     }
                     lastCommandInput[0] = currentTime;
@@ -470,6 +473,13 @@ public class Main {
                 tileManager.save();
             }
         }
+    }
+
+    private long timeoutUntil = 0;
+
+    public void timeout(int duration) {
+        System.out.println("Disabling input for " + duration + " minute(s)");
+        timeoutUntil = System.currentTimeMillis() + ((long) duration * 60 * 1000);
     }
 
     private void setResponseError(int errorCode, String message, BufferedWriter out) throws IOException {
