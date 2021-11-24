@@ -181,7 +181,6 @@ public class GlassBar extends JFrame {
     /**
      * Repositions the bar on the screen.<br>
      * The index determines the position of the bar on the screen:<ul>
-     * <li>-2: notification</li>
      * <li>-1: input bar</li>
      * <li>0+: results bar</li>
      * </ul>
@@ -192,13 +191,7 @@ public class GlassBar extends JFrame {
     public void setType(int index, Settings settings) {
         // first, using the index, the positioning of the bar is determined
         int fontSize;
-        if (index == -2) {
-            int width = settings.getInt(Settings.INPUT_WIDTH), height = settings.getInt(Settings.INPUT_HEIGHT);
-            this.setSize(width, height);
-            contentPane.setPreferredSize(new Dimension(width, height));
-            this.setLocation((int) SCREEN_RECTANGLE.getWidth() - width - 10, (int) SCREEN_RECTANGLE.getHeight() - height - 10);
-            fontSize = 15;
-        } else if (index == -1) {
+        if (index == -1) {
             int width = settings.getInt(Settings.INPUT_WIDTH), height = settings.getInt(Settings.INPUT_HEIGHT);
             this.setSize(width, height);
             contentPane.setPreferredSize(new Dimension(width, height));

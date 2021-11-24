@@ -3,6 +3,7 @@ package bar;
 import bar.logic.BarManager;
 import bar.logic.Settings;
 import bar.tile.*;
+import bar.ui.TrayUtil;
 import bar.util.GlobalKeyListener;
 import bar.util.Sleep;
 import bar.util.Util;
@@ -17,7 +18,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -45,6 +45,7 @@ public class Main {
         }
 
         System.out.println("Launching application on OS " + Util.getOS());
+        TrayUtil.init(this);
 
         settings = new Settings();
         barManager = new BarManager(settings);
@@ -62,6 +63,7 @@ public class Main {
                 if (e.getVirtualKeyCode() == settings.getInt(Settings.ACTIVATION_KEY)) {
                     long currentTime = System.currentTimeMillis();
                     if (timeoutUntil < currentTime && currentTime - lastCommandInput[0] < settings.getInt(Settings.ACTIVATION_DELAY) && currentTime - lastCommandInput[0] > 50) {
+                        TrayUtil.setMenuItemActive(0, false);
                         barManager.setInputActive(true);
                     }
                     lastCommandInput[0] = currentTime;
@@ -89,7 +91,7 @@ public class Main {
         });
         keyListener.activate();
 
-        openSettingsWebServer(false);
+        TrayUtil.showMessage("LaunchAnything", "LaunchAnything is now active");
     }
 
     private void userInput(String input) {
@@ -478,8 +480,15 @@ public class Main {
     private long timeoutUntil = 0;
 
     public void timeout(int duration) {
-        System.out.println("Disabling input for " + duration + " minute(s)");
-        timeoutUntil = System.currentTimeMillis() + ((long) duration * 60 * 1000);
+        if (duration == 0) {
+            timeoutUntil = 0;
+            TrayUtil.setMenuItemActive(0, false);
+        } else {
+            System.out.println("Disabling input for " + duration + " minute(s)");
+            timeoutUntil = System.currentTimeMillis() + ((long) duration * 60 * 1000);
+            TrayUtil.showMessage("LaunchAnything", "LaunchBar is now disabled for " + duration + " minute" + (duration == 1 ? "" : "s"));
+            TrayUtil.setMenuItemActive(0, true);
+        }
     }
 
     private void setResponseError(int errorCode, String message, BufferedWriter out) throws IOException {

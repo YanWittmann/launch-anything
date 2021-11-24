@@ -257,7 +257,7 @@ public class TileManager {
     }
 
     private void createTemplateTiles() {
-        addSettingsTile("LaunchAnything Settings", "tile option editor", "webeditor");
+        addSettingsTile("LaunchAnything Settings", "tile option editor help", "webeditor");
         addSettingsTile("Create Tile", "add new", "createTile");
         addSettingsTile("Restart LaunchAnything", "relaunch", "restartBar");
         addSettingsTile("Exit LaunchAnything", "leave quit stop", "exit");
