@@ -2,7 +2,6 @@ package bar.logic;
 
 import bar.ui.TrayUtil;
 import bar.util.Util;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -21,8 +20,13 @@ public class Settings {
 
     public Settings() {
         findSettingsFile();
-        if (settingsFile == null) reset();
-        else readSettingsFromFile();
+        if (settingsFile == null) {
+            reset();
+        } else {
+            readSettingsFromFile();
+            fillRequiredValues();
+        }
+
 
         Util.setSettings(this);
     }
@@ -78,22 +82,26 @@ public class Settings {
 
     public void reset() {
         settings.clear();
-        settings.put(INPUT_WIDTH, 800);
-        settings.put(INPUT_HEIGHT, 80);
-        settings.put(RESULT_WIDTH, 700);
-        settings.put(RESULT_HEIGHT, 70);
-        settings.put(AMOUNT_RESULTS, 6);
-        settings.put(RESULT_MARGIN, 10);
-        settings.put(INPUT_RESULT_DISTANCE, 20);
-        settings.put(BAR_FONT, "Comfortaa Regular");
-        settings.put(ACTIVATION_DELAY, 250);
-        settings.put(ACTIVATION_KEY, 162);
-        settings.put(CANCEL_KEY, 27);
-        settings.put(CONFIRM_KEY, 13);
-        settings.put(NEXT_RESULT_KEY, 40);
-        settings.put(PREVIOUS_RESULT_KEY, 38);
-        settings.put(RECURSION_LIMIT, 100);
+        fillRequiredValues();
         settingsFile = new File("res/settings.json");
+    }
+
+    private void fillRequiredValues() {
+        settings.putIfAbsent(INPUT_WIDTH, 800);
+        settings.putIfAbsent(INPUT_HEIGHT, 80);
+        settings.putIfAbsent(RESULT_WIDTH, 700);
+        settings.putIfAbsent(RESULT_HEIGHT, 70);
+        settings.putIfAbsent(AMOUNT_RESULTS, 6);
+        settings.putIfAbsent(RESULT_MARGIN, 10);
+        settings.putIfAbsent(INPUT_RESULT_DISTANCE, 20);
+        settings.putIfAbsent(BAR_FONT, "Comfortaa Regular");
+        settings.putIfAbsent(ACTIVATION_DELAY, 250);
+        settings.putIfAbsent(ACTIVATION_KEY, 162);
+        settings.putIfAbsent(CANCEL_KEY, 27);
+        settings.putIfAbsent(CONFIRM_KEY, 13);
+        settings.putIfAbsent(NEXT_RESULT_KEY, 40);
+        settings.putIfAbsent(PREVIOUS_RESULT_KEY, 38);
+        settings.putIfAbsent(RECURSION_LIMIT, 1000);
     }
 
     public boolean hasSetting(String key) {
