@@ -1,4 +1,4 @@
-# Launch Anything
+![LaunchAnything](doc/img/LaunchAnythingLogoDefSmall.png)
 
 ### _A search bar for anything you need_
 

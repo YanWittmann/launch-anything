@@ -66,7 +66,11 @@ public abstract class TrayUtil {
             trayIcon = createTrayIconFromResource();
             sysTray.add(trayIcon);
         } catch (AWTException e) {
-            System.out.println("Unable to add icon to the system tray");
+            System.out.println("Unable to add icon to the system tray: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Something went wrong while adding the icon to the system tray: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }
