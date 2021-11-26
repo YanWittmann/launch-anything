@@ -43,6 +43,7 @@ public class Settings {
             File candidate = new File(possibleSettingsFile).getAbsoluteFile();
             if (candidate.exists()) {
                 settingsFile = candidate;
+                System.out.println("Loaded settings in " + settingsFile.getAbsolutePath());
                 return;
             }
         }

@@ -2,6 +2,7 @@ package bar.tile;
 
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
+import bar.util.Util;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -36,6 +37,19 @@ public class TileManager {
         if (tileFile == null) {
             tileFile = new File("res/tiles.json");
             generateDefaultTiles();
+            if (!Util.isAutostartEnabled()) {
+                new Thread(() -> {
+                    String activateAutostart = Util.popupChooseButton(
+                            "LaunchAnything",
+                            "Do you want LaunchAnything to start on system startup?\n" +
+                            "This can be activated / deactivated in the settings later on.",
+                            new String[]{"Yes", "No"});
+                    if (activateAutostart != null) {
+                        if (activateAutostart.equals("Yes"))
+                            Util.setAutostartActive(true);
+                    }
+                }).start();
+            }
         } else {
             readTilesFromFile();
         }
@@ -98,6 +112,7 @@ public class TileManager {
             File candidate = new File(possibleSettingsFile).getAbsoluteFile();
             if (candidate.exists()) {
                 tileFile = candidate;
+                System.out.println("Loaded tiles in " + tileFile.getAbsolutePath());
                 return;
             }
         }

@@ -141,6 +141,13 @@ public abstract class Util {
         return o == null ? null : o.toString();
     }
 
+    public static String popupChooseButton(String title, String message, String[] options) {
+        if (options == null || options.length == 0) return null;
+        int o = showOptionDialog(null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, 0);
+        if (o == JOptionPane.CLOSED_OPTION) return null;
+        return options[o];
+    }
+
     public static void popupMessage(String title, String message) {
         showMessageDialog(null, message, title, PLAIN_MESSAGE);
     }
@@ -229,6 +236,12 @@ public abstract class Util {
             return files;
         }
         return Collections.emptyList();
+    }
+
+    public static boolean isAutostartEnabled() {
+        final String startupPath = "/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup";
+        File file = new File(System.getProperty("user.home") + startupPath + "/launch-anything.lnk");
+        return file.exists();
     }
 
     public static void setAutostartActive(boolean active) {
