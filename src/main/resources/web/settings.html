@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LaunchAnything Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --main-container-margin: 20px;
+            --glass-bar-padding-vertical: 15px;
+            --glass-bar-padding-horizontal: 20px;
+            --main-text-color: #dedede;
+            --dark-text-color: #212121;
+            --file-action-color: rgb(60, 150, 199);
+            --url-action-color: rgb(227, 101, 73);
+            --copy-action-color: rgb(252, 186, 3);
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 16px;
+            overflow: hidden;
+            background-color: #2B2B2B;
+        }
+
+        .main-content-container {
+            height: calc(100vh - var(--main-container-margin) * 2 - var(--glass-bar-padding-vertical) * 2);
+            margin: var(--main-container-margin);
+        }
+
+        .glass-bar {
+            padding: var(--glass-bar-padding-vertical) var(--glass-bar-padding-horizontal);
+            border-radius: 3px;
+            box-shadow: 0 0 0 2px #B1B6B7, inset 0 0 5px 0 #B1B6B7;
+            background: radial-gradient(at 88% 100%, hsl(220, 4%, 15%) 0, transparent 42%),
+            radial-gradient(at 9% 12%, hsl(135, 4%, 20%) 0, transparent 47%),
+            radial-gradient(at 24% 68%, hsla(193, 5%, 23%, 1) 0, transparent 49%),
+            radial-gradient(at 80% 30%, hsl(195, 6%, 26%) 0, transparent 48%),
+            #272d34;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            -ms-overflow-style: none;
+        }
+
+        .glass-bar-small {
+            display: inline-block;
+            margin-bottom: 10px;
+            padding: calc(var(--glass-bar-padding-vertical) / 2) var(--glass-bar-padding-horizontal);
+            margin-right: 10px;
+            border-radius: 3px;
+            box-shadow: 0 0 0 2px #B1B6B7, inset 0 0 3px 0 #B1B6B7;
+            background: radial-gradient(at 88% 100%, hsl(220, 3%, 23%) 0, transparent 42%),
+            radial-gradient(at 9% 12%, hsl(135, 4%, 20%) 0, transparent 47%),
+            radial-gradient(at 24% 68%, hsla(193, 5%, 23%, 1) 0, transparent 49%),
+            radial-gradient(at 80% 30%, hsl(195, 6%, 26%) 0, transparent 48%),
+            #272d34;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            -ms-overflow-style: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .glass-bar-small.selected {
+            box-shadow: 0 0 0 2px #ece2a2, inset 0 0 5px 0 #ffcc00;
+        }
+
+        .clickable {
+            cursor: pointer;
+        }
+
+        .clickable:hover {
+            text-decoration: underline;
+        }
+
+        .fit-content {
+            width: fit-content;
+            width: -moz-fit-content;
+        }
+
+        .hide-scrollbar {
+            scrollbar-width: none;
+            scrollbar-color: transparent transparent;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .main-text-color {
+            color: var(--main-text-color);
+        }
+
+        h1 {
+            font-size: 40px;
+            margin: 0 0 15px;
+            padding: 0;
+        }
+
+        .editor-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .editor-table th {
+            padding: 5px;
+            text-align: left;
+            font-size: 20px;
+        }
+
+        .editor-table td {
+            padding: 5px;
+        }
+
+        .editor-table > thead > tr > td,
+        .editor-table > tbody > tr > th,
+        .editor-table > tbody > tr > td,
+        .editor-table > tfoot > tr > th,
+        .editor-table > tfoot > tr > td {
+            border-bottom: 2px solid #dedede;
+            border-right: 2px solid #dedede;
+        }
+
+        .editor-table > thead > tr > th {
+            border-bottom: 2px solid #dedede;
+        }
+
+        .editor-table > thead > tr > :last-child,
+        .editor-table > tbody > tr > :last-child,
+        .editor-table > tfoot > tr > :last-child {
+            border-right: 0;
+        }
+
+        .editor-table > :last-child > tr:last-child > td,
+        .editor-table > :last-child > tr:last-child > th {
+            border-bottom: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.4em;
+            margin: 0 0.25em 0.25em;
+            border-radius: 0.25rem;
+            background-color: #212529;
+            color: #fff;
+            box-shadow: 2px 2px 2px 1px #212529;
+        }
+
+        .bg-red {
+            background-color: #ea3939;
+            color: var(--main-text-color);
+        }
+
+        .bg-green {
+            background-color: #50d36c;
+            color: var(--dark-text-color);
+        }
+
+        .bo-blue {
+            border: 1px solid var(--file-action-color);
+        }
+
+        .bo-red {
+            border: 1px solid var(--url-action-color);
+        }
+
+        .bo-yellow {
+            border: 1px solid var(--copy-action-color);
+        }
+
+        #notifications {
+            position: fixed;
+            bottom: 10px;
+            right: 30px;
+            z-index: 9999;
+        }
+
+        .notification-content {
+            position: relative;
+            margin-top: 10px;
+            margin-left: auto;
+            margin-right: 0;
+            padding: 10px;
+            background-color: #212529;
+            color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 0 2px #B1B6B7, inset 0 0 3px 0 #B1B6B7;
+            max-width: 500px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .notification-message {
+            font-size: 18px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .notification-fade {
+            opacity: 0;
+            transition: all 0.2s ease-in-out;
+        }
+
+        a {
+            color: var(--file-action-color);
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-content-container glass-bar main-text-color hide-scrollbar">
+    <h1>LaunchAnything Settings</h1>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable selected"
+          onclick="switchSection('tiles', this);">Tiles</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+          onclick="switchSection('generators', this);">Generators</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+          onclick="switchSection('runtime', this);">Runtime Tiles</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+          onclick="switchSection('categories', this);">Categories</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+          onclick="switchSection('settings', this);">Settings & Help</span>
+
+    <section id="tiles">
+        <br>
+        <span id="add-new-tile" class="clickable badge bg-green">Create Tile</span>
+        (You can also use the <span id="add-new-tile-2" class="badge clickable">Create Tile</span> tile to create
+        a tile)<br><br>
+        <table class="editor-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Keywords</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="tile-table"></tbody>
+        </table>
+    </section>
+
+    <section id="generators" class="hidden">
+        <br>
+        <span id="add-new-generator" class="clickable badge bg-green">Create Generator</span><br><br>
+        <table class="editor-table">
+            <thead>
+            <tr>
+                <th>Category</th>
+                <th>Keywords</th>
+                <th>Generate</th>
+            </tr>
+            </thead>
+            <tbody id="generators-table"></tbody>
+        </table>
+    </section>
+
+    <section id="runtime" class="hidden">
+        <ul id="runtime-tile-selection">
+        </ul>
+    </section>
+
+    <section id="categories" class="hidden">
+        <br>
+        <span id="add-new-category" class="clickable badge bg-green">Create Category</span><br><br>
+        <table class="editor-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+            </tr>
+            </thead>
+            <tbody id="categories-table"></tbody>
+        </table>
+    </section>
+
+    <section id="settings" class="hidden" style="line-height: 23px;">
+        Thank you for using the LaunchAnything Bar!<br><br>
+        <b>Quick help</b>
+        <ul>
+            <li>Left-Click any value to edit it</li>
+            <li>Right-Click the first value of a row to delete the row</li>
+            <li>
+                You can use <span id="undo-action" class="clickable badge" style="margin-top: 7px;">ctrl+z</span>
+                to undo and <span id="redo-action" class="clickable badge" style="margin-top: 7px;">ctrl+y</span>
+                to redo your tile edits (will not work on settings).
+            </li>
+            <li>All badges (like the gray ones above) are clickable and perform the action the label says</li>
+        </ul>
+        Check out the <a href="https://github.com/Skyball2000/launch-anything">GitHub Repository</a> for more help on
+        how to most effectively use LaunchAnything!<br><br><br>
+
+        <b>Settings</b><br>
+        Set whether LaunchAnything should run on system startup:
+        <span id="autostart-active" class="clickable badge bg-green">Add autostart</span>
+        <span id="autostart-inactive" class="clickable badge bg-red">Remove autostart</span><br><br>
+        Some of these settings require a restart of the bar to take effect. Click here or use the
+        <span id="restart-bar" class="clickable badge bg-red">Restart LaunchAnything</span>
+        tile to quickly restart it.
+        <br>
+        <ul id="settings-selection"></ul>
+        <br><br>
+    </section>
+
+    <span id="notifications"></span>
+
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const port = urlParams.get('p');
+    const requestUrl = 'http://localhost:' + port;
+
+    document.getElementById('restart-bar').onclick = function () {
+        firstLoad = true;
+        metaInteraction('restartBar');
+    };
+    document.getElementById('autostart-active').onclick = function () {
+        metaInteraction('activateAutostart');
+    };
+    document.getElementById('autostart-inactive').onclick = function () {
+        metaInteraction('deactivateAutostart');
+    };
+    document.getElementById('undo-action').onclick = function () {
+        metaInteraction('undo');
+    };
+    document.getElementById('redo-action').onclick = function () {
+        metaInteraction('redo');
+    };
+    document.addEventListener('keydown', function (e) {
+        if (e.keyCode === 90 && e.ctrlKey) {
+            metaInteraction('undo');
+        } else if (e.keyCode === 89 && e.ctrlKey) {
+            metaInteraction('redo');
+        }
+    });
+
+    function switchSection(section, menuItem) {
+        const sections = document.querySelectorAll('section');
+        for (let i = 0; i < sections.length; i++) {
+            sections[i].classList.add('hidden');
+        }
+        document.getElementById(section).classList.remove('hidden');
+
+        const sectionSelection = document.getElementsByClassName('section-selection');
+        for (let i = 0; i < sectionSelection.length; i++) {
+            sectionSelection[i].classList.remove('selected');
+        }
+        menuItem.classList.add('selected');
+    }
+
+    let tileCategories = {};
+
+    function refreshTiles() {
+        let parameteters = {
+            action: 'getAllTiles'
+        };
+        httpPost(requestUrl, parameteters, function (response) {
+            let parsedResponse = JSON.parse(response);
+
+            tileCategories = {};
+            let categoriesJson = parsedResponse.tiles.categories;
+            for (let i = 0; i < categoriesJson.length; i++) {
+                tileCategories[categoriesJson[i].label] = categoriesJson[i].color;
+            }
+
+            let tiles = parsedResponse.tiles.tiles;
+            let table = document.getElementById('tile-table');
+            table.innerHTML = '';
+            document.getElementById('add-new-tile').onclick = function () {
+                editTileIntent('none', 'createTile');
+            };
+            document.getElementById('add-new-tile-2').onclick = function () {
+                editTileIntent('none', 'createTile');
+            };
+            for (let i = 0; i < tiles.length; i++) {
+                table.appendChild(createTileEntryForTable(tiles[i]));
+            }
+
+            let categories = parsedResponse.tiles.categories;
+            table = document.getElementById('categories-table');
+            table.innerHTML = '';
+            document.getElementById('add-new-category').onclick = function () {
+                editCategoryIntent('', 'createCategory');
+            };
+            for (let i = 0; i < categories.length; i++) {
+                table.appendChild(createCategoryEntryForTable(categories[i]));
+            }
+
+            let tileGenerators = parsedResponse.tiles['tile-generators'];
+            table = document.getElementById('generators-table');
+            table.innerHTML = '';
+            document.getElementById('add-new-generator').onclick = function () {
+                editTileGeneratorIntent('', 'createGenerator');
+            };
+            for (let i = 0; i < tileGenerators.length; i++) {
+                table.appendChild(createGeneratorEntryForTable(tileGenerators[i]));
+            }
+
+            let runtimeTiles = parsedResponse.tiles['runtime-tiles'];
+            let disabledRuntimeTiles = parsedResponse.tiles['disabled-runtime-tiles'];
+            let list = document.getElementById('runtime-tile-selection');
+            list.innerHTML = '';
+            for (let i = 0; i < runtimeTiles.length; i++) {
+                let li = document.createElement('li');
+                li.innerText = runtimeTiles[i];
+                li.classList.add('badge');
+                li.classList.add('clickable');
+                if (disabledRuntimeTiles.indexOf(runtimeTiles[i]) !== -1) {
+                    li.classList.add('bg-red');
+                } else {
+                    li.classList.add('bg-green');
+                }
+                li.onclick = function () {
+                    editRuntimeTileIntent(runtimeTiles[i], 'toggleActive');
+                };
+                list.appendChild(li);
+                list.appendChild(document.createElement('br'));
+            }
+
+            let settings = parsedResponse.tiles['settings'];
+            list = document.getElementById('settings-selection');
+            list.innerHTML = '';
+            let keys = Object.keys(settings);
+            for (let i = 0; i < keys.length; i++) {
+                let li = document.createElement('li');
+                li.innerText = keys[i] + ' = ' + settings[keys[i]];
+                li.classList.add('badge');
+                li.classList.add('clickable');
+                li.onclick = function () {
+                    editSettingIntent(keys[i]);
+                };
+                list.appendChild(li);
+                list.appendChild(document.createElement('br'));
+            }
+            let badge = document.createElement('span');
+            badge.classList.add('badge');
+            badge.classList.add('clickable');
+            badge.classList.add('bg-red');
+            badge.innerText = 'Reset to default values';
+            badge.onclick = function () {
+                editSettingIntent('resetSettings');
+            };
+            list.appendChild(document.createElement('br'));
+            list.appendChild(badge);
+        });
+    }
+
+    function createColoredCategoryBadge(cat) {
+        let badge = document.createElement('span');
+        badge.className = 'badge';
+        try {
+            badge.style.backgroundColor = 'rgb(' + tileCategories[cat][0] + ', ' + tileCategories[cat][1] + ', ' + tileCategories[cat][2] + ')';
+            if (tileCategories[cat][0] + tileCategories[cat][1] + tileCategories[cat][2] > 310) {
+                badge.style.color = 'black';
+            }
+        } catch (e) {
+            console.log(cat + ' does not exist');
+            console.log(e);
+        }
+        badge.innerHTML = cat;
+        return badge;
+    }
+
+    function createGeneratorEntryForTable(generatorJson) {
+        let row = document.createElement('tr');
+
+        let color = document.createElement('td');
+        let badge = createColoredCategoryBadge(generatorJson.category);
+        badge.classList.add('clickable');
+        badge.onclick = function () {
+            editTileGeneratorIntent(generatorJson.id, 'editCategory');
+        };
+        badge.oncontextmenu = function (e) {
+            e.preventDefault();
+            editTileGeneratorIntent(generatorJson.id, 'deleteGenerator');
+        };
+        color.appendChild(badge);
+        row.appendChild(color);
+
+        let keywords = document.createElement('td');
+        if (generatorJson.keywords !== undefined && generatorJson.keywords !== null) {
+            let keywordsArray = generatorJson.keywords.split(' ');
+            for (let i = 0; i < keywordsArray.length; i++) {
+                if (keywordsArray[i].length === 0) continue;
+                let badge = document.createElement('span');
+                badge.className = 'badge clickable';
+                badge.innerHTML = keywordsArray[i];
+                badge.onclick = function () {
+                    editTileGeneratorIntent(generatorJson.id, 'editKeyword', keywordsArray[i]);
+                };
+                badge.oncontextmenu = function (e) {
+                    e.preventDefault();
+                    editTileGeneratorIntent(generatorJson.id, 'deleteKeyword', keywordsArray[i]);
+                };
+                keywords.append(badge);
+            }
+        }
+        badge = document.createElement('span');
+        badge.className = 'badge bg-green clickable';
+        badge.innerHTML = '+';
+        badge.onclick = function () {
+            editTileGeneratorIntent(generatorJson.id, 'addKeyword');
+        };
+        keywords.append(badge);
+        row.appendChild(keywords);
+
+        let actions = document.createElement('td');
+        if (generatorJson.generators !== undefined && generatorJson.generators !== null) {
+            let actionsArray = generatorJson.generators;
+            for (let i = 0; i < actionsArray.length; i++) {
+                let action = actionsArray[i];
+                let badge = document.createElement('div');
+                if (action.type === 'file') {
+                    badge.className = 'badge bo-blue clickable';
+                    if (action.param2 !== undefined && action.param2 !== null) {
+                        badge.innerText = 'FILE: ' + action.param1 + ', ' + action.param2;
+                    } else {
+                        badge.innerText = 'FILE: ' + action.param1;
+                    }
+                }
+                badge.onclick = function () {
+                    editTileGeneratorIntent(generatorJson.id, 'editAction', action.id);
+                };
+                badge.oncontextmenu = function (e) {
+                    e.preventDefault();
+                    editTileGeneratorIntent(generatorJson.id, 'deleteAction', action.id);
+                };
+                actions.append(badge);
+            }
+        }
+        badge = document.createElement('span');
+        badge.className = 'badge bg-green clickable';
+        badge.innerHTML = '+';
+        badge.onclick = function () {
+            editTileGeneratorIntent(generatorJson.id, 'createAction');
+        };
+        actions.append(badge);
+        row.appendChild(actions);
+
+        return row;
+    }
+
+    function createCategoryEntryForTable(categoryJson) {
+        let row = document.createElement('tr');
+
+        let color = document.createElement('td');
+        let badge = createColoredCategoryBadge(categoryJson.label);
+        badge.classList.add('clickable');
+        badge.onclick = function () {
+            editCategoryIntent(categoryJson.label, 'editColor');
+        };
+        badge.oncontextmenu = function (e) {
+            e.preventDefault();
+            editCategoryIntent(categoryJson.label, 'deleteCategory');
+        };
+        color.appendChild(badge);
+        row.appendChild(color);
+
+        return row;
+    }
+
+    function createTileEntryForTable(tileJson) {
+        // create a new tile row entry as seen in the table 'tile-table' above
+        let row = document.createElement('tr');
+        let name = document.createElement('td');
+        let category = document.createElement('td');
+        let keywords = document.createElement('td');
+        let actions = document.createElement('td');
+
+        // add the data from the tileJson to the table row
+        name.innerHTML = '<b>' + tileJson.label + '</b>';
+        name.classList.add('clickable');
+        name.onclick = function () {
+            editTileIntent(tileJson.id, 'editName');
+        };
+        name.oncontextmenu = function (e) {
+            e.preventDefault();
+            editTileIntent(tileJson.id, 'deleteTile');
+        };
+
+        let categoryBadge = createColoredCategoryBadge(tileJson.category);
+        categoryBadge.classList.add('clickable');
+        categoryBadge.onclick = function () {
+            editTileIntent(tileJson.id, 'editCategory');
+        };
+        category.append(categoryBadge);
+
+        let keywordsArray = tileJson.keywords.split(' ');
+        for (let i = 0; i < keywordsArray.length; i++) {
+            if (keywordsArray[i].length === 0) continue;
+            let badge = document.createElement('span');
+            badge.className = 'badge clickable';
+            badge.innerHTML = keywordsArray[i];
+            badge.onclick = function () {
+                editTileIntent(tileJson.id, 'editKeyword', keywordsArray[i]);
+            };
+            badge.oncontextmenu = function (e) {
+                e.preventDefault();
+                editTileIntent(tileJson.id, 'deleteKeyword', keywordsArray[i]);
+            };
+            keywords.append(badge);
+        }
+        let badge = document.createElement('span');
+        badge.className = 'badge bg-green clickable';
+        badge.innerHTML = '+';
+        badge.onclick = function () {
+            editTileIntent(tileJson.id, 'addKeyword');
+        };
+        keywords.append(badge);
+
+        // add the actions to the table row depending on what action type it is
+        let actionsArray = tileJson.actions;
+        for (let i = 0; i < actionsArray.length; i++) {
+            let action = actionsArray[i];
+            let badge = document.createElement('div');
+            if (action.type === 'url') {
+                badge.className = 'badge bo-red clickable';
+                badge.innerText = 'URL: ' + action.param1;
+            } else if (action.type === 'file') {
+                badge.className = 'badge bo-blue clickable';
+                badge.innerText = 'FILE: ' + action.param1;
+            } else if (action.type === 'copy') {
+                badge.className = 'badge bo-yellow clickable';
+                badge.innerText = 'COPY: ' + action.param1;
+            }
+            badge.onclick = function () {
+                editTileIntent(tileJson.id, 'editAction', action.param1);
+            };
+            badge.oncontextmenu = function (e) {
+                e.preventDefault();
+                editTileIntent(tileJson.id, 'deleteAction', action.param1);
+            };
+            actions.append(badge);
+        }
+        badge = document.createElement('span');
+        badge.className = 'badge bg-green clickable';
+        badge.innerHTML = '+';
+        badge.onclick = function () {
+            editTileIntent(tileJson.id, 'createAction');
+        };
+        actions.append(badge);
+
+        // add the elements to the row
+        row.append(name);
+        row.append(category);
+        row.append(keywords);
+        row.append(actions);
+
+        return row;
+    }
+
+    let firstLoad = true;
+
+    function checkFirstLoad() {
+        if (firstLoad) {
+            firstLoad = false;
+            showNotification('If you expect but don\'t see a popup right now, use alt-tab to switch through the active windows!\n' +
+                'This is an issue with java popups not grabbing the focus on the first time they open, so you will ' +
+                'only have to do this once per session.');
+        }
+    }
+
+    function showNotification(text) {
+        let notification = document.getElementById('notifications');
+        let content = document.createElement('div');
+        content.className = 'notification-content fit-content';
+        let message = document.createElement('span');
+        message.className = 'notification-message';
+        message.innerText = text;
+        content.append(message);
+        notification.append(content);
+        let showDuration = Math.min(Math.max(text.length * 43, 4000), 10000);
+        setTimeout(function () {
+            content.className += ' notification-fade';
+            setTimeout(function () {
+                content.remove();
+            }, 1000);
+        }, showDuration);
+        notification.onclick = function () {
+            content.className += ' notification-fade';
+            setTimeout(function () {
+                content.remove();
+            }, 1000);
+        };
+    }
+
+    function metaInteraction(interactionType) {
+        let params = {
+            'action': 'metaInteraction',
+            'editType': interactionType
+        };
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+            if (interactionType === 'undo' || interactionType === 'redo') {
+                let resultJson = JSON.parse(response);
+                showNotification(resultJson.message);
+            }
+        });
+    }
+
+    function editTileIntent(tileId, whatToEdit, additionalValue) {
+        let params = {
+            'action': 'tileInteraction',
+            'editType': 'tile',
+            'whatToEdit': whatToEdit,
+            'tileId': tileId,
+        };
+        if (additionalValue !== undefined && additionalValue != null) {
+            params.additionalValue = additionalValue;
+        }
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+
+        checkFirstLoad();
+    }
+
+    function editSettingIntent(whatToEdit) {
+        let params = {
+            'action': 'tileInteraction',
+            'editType': 'setting',
+            'whatToEdit': whatToEdit,
+        };
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+
+        checkFirstLoad();
+    }
+
+    function editRuntimeTileIntent(tileId, whatToEdit) {
+        let params = {
+            'action': 'tileInteraction',
+            'editType': 'runtime',
+            'whatToEdit': whatToEdit,
+            'tileId': tileId,
+        };
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+    }
+
+    function editTileGeneratorIntent(tileId, whatToEdit, additionalValue) {
+        let params = {
+            'action': 'tileInteraction',
+            'editType': 'generator',
+            'whatToEdit': whatToEdit,
+            'tileId': tileId,
+        };
+        if (additionalValue !== undefined && additionalValue != null) {
+            params.additionalValue = additionalValue;
+        }
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+
+        checkFirstLoad();
+    }
+
+    function editCategoryIntent(categoryName, whatToEdit) {
+        let params = {
+            'action': 'tileInteraction',
+            'editType': 'category',
+            'categoryName': categoryName,
+            'whatToEdit': whatToEdit,
+        };
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+
+        checkFirstLoad();
+    }
+
+    function htmlToElement(html) {
+        let template = document.createElement('template');
+        html = html.trim();
+        template.innerHTML = html;
+        return template.content.firstChild;
+    }
+
+    function httpPost(theUrl, parameterMap, callback) {
+        let xmlHttp = new XMLHttpRequest();
+        theUrl += '?' + Object.keys(parameterMap).map(function (key) {
+            return encodeURIComponent(key) + '=' + encodeURIComponent(parameterMap[key]);
+        }).join('&');
+        xmlHttp.open("GET", theUrl, true);
+        xmlHttp.send(null);
+        if (callback != null) {
+            xmlHttp.onreadystatechange = function () {
+                if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+                    callback(xmlHttp.responseText);
+                }
+            };
+        }
+    }
+
+    refreshTiles();
+</script>
+</body>
+</html>

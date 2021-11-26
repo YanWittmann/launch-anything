@@ -1,64 +1,51 @@
-# Launch Anything
-### _A search bar for anything you need_
+![Example search results](doc/img/barExample.png)
 
-![readmeLaunchBarIsOpen](other/img/readmeLaunchBarIsOpen.png)
+### _A search bar for anything you need_
 
 Use this application to launch a variety of processes on your system.
 
-![readmeLaunchBarIsOpen](other/img/launchAnything_small.png)
-
 ## Features
 
-- Open files
-- Open files inside a specified directory
-- Open music files inside a specified directory
+- A search bar available from anywhere with only two keystrokes
+- Open files and directories
+- Open URLs in the browser
 - Copy text to the clipboard
-- Open URLs in your browser
-- Open QR codes that are visible on-screen
+- Tile Generators: generate tiles for files in a given directory
+- Runtime Tiles:
+    - Solve mathematical expressions
+    - Use the I'm feeling lucky functionality to open a webpage
+    - Directly go to a wikipedia article
+- Disable (timeout) the bar for a given amount of time
 
-## Setup
+## Quick Setup
 
-Download the [latest version](https://github.com/Skyball2000/launch-anything/releases) of the LaunchAnything bar and extract the `.zip`.  
+- Download the **[latest version](https://github.com/Skyball2000/launch-anything/releases)** and place the jar file in
+  any directory on your system that you want the base directory to be
+- Start the jar file with at least Java 8
+- Double-Tap `command` or `ctrl` to open the search bar
+- Type in some search terms and navigate the results using the arrow keys
+- Press `enter` to execute the topmost result tile
 
-If you open the `launch-anything.jar` jar file, you will see the settings:
+For a more complete how-to, see this **[document](doc/how-to.md)**.
 
-![readmeSetupTilesSettingMain](other/img/readmeSetupTilesSettingMain.png)
+## Bar Settings
 
+After having started the application, open up the search bar by double-tapping `command` or `ctrl`, type in `settings`
+and hit enter. This will open up a webserver and the corresponding web page in your browser. A more detailed description
+of this settings page can be found **[here](doc/how-to.md)**.
 
-Here you can set up `Tiles` that you want to be able to search for. Click on `Create Tile` to select a preset.
-To edit the tile data afterwards, simply edit the table value and click on `Save Tiles` in the bottom right.  
-To edit a tile's action, click on `Edit Tile Action` and enter the ID of the tile. You can add as many actions as you want. You have these actions available:
+## Build it yourself
 
-- `openFile` with the parameter `path`
-- `openURL` with the parameter `url`
-- `copyToClipboard` with the parameter `text` (use `EOL` for a new line)
-- `settings` with the parameter `setting` (set to either `exit`, `settings` or `lafolder`)
-- `scanForQR`
+To build the launch bar yourself, perform these actions:
 
-You can join multiple parameters by using `&&&`.
+1. Clone and install the entirety of **[steos jnafilechooser](https://github.com/steos/jnafilechooser.git)** using Maven
+   (`mvn install`)
+2. Build this project using Maven (`mvn package`)
+3. The jar will be located in the `target` directory
 
-The next tab are the `Tile Generators`, which create tiles dynamically each time when starting up the LaunchBar. These are the generators that are available:
+## Have fun using the LaunchAnything bar!
 
-- `music` generates tiles based on the music files in the given directory
-- `file` generates tiles based on the files in the given directory with the option to filter them via the file name
+![LaunchAnything](doc/img/LaunchAnythingLogoDefSmall.png)
 
-The `Categories` tab allows you to make the results have different colors by placing them inside a category.
-
-`General Settings` will allow you to customize a variety of settings, including the startup button.
-
-When finished, click on `Return to LaunchBar` in the bottom right (don't forget to save!). This will activate the `LaunchBar`. You can see that it's active when the notification appears.
-
-![readmeSetupNowActive](other/img/readmeSetupNowActive.png)
-
-By double tapping `control` or whatever button you specified in the settings earlier, you can bring up the search bar. Type what you want to search for and use the up and down arrows to scroll through the results.  
-Either use `enter` to open the result that is currently on the top or click the result you want to open.
-
-To return to the settings, just type `Settings` and press enter.
-
-Type `Exit` to exit the bar.
-
-## Enjoy using the LaunchAnything bar!
-
-And I hope you consider [buying me a coffee](https://paypal.me/yanwittmann)!
-
-![Icon](other/img/launchAnything.png)
+If you like this application and want to support my work, you can
+**[buy me a coffee](https://www.paypal.com/paypalme/yanwittmann)**!
