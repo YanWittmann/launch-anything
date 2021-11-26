@@ -1,7 +1,7 @@
-
 ![Example search results](doc/img/barExample.png)
 
 ### _A search bar for anything you need_
+
 Use this application to launch a variety of processes on your system.
 
 ## Features
@@ -11,19 +11,26 @@ Use this application to launch a variety of processes on your system.
 - Open URLs in the browser
 - Copy text to the clipboard
 - Tile Generators: generate tiles for files in a given directory
+- Runtime Tiles:
+    - Solve mathematical expressions
+    - Use the I'm feeling lucky functionality to open a webpage
+    - Directly go to a wikipedia article
+- Disable (timeout) the bar for a given amount of time
 
 ## Quick Setup
 
-- Download the **[latest version](https://github.com/Skyball2000/launch-anything/releases)** and place the jar file in any
-  directory on your system that you want the base directory to be
+- Download the **[latest version](https://github.com/Skyball2000/launch-anything/releases)** and place the jar file in
+  any directory on your system that you want the base directory to be
 - Start the jar file with at least Java 8
-- Double-Tap 'command' or 'ctrl' to open the search bar
+- Double-Tap `command` or `ctrl` to open the search bar
+- Type in some search terms and navigate the results using the arrow keys
+- Press `enter` to execute the topmost result tile
 
 ## Bar Settings
 
-After having started the application, open up the search bar by double-tapping 'command' or 'ctrl', type in 'settings'
-and hit enter. This will open up a webserver and the corresponding web page in your browser. A more detailed
-description of this settings page can be found **[here](doc/how-to.md)**.
+After having started the application, open up the search bar by double-tapping `command` or `ctrl`, type in `settings`
+and hit enter. This will open up a webserver and the corresponding web page in your browser. A more detailed description
+of this settings page can be found **[here](doc/how-to.md)**.
 
 ## Build it yourself
 
@@ -37,3 +44,6 @@ To build the launch bar yourself, perform these actions:
 ### Have fun using the LaunchAnything bar!
 
 ![LaunchAnything](doc/img/LaunchAnythingLogoDefSmall.png)
+
+If you like this application and want to support my work, you can
+**[buy me a coffee](https://www.paypal.com/paypalme/yanwittmann)**!

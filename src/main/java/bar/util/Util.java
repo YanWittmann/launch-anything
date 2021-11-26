@@ -244,6 +244,15 @@ public abstract class Util {
         return file.exists();
     }
 
+    public static boolean isApplicationStartedFromJar() {
+        try {
+            final File currentJar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            return currentJar.getName().endsWith(".jar");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public static void setAutostartActive(boolean active) {
         final String startupPath = "/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup";
         File file = new File(System.getProperty("user.home") + startupPath + "/launch-anything.lnk");

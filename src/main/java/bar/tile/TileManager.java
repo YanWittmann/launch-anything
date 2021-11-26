@@ -37,7 +37,7 @@ public class TileManager {
         if (tileFile == null) {
             tileFile = new File("res/tiles.json");
             generateDefaultTiles();
-            if (!Util.isAutostartEnabled()) {
+            if (Util.isApplicationStartedFromJar() && !Util.isAutostartEnabled()) {
                 new Thread(() -> {
                     String activateAutostart = Util.popupChooseButton(
                             "LaunchAnything",
