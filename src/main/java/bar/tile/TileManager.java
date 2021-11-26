@@ -106,55 +106,64 @@ public class TileManager {
             while (reader.hasNextLine()) {
                 fileContent.append(reader.nextLine().trim());
             }
+            long end = System.currentTimeMillis();
             reader.close();
 
             JSONObject tilesRoot = new JSONObject(fileContent.toString());
-            JSONArray tilesArray = tilesRoot.optJSONArray("tiles");
-            if (tilesArray != null) {
-                for (int i = 0; i < tilesArray.length(); i++) {
-                    JSONObject tileJson = tilesArray.optJSONObject(i);
-                    if (tileJson == null) continue;
-                    Tile tile = new Tile(tileJson);
-                    if (tile.isValid()) tiles.add(tile);
-                }
-            }
-
-            JSONArray tileGeneratorsArray = tilesRoot.optJSONArray("tile-generators");
-            if (tileGeneratorsArray != null) {
-                for (int i = 0; i < tileGeneratorsArray.length(); i++) {
-                    JSONObject tileGeneratorJson = tileGeneratorsArray.optJSONObject(i);
-                    if (tileGeneratorJson == null) continue;
-                    TileGenerator tileGenerator = new TileGenerator(tileGeneratorJson);
-                    if (tileGenerator.isValid()) tileGenerators.add(tileGenerator);
-                }
-            }
-
-            JSONArray categoriesArray = tilesRoot.optJSONArray("categories");
-            if (categoriesArray != null) {
-                for (int i = 0; i < categoriesArray.length(); i++) {
-                    JSONObject categoryJson = categoriesArray.optJSONObject(i);
-                    if (categoryJson == null) continue;
-                    TileCategory category = new TileCategory(categoryJson);
-                    if (category.isValid()) {
-                        categories.add(category);
-                    }
-                }
-            }
-
-            JSONArray disabledRuntimeTilesArray = tilesRoot.optJSONArray("disabled-runtime-tiles");
-            if (disabledRuntimeTilesArray != null) {
-                for (int i = 0; i < disabledRuntimeTilesArray.length(); i++) {
-                    String tile = disabledRuntimeTilesArray.optString(i);
-                    disabledRuntimeTiles.add(tile);
-                }
-            }
-
-            regenerateGeneratedTiles();
-            System.out.println("Loaded " + tiles.size() + " tile(s), " + tileGenerators.size() + " tile generator(s) and " + categories.size() + " category/ies.");
+            loadTilesFromJson(tilesRoot);
         } catch (FileNotFoundException e) {
             TrayUtil.showError("Something went wrong while reading the tiles: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    public void loadTilesFromJson(JSONObject tilesRoot) {
+        tiles.clear();
+        tileGenerators.clear();
+        categories.clear();
+
+        JSONArray tilesArray = tilesRoot.optJSONArray("tiles");
+        if (tilesArray != null) {
+            for (int i = 0; i < tilesArray.length(); i++) {
+                JSONObject tileJson = tilesArray.optJSONObject(i);
+                if (tileJson == null) continue;
+                Tile tile = new Tile(tileJson);
+                if (tile.isValid()) tiles.add(tile);
+            }
+        }
+
+        JSONArray tileGeneratorsArray = tilesRoot.optJSONArray("tile-generators");
+        if (tileGeneratorsArray != null) {
+            for (int i = 0; i < tileGeneratorsArray.length(); i++) {
+                JSONObject tileGeneratorJson = tileGeneratorsArray.optJSONObject(i);
+                if (tileGeneratorJson == null) continue;
+                TileGenerator tileGenerator = new TileGenerator(tileGeneratorJson);
+                if (tileGenerator.isValid()) tileGenerators.add(tileGenerator);
+            }
+        }
+
+        JSONArray categoriesArray = tilesRoot.optJSONArray("categories");
+        if (categoriesArray != null) {
+            for (int i = 0; i < categoriesArray.length(); i++) {
+                JSONObject categoryJson = categoriesArray.optJSONObject(i);
+                if (categoryJson == null) continue;
+                TileCategory category = new TileCategory(categoryJson);
+                if (category.isValid()) {
+                    categories.add(category);
+                }
+            }
+        }
+
+        JSONArray disabledRuntimeTilesArray = tilesRoot.optJSONArray("disabled-runtime-tiles");
+        if (disabledRuntimeTilesArray != null) {
+            for (int i = 0; i < disabledRuntimeTilesArray.length(); i++) {
+                String tile = disabledRuntimeTilesArray.optString(i);
+                disabledRuntimeTiles.add(tile);
+            }
+        }
+
+        regenerateGeneratedTiles();
+        System.out.println("Loaded " + tiles.size() + " tile(s), " + tileGenerators.size() + " tile generator(s) and " + categories.size() + " category/ies.");
     }
 
     public void regenerateGeneratedTiles() {
@@ -254,7 +263,7 @@ public class TileManager {
         tilesRoot.put("tiles", tilesArray);
         tilesRoot.put("tile-generators", tileGeneratorsArray);
         tilesRoot.put("categories", categoriesArray);
-        tilesRoot.put("disabled-runtime-tiles", disabledRuntimeTiles);
+        tilesRoot.put("disabled-runtime-tiles", disabledRuntimeTiles.stream().distinct().collect(Collectors.toList()));
 
         return tilesRoot;
     }
@@ -303,6 +312,9 @@ public class TileManager {
         } else {
             disabledRuntimeTiles.add(tileId);
         }
+        List<String> distinct = disabledRuntimeTiles.stream().distinct().collect(Collectors.toList());
+        disabledRuntimeTiles.clear();
+        disabledRuntimeTiles.addAll(distinct);
         createCustomTiles();
     }
 

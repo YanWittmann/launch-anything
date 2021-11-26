@@ -2,6 +2,7 @@ package bar;
 
 import bar.logic.BarManager;
 import bar.logic.Settings;
+import bar.logic.UndoHistory;
 import bar.tile.*;
 import bar.ui.TrayUtil;
 import bar.util.GlobalKeyListener;
@@ -35,6 +36,7 @@ public class Main {
     private final Settings settings;
     private final BarManager barManager;
     private final TileManager tileManager;
+    private final UndoHistory undoHistory = new UndoHistory();
     private int lastPressedKey = -1;
 
     private Main(String[] args) {
@@ -151,6 +153,7 @@ public class Main {
                     e.printStackTrace();
                 }
             }).start();
+            System.out.println("Settings webserver started on port " + port);
         }
         if (openWebpage) {
             Sleep.milliseconds(300);
@@ -220,6 +223,26 @@ public class Main {
                                 case "deactivateAutostart":
                                     Util.setAutostartActive(false);
                                     break;
+                                case "undo":
+                                    JSONObject undo = undoHistory.undo(tileManager.toJSON());
+                                    if (undo != null) {
+                                        tileManager.loadTilesFromJson(undo);
+                                        tileManager.save();
+                                        response.put("message", "Undo successful");
+                                    } else {
+                                        response.put("message", "Nothing to undo");
+                                    }
+                                    break;
+                                case "redo":
+                                    JSONObject redo = undoHistory.redo(tileManager.toJSON());
+                                    if (redo != null) {
+                                        tileManager.loadTilesFromJson(redo);
+                                        tileManager.save();
+                                        response.put("message", "Redo successful");
+                                    } else {
+                                        response.put("message", "Nothing to redo");
+                                    }
+                                    break;
                             }
                         }
 
@@ -230,6 +253,7 @@ public class Main {
                         String additionalValue = getParams.getOrDefault("additionalValue", null);
 
                         if (whatToEdit != null && editType != null) {
+                            undoHistory.add(tileManager.toJSON());
                             if (editType.equals("tile")) {
                                 String tileId = getParams.getOrDefault("tileId", null);
                                 Tile tile = tileManager.findTile(tileId);
@@ -400,6 +424,8 @@ public class Main {
                                         settings.setSetting(whatToEdit, newValue);
                                     }
                                 }
+                            } else {
+                                undoHistory.undo(null);
                             }
                             tileManager.cleanUpTileActions();
                             tileManager.save();

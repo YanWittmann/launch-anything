@@ -184,6 +184,8 @@
         .notification-content {
             position: relative;
             margin-top: 10px;
+            margin-left: auto;
+            margin-right: 0;
             padding: 10px;
             background-color: #212529;
             color: #fff;
@@ -287,6 +289,8 @@
         Set whether LaunchAnything should run on system startup:
         <span id="autostart-active" class="clickable badge bg-green">Add autostart</span>
         <span id="autostart-inactive" class="clickable badge bg-red">Remove autostart</span><br><br>
+        You can use <span id="undo-action" class="clickable badge bg-red">ctrl+z</span> to undo and
+        <span id="redo-action" class="clickable badge bg-red">ctrl+y</span> to redo your actions.<br><br>
         Check out the <a href="https://github.com/Skyball2000/launch-anything">GitHub Repository</a> for help on how to
         use LaunchAnything!<br><br>
     </section>
@@ -301,6 +305,7 @@
     const requestUrl = 'http://localhost:' + port;
 
     document.getElementById('restart-bar').onclick = function () {
+        firstLoad = true;
         metaInteraction('restartBar');
     };
     document.getElementById('autostart-active').onclick = function () {
@@ -309,6 +314,19 @@
     document.getElementById('autostart-inactive').onclick = function () {
         metaInteraction('deactivateAutostart');
     };
+    document.getElementById('undo-action').onclick = function () {
+        metaInteraction('undo');
+    };
+    document.getElementById('redo-action').onclick = function () {
+        metaInteraction('redo');
+    };
+    document.addEventListener('keydown', function (e) {
+        if (e.keyCode === 90 && e.ctrlKey) {
+            metaInteraction('undo');
+        } else if (e.keyCode === 89 && e.ctrlKey) {
+            metaInteraction('redo');
+        }
+    });
 
     function switchSection(section, menuItem) {
         const sections = document.querySelectorAll('section');
@@ -645,12 +663,19 @@
         message.innerText = text;
         content.append(message);
         notification.append(content);
+        let showDuration = Math.min(Math.max(text.length * 43, 4000), 10000);
         setTimeout(function () {
             content.className += ' notification-fade';
             setTimeout(function () {
                 content.remove();
             }, 1000);
-        }, 10000);
+        }, showDuration);
+        notification.onclick = function () {
+            content.className += ' notification-fade';
+            setTimeout(function () {
+                content.remove();
+            }, 1000);
+        };
     }
 
     function metaInteraction(interactionType) {
@@ -660,7 +685,10 @@
         };
         httpPost(requestUrl, params, function (response) {
             refreshTiles();
-            firstLoad = true;
+            if (interactionType === 'undo' || interactionType === 'redo') {
+                let resultJson = JSON.parse(response);
+                showNotification(resultJson.message);
+            }
         });
     }
 
