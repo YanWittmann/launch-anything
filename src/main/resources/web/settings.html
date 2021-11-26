@@ -277,22 +277,32 @@
         </table>
     </section>
 
-    <section id="settings" class="hidden">
-        <br>Thank you for using the LaunchAnything Bar!<br>
+    <section id="settings" class="hidden" style="line-height: 23px;">
+        Thank you for using the LaunchAnything Bar!<br><br>
+        <b>Quick help</b>
+        <ul>
+            <li>Left-Click any value to edit it</li>
+            <li>Right-Click the first value of a row to delete the row</li>
+            <li>
+                You can use <span id="undo-action" class="clickable badge bg-red" style="margin-top: 7px;">ctrl+z</span>
+                to undo and <span id="redo-action" class="clickable badge bg-red" style="margin-top: 7px;">ctrl+y</span>
+                to redo your tile edits (will not work on settings).
+            </li>
+            <li>All badges (like the red ones above) are clickable and perform the action the label says</li>
+        </ul>
+        Check out the <a href="https://github.com/Skyball2000/launch-anything">GitHub Repository</a> for more help on
+        how to most effectively use LaunchAnything!<br><br><br>
+
+        <b>Settings</b><br>
+        Set whether LaunchAnything should run on system startup:
+        <span id="autostart-active" class="clickable badge bg-green">Add autostart</span>
+        <span id="autostart-inactive" class="clickable badge bg-red">Remove autostart</span><br><br>
         Some of these settings require a restart of the bar to take effect. Click here or use the
         <span id="restart-bar" class="clickable badge bg-red">Restart LaunchAnything</span>
         tile to quickly restart it.
         <br>
-        <ul id="settings-selection">
-        </ul>
-        <br>
-        Set whether LaunchAnything should run on system startup:
-        <span id="autostart-active" class="clickable badge bg-green">Add autostart</span>
-        <span id="autostart-inactive" class="clickable badge bg-red">Remove autostart</span><br><br>
-        You can use <span id="undo-action" class="clickable badge bg-red">ctrl+z</span> to undo and
-        <span id="redo-action" class="clickable badge bg-red">ctrl+y</span> to redo your actions.<br><br>
-        Check out the <a href="https://github.com/Skyball2000/launch-anything">GitHub Repository</a> for help on how to
-        use LaunchAnything!<br><br>
+        <ul id="settings-selection"></ul>
+        <br><br>
     </section>
 
     <span id="notifications"></span>

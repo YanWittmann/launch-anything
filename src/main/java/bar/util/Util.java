@@ -93,8 +93,10 @@ public abstract class Util {
         final File currentJar = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 
         /* is it a jar file? */
-        if (!currentJar.getName().endsWith(".jar"))
+        if (!currentJar.getName().endsWith(".jar")) {
+            TrayUtil.showError("The application has not been launched from a jar file. Canceling restart.");
             return;
+        }
 
         /* Build command: java -jar application.jar */
         final ArrayList<String> command = new ArrayList<>();

@@ -294,6 +294,22 @@ public class TileManager {
         tiles.add(tile);
     }
 
+    private void addUrlTile(String label, String keywords, String url) {
+        Tile tile = new Tile(label);
+        tile.setCategory("url");
+        tile.setActive(true);
+        tile.setExportable(true);
+        tile.setKeywords(keywords);
+        tile.addAction(new TileAction("url", url));
+        tiles.add(tile);
+    }
+
+    private void generateDefaultTiles() {
+        tiles.clear();
+        addUrlTile("GeoGebra", "graphs", "https://www.geogebra.org/calculator");
+        addUrlTile("LaunchAnything", "launch", "https://launchanything.com");
+    }
+
     private void createCustomTiles() {
         runtimeTiles.clear();
         if (!disabledRuntimeTiles.contains(RUNTIME_TILES[0]))
