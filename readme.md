@@ -43,7 +43,7 @@ To build the launch bar yourself, perform these actions:
 2. Build this project using Maven (`mvn package`)
 3. The jar will be located in the `target` directory
 
-### Have fun using the LaunchAnything bar!
+## Have fun using the LaunchAnything bar!
 
 ![LaunchAnything](doc/img/LaunchAnythingLogoDefSmall.png)
 
