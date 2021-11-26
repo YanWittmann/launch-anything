@@ -26,6 +26,8 @@ Use this application to launch a variety of processes on your system.
 - Type in some search terms and navigate the results using the arrow keys
 - Press `enter` to execute the topmost result tile
 
+For a more complete how-to, see this **[document](doc/how-to.md)**.
+
 ## Bar Settings
 
 After having started the application, open up the search bar by double-tapping `command` or `ctrl`, type in `settings`

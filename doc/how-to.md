@@ -25,12 +25,9 @@ tap the `ctrl` or `command` key to open the bar and enter `Create Tile` into it.
 There, you will be asked to enter a name for your tile. Do so and hit enter. Then the tile category. There are three
 categories available:
 
-- File:
-  Opens up a file explorer that lets you select a file that will be opened up when executing the tile.
-- URL:
-  Enter a URL that should be opened up when executing the tile.
-- Copy:
-  Enter a text that should be copied to the clipboard when executing the tile.
+- File: Opens up a file explorer that lets you select a file that will be opened up when executing the tile.
+- URL: Enter a URL that should be opened up when executing the tile.
+- Copy: Enter a text that should be copied to the clipboard when executing the tile.
 
 The new tile will be added to the list of tiles.  
 The individual values mean the following:
@@ -45,11 +42,29 @@ left click it.
 
 ## Section: Tile Generators
 
-TODO
+Tile generators can be used to dynamically generate tiles on application startup. There is currently only one type:
+
+- File: Generates one tile for each file in the specified directory. The file scanner includes files in subdirectories
+  as well. One or multiple extensions can be specified to only include files with those extensions (like `txt`).
+
+The category and the keywords of the tiles are inherited from the tile generator.
+
+Similar to the tiles: to delete a tile generator, right-click the category of the tile generator.
 
 ## Section: Runtime Tiles
 
-TODO
+Runtime tiles are tiles that are generated based on the current search terms. These are predetermined and therefore the
+only thing you can change is the choice to deactivate them by left-clicking the according badge. These runtime tiles are
+currently only available:
+
+- Go Website: Enter 'go' and any search term to use the `I'm Feeling Lucky` functionality and instantly open the
+  corresponding website.
+- Math Expression: Enter any mathematical expression and let the application calculate the result. You can include
+  mathematical expressions like `pow(2,4)` or `sqrt(4)`.
+- Wiki Search: Enter 'wiki' and any search term to display the short description of the Wikipedia article. Press enter
+  to open the article in your browser.
+- Timeout: 'timeout' or 'to' and a duration in minutes the bar should remain inactive. Timeout mode can be deactivated
+  by right-clicking the system tray icon and selecting `Reset Timeout`.
 
 ## Section: Categories
 
@@ -63,6 +78,10 @@ application to take effect.
 
 If you somehow messed up the settings, you can always use the `Reset to default values` button to reset the settings to
 their default values. Alternatively you can delete the `settings.json` file and the default settings will be restored.
+
+## System tray
+
+TODO
 
 ## Advanced usage
 
@@ -101,4 +120,4 @@ of the application and directly use them there.
 
 I hope you like this bar. If you have any questions, suggestions or comments, feel free to contact me or to create an
 issue on the **[GitHub repository](https://github.com/Skyball2000/launch-anything/issues)**.  
-If you're feeling especially generous, you can also [buy me a coffee](https://www.paypal.com/paypalme/yanwittmann)!
+If you're feeling especially generous, you can also **[buy me a coffee](https://www.paypal.com/paypalme/yanwittmann)**!
