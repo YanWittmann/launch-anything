@@ -35,7 +35,6 @@ public class Main {
     private final Settings settings;
     private final BarManager barManager;
     private final TileManager tileManager;
-    private int currentlyPressedKey = -1;
     private int lastPressedKey = -1;
 
     private Main(String[] args) {
@@ -44,7 +43,7 @@ public class Main {
         } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
         }
 
-        System.out.println("Launching application on OS " + Util.getOS());
+        System.out.println("Launching application on OS [" + Util.getOS() + "]");
         TrayUtil.init(this);
 
         settings = new Settings();
@@ -58,7 +57,6 @@ public class Main {
         keyListener.addListener(new GlobalKeyListener.KeyListener() {
             @Override
             public void keyPressed(GlobalKeyEvent e) {
-                currentlyPressedKey = e.getVirtualKeyCode();
                 lastPressedKey = e.getVirtualKeyCode();
                 if (e.getVirtualKeyCode() == settings.getInt(Settings.ACTIVATION_KEY)) {
                     long currentTime = System.currentTimeMillis();
@@ -86,19 +84,31 @@ public class Main {
 
             @Override
             public void keyReleased(GlobalKeyEvent e) {
-                currentlyPressedKey = -1;
             }
         });
         keyListener.activate();
 
-        TrayUtil.showMessage("LaunchAnything is now active");
-
-        Sleep.milliseconds(4000);
+        boolean willRestartWebServer = false;
         for (String arg : args) {
             if (arg.equals("-ws")) {
-                openSettingsWebServer(false);
+                willRestartWebServer = true;
                 break;
             }
+        }
+
+        if (willRestartWebServer) {
+            new Thread(() -> {
+                try {
+                    TrayUtil.showMessage("LaunchAnything is now active.\nSettings page will be available in a few seconds.");
+                    Sleep.milliseconds(10000);
+                    openSettingsWebServer(false);
+                } catch (Exception e) {
+                    TrayUtil.showError("Failed to start web server: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }).start();
+        } else {
+            TrayUtil.showMessage("LaunchAnything is now active.");
         }
     }
 
