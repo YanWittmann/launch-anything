@@ -1,9 +1,7 @@
-![LaunchAnything](doc/img/LaunchAnythingLogoDefSmall.png)
-
-### _A search bar for anything you need_
 
 ![Example search results](doc/img/barExample.png)
 
+### _A search bar for anything you need_
 Use this application to launch a variety of processes on your system.
 
 ## Features
@@ -35,3 +33,7 @@ To build the launch bar yourself, perform these actions:
    (`mvn install`)
 2. Build this project using Maven (`mvn package`)
 3. The jar will be located in the `target` directory
+
+### Have fun using the LaunchAnything bar!
+
+![LaunchAnything](doc/img/LaunchAnythingLogoDefSmall.png)
