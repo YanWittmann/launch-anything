@@ -66,9 +66,20 @@ currently only available:
 - Timeout: 'timeout' or 'to' and a duration in minutes the bar should remain inactive. Timeout mode can be deactivated
   by right-clicking the system tray icon and selecting `Reset Timeout`.
 
+If you have ideas for more runtime tiles, please create an issue using the link below.
+
 ## Section: Categories
 
-TODO
+Every tile (generated tiles as well) have categories. The categories are used to determine the color of the tile and can
+be used as a search term. There are a few default categories:
+
+- file (blue)
+- url (orange/red)
+- copy (yellow)
+- runtime (green)
+- settings (red)
+
+But of course you can add as many categories as you like.
 
 ## Section: Settings & Help
 
@@ -81,7 +92,10 @@ their default values. Alternatively you can delete the `settings.json` file and 
 
 ## System tray
 
-TODO
+While the application is running, a system tray icon is shown in the bottom right corner of the screen (or wherever your
+taskbar is located). This icon can be right-clicked to open the settings, exit the bar or end the timeout mode.
+
+![System tray](img/systemTray.png)
 
 ## Advanced usage
 
