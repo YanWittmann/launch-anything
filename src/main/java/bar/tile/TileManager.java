@@ -5,6 +5,7 @@ import bar.ui.TrayUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -32,8 +33,12 @@ public class TileManager {
 
     public TileManager() {
         findSettingsFile();
-        if (tileFile == null) tileFile = new File("res/tiles.json");
-        else readTilesFromFile();
+        if (tileFile == null) {
+            tileFile = new File("res/tiles.json");
+            generateDefaultTiles();
+        } else {
+            readTilesFromFile();
+        }
         createTemplateTiles();
         createCustomTiles();
     }
@@ -106,7 +111,6 @@ public class TileManager {
             while (reader.hasNextLine()) {
                 fileContent.append(reader.nextLine().trim());
             }
-            long end = System.currentTimeMillis();
             reader.close();
 
             JSONObject tilesRoot = new JSONObject(fileContent.toString());
@@ -306,8 +310,17 @@ public class TileManager {
 
     private void generateDefaultTiles() {
         tiles.clear();
+        addUrlTile("LaunchAnything GitHub", "readme help", "https://github.com/Skyball2000/launch-anything");
+        addUrlTile("WhatsApp", "messages", "https://web.whatsapp.com");
         addUrlTile("GeoGebra", "graphs", "https://www.geogebra.org/calculator");
-        addUrlTile("LaunchAnything", "launch", "https://launchanything.com");
+        addUrlTile("YouTube", "video", "https://www.youtube.com");
+        addUrlTile("Timerling", "countdown", "http://yanwittmann.de/projects/timerling");
+        categories.add(new TileCategory("file", new Color(60, 150, 199)));
+        categories.add(new TileCategory("url", new Color(239, 93, 62)));
+        categories.add(new TileCategory("copy", new Color(252, 186, 3)));
+        categories.add(new TileCategory("runtime", new Color(59, 196, 57)));
+        categories.add(new TileCategory("settings", new Color(222, 40, 0)));
+        System.out.println("Generated default tiles and categories");
     }
 
     private void createCustomTiles() {
