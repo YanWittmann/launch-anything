@@ -60,7 +60,8 @@ currently only available:
 - Go Website: Enter 'go' and any search term to use the `I'm Feeling Lucky` functionality and instantly open the
   corresponding website.
 - Math Expression: Enter any mathematical expression and let the application calculate the result. You can include
-  mathematical expressions like `pow(2,4)` or `sqrt(4)`.
+  mathematical expressions like `pow(2,4)` or `sqrt(4)`.  
+  You can also define variables first by typing in `x = 2` and then use `x` in your expression.
 - Wiki Search: Enter 'wiki' and any search term to display the short description of the Wikipedia article. Press enter
   to open the article in your browser.
 - Timeout: 'timeout' or 'to' and a duration in minutes the bar should remain inactive. Timeout mode can be deactivated

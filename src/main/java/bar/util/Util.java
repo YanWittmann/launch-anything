@@ -179,6 +179,12 @@ public abstract class Util {
         return expr.evaluate();
     }
 
+    public static double evaluateMathematicalExpression(String expression, Map<String, Double> variables) {
+        Expression expr = new ExpressionBuilder(expression).variables(variables.keySet()).build();
+        variables.forEach(expr::setVariable);
+        return expr.evaluate();
+    }
+
     public static String getHttpRequestResult(String url) throws IOException {
         StringBuilder result = new StringBuilder();
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();

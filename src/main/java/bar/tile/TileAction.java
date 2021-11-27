@@ -40,6 +40,18 @@ public class TileAction {
         this.json.put("param2", (Object) null);
     }
 
+    private RuntimeTileInteraction runtimeTileInteraction = null;
+
+    public TileAction(RuntimeTileInteraction interaction) {
+        this.json = new JSONObject();
+        this.json.put("type", "interaction");
+        runtimeTileInteraction = interaction;
+    }
+
+    public interface RuntimeTileInteraction {
+        void run();
+    }
+
     public String getType() {
         return json.optString("type", null);
     }
@@ -99,6 +111,9 @@ public class TileAction {
                         if (param1 != null) {
                             Util.copyToClipboard(param1);
                         }
+                        break;
+                    case "interaction":
+                        runtimeTileInteraction.run();
                         break;
                     case "settings":
                         if (param1 != null) {
