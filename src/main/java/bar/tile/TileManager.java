@@ -50,10 +50,10 @@ public class TileManager {
                     }
                 }).start();
             }
+            createSettingsTiles();
         } else {
             readTilesFromFile();
         }
-        createTemplateTiles();
         createCustomTiles();
     }
 
@@ -182,6 +182,8 @@ public class TileManager {
         }
 
         regenerateGeneratedTiles();
+        createSettingsTiles();
+
         System.out.println("Loaded " + tiles.size() + " tile(s), " + tileGenerators.size() + " tile generator(s) and " + categories.size() + " category/ies.");
     }
 
@@ -287,7 +289,7 @@ public class TileManager {
         return tilesRoot;
     }
 
-    private void createTemplateTiles() {
+    private void createSettingsTiles() {
         addSettingsTile("LaunchAnything Settings", "tile option editor help", "webeditor");
         addSettingsTile("Create Tile", "add new", "createTile");
 
