@@ -26,6 +26,7 @@ There, you will be asked to enter a name for your tile. Do so and hit enter. The
 categories available:
 
 - File: Opens up a file explorer that lets you select a file that will be opened up when executing the tile.
+- Directory: Opens up a file explorer that lets you select a directory that will be opened up when executing the tile.
 - URL: Enter a URL that should be opened up when executing the tile.
 - Copy: Enter a text that should be copied to the clipboard when executing the tile.
 
@@ -112,10 +113,10 @@ When entering a search term, the bar will
   with this name `FileZilla`, as it first matches `fi` in `File` and then `z` in `Zilla`. You can create some elaborate
   keywords that allow you to search for much shorter terms.
 
-#### Create Tiles
+#### Modify the topmost tile
 
-To quickly create tiles, you can use the `Create Tile` tile. This is a lot faster than opening the settings and doing it
-over there.
+If you press alt+enter (or whatever key you have configured in the settings) while the bar is active, you can quickly
+modify the name, action or both of the topmost tile.
 
 #### Execute the last executed tile
 
@@ -130,6 +131,11 @@ restart the application using the `Restart LaunchAnything` tile and the webserve
 
 The tiles and settings are stored in JSON files in the res/ directory. YOu can copy those files to a different instance
 of the application and directly use them there.
+
+#### Create Tiles
+
+To quickly create tiles, you can use the `Create Tile` tile. This is a lot faster than opening the settings and doing it
+over there.
 
 ## That's it!
 

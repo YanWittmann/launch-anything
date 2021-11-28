@@ -95,9 +95,7 @@ public class TileGeneratorGenerator {
                     if (files.size() > 0) {
                         for (File file : files) {
                             if (file != null) {
-                                String filename = file.getName().replaceAll("(.+)\\.[^.]+", "$1");
-                                String extension = file.getName().replaceAll(".+\\.([^.]+)", "$1").toUpperCase();
-                                Tile tile = new Tile(filename + " (" + extension + ")");
+                                Tile tile = new Tile(fileTypeNameGenerator(file));
                                 tile.addAction(new TileAction("file", file.getAbsolutePath()));
                                 for (String s : file.getAbsolutePath().replaceAll("[A-Z]:", "").replaceAll("[/\\\\.]+", " ").replaceAll(" +", " ").trim().split(" ")) {
                                     tile.addKeyword(s);
@@ -113,6 +111,17 @@ public class TileGeneratorGenerator {
         }
 
         return tiles;
+    }
+
+    public static String fileTypeNameGenerator(File file) {
+        if (file == null) return "";
+        if (file.isDirectory() || !file.getName().contains(".")) {
+            return file.getName();
+        } else {
+            String filename = file.getName().replaceAll("(.+)\\.[^.]+", "$1");
+            String extension = file.getName().replaceAll(".+\\.([^.]+)", "$1").toUpperCase();
+            return filename + " (" + extension + ")";
+        }
     }
 
     public JSONObject toJSON() {

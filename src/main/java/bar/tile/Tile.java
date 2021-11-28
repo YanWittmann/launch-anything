@@ -44,6 +44,16 @@ public class Tile {
         this.lastActivated = 0;
     }
 
+    public Tile() {
+        this.id = UUID.randomUUID().toString();
+        this.label = "unnamed";
+        this.category = "";
+        this.keywords = "";
+        this.isActive = true;
+        this.exportable = true;
+        this.lastActivated = 0;
+    }
+
     public boolean isValid() {
         return lastActivated != -1;
     }
@@ -98,6 +108,13 @@ public class Tile {
 
     public String getCategory() {
         return category;
+    }
+
+    public TileAction getFirstAction() {
+        if (tileActions.size() > 0) {
+            return tileActions.get(0);
+        }
+        return null;
     }
 
     public void execute(Main main) {
@@ -215,6 +232,12 @@ public class Tile {
     public TileAction findTileAction(String param1, String param2) {
         for (TileAction action : tileActions) {
             if (isNormalizedTileActionEquals(action.getParam1(), param1) && isNormalizedTileActionEquals(action.getParam2(), param2)) {
+                return action;
+            }
+        }
+        for (TileAction action : tileActions) {
+            if ((isNormalizedTileActionEquals(action.getParam1(), param1) || isNormalizedTileActionEquals(action.getParam1(), param2))
+                && (isNormalizedTileActionEquals(action.getParam2(), param1) || isNormalizedTileActionEquals(action.getParam2(), param2))) {
                 return action;
             }
         }

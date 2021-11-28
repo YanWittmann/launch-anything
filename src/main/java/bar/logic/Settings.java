@@ -100,6 +100,7 @@ public class Settings {
         settings.putIfAbsent(ACTIVATION_KEY, 162);
         settings.putIfAbsent(CANCEL_KEY, 27);
         settings.putIfAbsent(CONFIRM_KEY, 13);
+        settings.putIfAbsent(MODIFY_KEY, 164);
         settings.putIfAbsent(NEXT_RESULT_KEY, 40);
         settings.putIfAbsent(PREVIOUS_RESULT_KEY, 38);
         settings.putIfAbsent(RECURSION_LIMIT, 1000);
@@ -145,6 +146,7 @@ public class Settings {
     public final static String ACTIVATION_KEY = "activationKey";
     public final static String CANCEL_KEY = "cancelKey";
     public final static String CONFIRM_KEY = "confirmKey";
+    public final static String MODIFY_KEY = "modifyKeyMetaChar";
     public final static String NEXT_RESULT_KEY = "nextResultKey";
     public final static String PREVIOUS_RESULT_KEY = "previousResultKey";
     public final static String RECURSION_LIMIT = "recursionLimit";

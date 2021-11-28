@@ -59,7 +59,6 @@ public class Main {
         keyListener.addListener(new GlobalKeyListener.KeyListener() {
             @Override
             public void keyPressed(GlobalKeyEvent e) {
-                lastPressedKey = e.getVirtualKeyCode();
                 if (e.getVirtualKeyCode() == settings.getInt(Settings.ACTIVATION_KEY)) {
                     long currentTime = System.currentTimeMillis();
                     if (timeoutUntil < currentTime && currentTime - lastCommandInput[0] < settings.getInt(Settings.ACTIVATION_DELAY) && currentTime - lastCommandInput[0] > 50) {
@@ -69,12 +68,14 @@ public class Main {
                     lastCommandInput[0] = currentTime;
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.CANCEL_KEY)) {
                     barManager.setInputActive(false);
-                } else if (e.getVirtualKeyCode() == settings.getInt(Settings.CONFIRM_KEY)) {
+                } else if (e.getVirtualKeyCode() == settings.getInt(Settings.CONFIRM_KEY) && lastPressedKey != settings.getInt(Settings.MODIFY_KEY)) {
                     boolean isInputActive = barManager.isInputActive();
                     if (isInputActive) {
                         barManager.setInputActive(false);
                         executeTopmostTile();
                     }
+                } else if (e.getVirtualKeyCode() == settings.getInt(Settings.CONFIRM_KEY) && lastPressedKey == settings.getInt(Settings.MODIFY_KEY)) {
+                    modifyTopmostTile();
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.PREVIOUS_RESULT_KEY)) {
                     currentResultIndex = Math.max(0, currentResultIndex - 1);
                     barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
@@ -82,6 +83,7 @@ public class Main {
                     currentResultIndex = Math.min(currentResultIndex + 1, lastTiles.size() - 1);
                     barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
                 }
+                lastPressedKey = e.getVirtualKeyCode();
             }
 
             @Override
@@ -129,6 +131,54 @@ public class Main {
         if (lastExecutedTile != null) {
             lastExecutedTile.execute(this);
             tileManager.save();
+        }
+    }
+
+    private void modifyTopmostTile() {
+        if (currentResultIndex < lastTiles.size()) {
+            lastExecutedTile = lastTiles.get(currentResultIndex);
+            barManager.setInputActive(false);
+            if (lastExecutedTile != null) {
+                String selectedOption = Util.popupChooseButton("LaunchAnything", "What do you want to edit?", new String[]{"Name", "Action", "Both", "Cancel"});
+                if (selectedOption != null) {
+                    switch (selectedOption) {
+                        case "Action":
+                        case "Both":
+                            TileAction firstAction = lastExecutedTile.getFirstAction();
+                            String param1 = null, param2 = null;
+                            if (firstAction != null) {
+                                String editType = Util.popupChooseButton("LaunchAnything", "Do you want to modify the action type or only the parameters?", new String[]{"Parameters", "Type and Parameters", "Cancel"});
+                                if (editType != null) {
+                                    if (editType.equals("Parameters")) {
+                                        param1 = firstAction.getParam1();
+                                        param2 = firstAction.getParam2();
+                                    } else if (editType.equals("Type and Parameters")) {
+                                        lastExecutedTile.removeAction(firstAction);
+                                    } else if (editType.equals("Cancel")) {
+                                        return;
+                                    }
+                                }
+                            }
+                            createOrEditNewTileAction(lastExecutedTile, param1, param2);
+                            if (!selectedOption.equals("Both")) {
+                                break;
+                            }
+                        case "Name":
+                            String templateName = lastExecutedTile.getLabel();
+                            if (selectedOption.equals("Both") && lastExecutedTile.getFirstAction() != null) {
+                                templateName = lastExecutedTile.getFirstAction().getExampleTileLabel();
+                            }
+                            String newName = Util.popupTextInput("LaunchAnything", "Enter new name:", templateName);
+                            if (newName != null && !newName.isEmpty() && !newName.equals("null")) {
+                                lastExecutedTile.setLabel(newName);
+                            }
+                            break;
+                        case "Cancel":
+                            return;
+                    }
+                }
+                tileManager.save();
+            }
         }
     }
 
@@ -515,6 +565,13 @@ public class Main {
                         param1 = file.getAbsolutePath();
                     }
                     break;
+                case "directory":
+                    actionType = "file";
+                    file = Util.pickDirectory();
+                    if (file != null) {
+                        param1 = file.getAbsolutePath();
+                    }
+                    break;
                 case "url":
                     param1 = Util.popupTextInput("Tile Action", "Enter the URL", previousValue);
                     break;
@@ -534,11 +591,12 @@ public class Main {
     }
 
     public void createTile() {
-        String tileName = Util.popupTextInput("Create new Tile", "Enter the name of the new Tile", null);
-        if (tileName != null && tileName.length() > 0 && !tileName.equals("null")) {
-            Tile newTile = new Tile(tileName);
-            TileAction newTileAction = createOrEditNewTileAction(newTile, null, null);
-            if (newTileAction != null) {
+        Tile newTile = new Tile();
+        TileAction newTileAction = createOrEditNewTileAction(newTile, null, null);
+        if (newTileAction != null) {
+            String tileName = Util.popupTextInput("Create new Tile", "Enter the name of the new Tile:", newTileAction.getExampleTileLabel());
+            if (tileName != null && tileName.length() > 0 && !tileName.equals("null")) {
+                newTile.setLabel(tileName);
                 newTile.setCategory(newTileAction.getType());
                 tileManager.addTile(newTile);
                 tileManager.save();

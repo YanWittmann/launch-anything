@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 public class TileAction {
 
@@ -85,6 +86,7 @@ public class TileAction {
             if (type != null) {
                 switch (type) {
                     case "file":
+                    case "directory":
                         if (param1 != null) {
                             try {
                                 Desktop desktop = Desktop.getDesktop();
@@ -152,6 +154,38 @@ public class TileAction {
         }
     }
 
+    public String getExampleTileLabel() {
+        try {
+            String type = json.optString("type");
+            String param1 = json.optString("param1");
+
+            if (type != null) {
+                switch (type) {
+                    case "file":
+                    case "directory":
+                        if (param1 != null) {
+                            return TileGeneratorGenerator.fileTypeNameGenerator(new File(param1));
+                        }
+                        break;
+                    case "url":
+                        if (param1 != null) {
+                            URL url = new URL(param1);
+                            return url.getHost() + " -> " + url.getPath().replace("/", " ").replaceAll("\\?.*", "").replaceAll(" +", " ");
+                        }
+                        break;
+                    case "copy":
+                        if (param1 != null) {
+                            return "COPY: " + param1;
+                        }
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            TrayUtil.showError("Tile action failure: " + e.getMessage() + "\nAre you sure that the tile action value is valid?");
+        }
+        return "";
+    }
+
     public JSONObject toJSON() {
         return json;
     }
@@ -165,6 +199,7 @@ public class TileAction {
 
     public final static String[] ACTION_TYPES = {
             "file",
+            "directory",
             "url",
             "copy",
             "settings"
