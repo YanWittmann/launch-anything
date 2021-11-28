@@ -96,6 +96,7 @@ public class Settings {
         settings.putIfAbsent(RESULT_WIDTH, 700);
         settings.putIfAbsent(RESULT_HEIGHT, 70);
         settings.putIfAbsent(AMOUNT_RESULTS, 6);
+        settings.putIfAbsent(RESULT_MARGIN, 10);
         settings.putIfAbsent(INPUT_RESULT_DISTANCE, 20);
         settings.putIfAbsent(BAR_FONT, "Comfortaa Regular");
         settings.putIfAbsent(ACTIVATION_DELAY, 250);

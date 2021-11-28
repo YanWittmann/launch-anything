@@ -77,7 +77,10 @@ public class Main {
                         executeTopmostTile();
                     }
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.CONFIRM_KEY) && lastPressedKey == settings.getInt(Settings.MODIFY_KEY)) {
-                    modifyTopmostTile();
+                    boolean isInputActive = barManager.isInputActive();
+                    if (isInputActive) {
+                        modifyTopmostTile();
+                    }
                 } else if (e.getVirtualKeyCode() == settings.getInt(Settings.PREVIOUS_RESULT_KEY)) {
                     currentResultIndex = Math.max(0, currentResultIndex - 1);
                     barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
