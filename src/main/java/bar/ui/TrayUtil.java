@@ -14,10 +14,12 @@ public abstract class TrayUtil {
     private static MenuItem resetTimeoutIcon;
 
     public static void showMessage(String message) {
+        System.out.println("Showing message tray: " + message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything", message, TrayIcon.MessageType.INFO);
     }
 
     public static void showError(String message) {
+        System.out.println("Showing error message tray: " + message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything Error", message, TrayIcon.MessageType.ERROR);
     }
 
@@ -33,6 +35,10 @@ public abstract class TrayUtil {
         MenuItem settingsItem = new MenuItem("Settings");
         settingsItem.addActionListener(e -> main.openSettingsWebServer(true));
         trayMenu.add(settingsItem);
+
+        MenuItem resetSettingsItem = new MenuItem("Reset Settings");
+        resetSettingsItem.addActionListener(e -> main.resetSettings());
+        trayMenu.add(resetSettingsItem);
 
         return trayMenu;
     }

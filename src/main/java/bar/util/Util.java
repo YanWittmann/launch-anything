@@ -211,7 +211,7 @@ public abstract class Util {
                     files.addAll(recursivelyListFiles(file, amount));
                 } else {
                     files.add(file);
-                    if (amount.incrementAndGet() > (settings != null ? settings.getInt("recursionLimit") : 200)) {
+                    if (amount.incrementAndGet() > (settings != null ? settings.getInt(Settings.TILE_GENERATOR_FILE_LIMIT) : 1000)) {
                         return files;
                     }
                 }
@@ -234,7 +234,7 @@ public abstract class Util {
                     files.addAll(recursivelyListFiles(file, extension));
                 } else if (extension == null || extension.length == 0 || Arrays.stream(extension).anyMatch(file.getName()::endsWith)) {
                     files.add(file);
-                    if (amount.incrementAndGet() > (settings != null ? settings.getInt("recursionLimit") : 200)) {
+                    if (amount.incrementAndGet() > (settings != null ? settings.getInt(Settings.TILE_GENERATOR_FILE_LIMIT) : 1000)) {
                         return files;
                     }
                 }
@@ -242,6 +242,24 @@ public abstract class Util {
             return files;
         }
         return Collections.emptyList();
+    }
+
+    public static String capitalizeWords(String text) {
+        StringBuilder sb = new StringBuilder();
+        if (text.length() > 0) {
+            sb.append(Character.toUpperCase(text.charAt(0)));
+        }
+        for (int i = 1; i < text.length(); i++) {
+            String chPrev = String.valueOf(text.charAt(i - 1));
+            String ch = String.valueOf(text.charAt(i));
+            if (Objects.equals(chPrev, " ")) {
+                sb.append(ch.toUpperCase());
+            } else {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
+
     }
 
     public static boolean isAutostartEnabled() {

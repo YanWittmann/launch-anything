@@ -96,7 +96,6 @@ public class Settings {
         settings.putIfAbsent(RESULT_WIDTH, 700);
         settings.putIfAbsent(RESULT_HEIGHT, 70);
         settings.putIfAbsent(AMOUNT_RESULTS, 6);
-        settings.putIfAbsent(RESULT_MARGIN, 10);
         settings.putIfAbsent(INPUT_RESULT_DISTANCE, 20);
         settings.putIfAbsent(BAR_FONT, "Comfortaa Regular");
         settings.putIfAbsent(ACTIVATION_DELAY, 250);
@@ -106,12 +105,53 @@ public class Settings {
         settings.putIfAbsent(MODIFY_KEY, 164);
         settings.putIfAbsent(NEXT_RESULT_KEY, 40);
         settings.putIfAbsent(PREVIOUS_RESULT_KEY, 38);
-        settings.putIfAbsent(RECURSION_LIMIT, 1000);
+        settings.putIfAbsent(TILE_GENERATOR_FILE_LIMIT, 1000);
+        settings.putIfAbsent(INPUT_BAR_FONT_SIZE, 36);
+        settings.putIfAbsent(RESULT_BAR_FONT_SIZE, 30);
+    }
+
+    public void loadTemplate(String template) {
+        switch (template) {
+            case "sizeNormal":
+                settings.put(INPUT_WIDTH, 800);
+                settings.put(INPUT_HEIGHT, 80);
+                settings.put(RESULT_WIDTH, 700);
+                settings.put(RESULT_HEIGHT, 70);
+                settings.put(AMOUNT_RESULTS, 6);
+                settings.put(INPUT_RESULT_DISTANCE, 20);
+                settings.put(INPUT_BAR_FONT_SIZE, 36);
+                settings.put(RESULT_BAR_FONT_SIZE, 30);
+                TrayUtil.showMessage("Settings loaded: Size normal");
+                break;
+            case "sizeMedium":
+                settings.put(INPUT_WIDTH, 800);
+                settings.put(INPUT_HEIGHT, 64);
+                settings.put(RESULT_WIDTH, 700);
+                settings.put(RESULT_HEIGHT, 62);
+                settings.put(AMOUNT_RESULTS, 7);
+                settings.put(INPUT_RESULT_DISTANCE, 20);
+                settings.put(INPUT_BAR_FONT_SIZE, 36);
+                settings.put(RESULT_BAR_FONT_SIZE, 28);
+                TrayUtil.showMessage("Settings loaded: Size medium");
+                break;
+            case "sizeSmall":
+                settings.put(INPUT_WIDTH, 700);
+                settings.put(INPUT_HEIGHT, 55);
+                settings.put(RESULT_WIDTH, 600);
+                settings.put(RESULT_HEIGHT, 50);
+                settings.put(AMOUNT_RESULTS, 8);
+                settings.put(INPUT_RESULT_DISTANCE, 6);
+                settings.put(INPUT_BAR_FONT_SIZE, 26);
+                settings.put(RESULT_BAR_FONT_SIZE, 24);
+                TrayUtil.showMessage("Settings loaded: Size small");
+                break;
+        }
+        save();
     }
 
     public void setSetting(String key, Object value) {
         settings.put(key, value);
-        TrayUtil.showMessage(key + " set to: " + value);
+        TrayUtil.showMessage(Util.capitalizeWords(key.replaceAll("([A-Z])", " $1")) + " set to: " + value);
         save();
     }
 
@@ -149,5 +189,7 @@ public class Settings {
     public final static String MODIFY_KEY = "modifyKeyMetaChar";
     public final static String NEXT_RESULT_KEY = "nextResultKey";
     public final static String PREVIOUS_RESULT_KEY = "previousResultKey";
-    public final static String RECURSION_LIMIT = "recursionLimit";
+    public final static String TILE_GENERATOR_FILE_LIMIT = "tileGeneratorFileLimit";
+    public final static String INPUT_BAR_FONT_SIZE = "inputBarFontSize";
+    public final static String RESULT_BAR_FONT_SIZE = "resultBarFontSize";
 }

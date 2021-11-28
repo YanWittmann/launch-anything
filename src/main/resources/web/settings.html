@@ -302,6 +302,11 @@
         tile to quickly restart it.
         <br>
         <ul id="settings-selection"></ul>
+        <br>
+        You can load one of these templates:
+        <span id="load-settings-size-small-bar" class="clickable badge">Small bar</span>
+        <span id="load-settings-size-medium-bar" class="clickable badge">Medium sized bar</span>
+        <span id="load-settings-size-normal-bar" class="clickable badge">Normal sized bar</span>
         <br><br>
     </section>
 
@@ -329,6 +334,15 @@
     };
     document.getElementById('redo-action').onclick = function () {
         metaInteraction('redo');
+    };
+    document.getElementById('load-settings-size-small-bar').onclick = function () {
+        metaInteraction('settingsTemplateSizeSmall');
+    };
+    document.getElementById('load-settings-size-normal-bar').onclick = function () {
+        metaInteraction('settingsTemplateSizeNormal');
+    };
+    document.getElementById('load-settings-size-medium-bar').onclick = function () {
+        metaInteraction('settingsTemplateSizeMedium');
     };
     document.addEventListener('keydown', function (e) {
         if (e.keyCode === 90 && e.ctrlKey) {

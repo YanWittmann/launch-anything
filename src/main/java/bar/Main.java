@@ -295,6 +295,15 @@ public class Main {
                                         response.put("message", "Nothing to redo");
                                     }
                                     break;
+                                case "settingsTemplateSizeSmall":
+                                    settings.loadTemplate("sizeSmall");
+                                    break;
+                                case "settingsTemplateSizeMedium":
+                                    settings.loadTemplate("sizeMedium");
+                                    break;
+                                case "settingsTemplateSizeNormal":
+                                    settings.loadTemplate("sizeNormal");
+                                    break;
                             }
                         }
 
@@ -455,11 +464,7 @@ public class Main {
                                 }
                             } else if (editType.equals("setting")) {
                                 if (whatToEdit.equals("resetSettings")) {
-                                    String confirmation = Util.popupTextInput("Reset Settings", "Are you sure you want to reset all settings?\nEnter 'confirm' to delete the settings:", "");
-                                    if (confirmation != null && confirmation.equals("confirm")) {
-                                        settings.reset(true);
-                                        settings.save();
-                                    }
+                                    resetSettings();
                                 } else {
                                     Object newValue;
                                     if (whatToEdit.toLowerCase().contains("key")) {
@@ -507,6 +512,14 @@ public class Main {
             System.out.println("Something went wrong while answering to the client: " + e.getMessage());
             e.printStackTrace();
             openSettingsWebServer(false);
+        }
+    }
+
+    public void resetSettings() {
+        String confirmation = Util.popupTextInput("Reset Settings", "Are you sure you want to reset all settings?\nEnter 'confirm' to delete the settings:", "");
+        if (confirmation != null && confirmation.equals("confirm")) {
+            settings.reset(true);
+            settings.save();
         }
     }
 

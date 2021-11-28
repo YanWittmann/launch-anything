@@ -16,7 +16,8 @@ import java.util.List;
 public class GlassBar extends JFrame {
 
     private final static int BORDER_RADIUS = 12;
-    private final static int BORDER_THICKNESS = 2;
+    private final static int BORDER_THICKNESS_FOR_DARK_MODE = 2;
+    private final static int BORDER_THICKNESS_FOR_BRIGHT_MODE = 3;
     private static final float BACKGROUND_TINT_FACTOR_FOR_DARK_MODE = 0.05f;
     private static final float BACKGROUND_TINT_FACTOR_FOR_BRIGHT_MODE = 0.1f;
     private static final float BACKGROUND_BLEND_FACTOR_FOR_DARK_MODE = 0.6f;
@@ -25,8 +26,8 @@ public class GlassBar extends JFrame {
     private final static Color BLUR_COLOR_FOR_BRIGHT_MODE = new Color(255, 255, 255);
     private final static Color TEXT_COLOR_FOR_DARK_MODE = new Color(241, 241, 241);
     private final static Color TEXT_COLOR_FOR_BRIGHT_MODE = new Color(31, 31, 31);
-    private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_DARK_MODE = new TextBubbleBorder(new Color(177, 182, 183), BORDER_THICKNESS, BORDER_RADIUS, 0, false);
-    private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE = new TextBubbleBorder(new Color(100, 100, 100), BORDER_THICKNESS, BORDER_RADIUS, 0, false);
+    private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_DARK_MODE = new TextBubbleBorder(new Color(177, 182, 183), BORDER_THICKNESS_FOR_DARK_MODE, BORDER_RADIUS, 0, false);
+    private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE = new TextBubbleBorder(new Color(100, 100, 100), BORDER_THICKNESS_FOR_BRIGHT_MODE, BORDER_RADIUS, 0, false);
     public final static Rectangle SCREEN_RECTANGLE = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
     public final static GaussianFilter BACKGROUND_BLUR_FILTER = new GaussianFilter(20);
 
@@ -143,12 +144,13 @@ public class GlassBar extends JFrame {
             frameBorderLabel.setBorder(ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE);
             screenshot = ImageUtil.overlayColor(screenshot, BLUR_COLOR_FOR_BRIGHT_MODE, BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE);
             inputField.setForeground(TEXT_COLOR_FOR_BRIGHT_MODE);
+            screenshot = ImageUtil.makeRoundedCorner(screenshot, BORDER_RADIUS + BORDER_THICKNESS_FOR_BRIGHT_MODE + 5);
         } else {
             frameBorderLabel.setBorder(ROUNDED_LINE_BORDER_FOR_DARK_MODE);
             screenshot = ImageUtil.overlayColor(screenshot, BLUR_COLOR_FOR_DARK_MODE, BACKGROUND_BLEND_FACTOR_FOR_DARK_MODE);
             inputField.setForeground(TEXT_COLOR_FOR_DARK_MODE);
+            screenshot = ImageUtil.makeRoundedCorner(screenshot, BORDER_RADIUS + BORDER_THICKNESS_FOR_DARK_MODE + 5);
         }
-        screenshot = ImageUtil.makeRoundedCorner(screenshot, BORDER_RADIUS + BORDER_THICKNESS + 5);
         lastBackgroundImage = screenshot;
         backgroundImageLabel.setIcon(new ImageIcon(screenshot));
     }
@@ -197,7 +199,7 @@ public class GlassBar extends JFrame {
             contentPane.setPreferredSize(new Dimension(width, height));
             this.setLocationRelativeTo(null);
             this.setLocation(this.getX(), SCREEN_RECTANGLE.height / 6);
-            fontSize = 36;
+            fontSize = settings.getInt(Settings.INPUT_BAR_FONT_SIZE);
 
             // hide the cursor if it is on the frame
             this.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
@@ -210,12 +212,12 @@ public class GlassBar extends JFrame {
             contentPane.setPreferredSize(new Dimension(width, height));
             this.setLocationRelativeTo(null);
             this.setLocation(this.getX(), (SCREEN_RECTANGLE.height / 6) + ((index + 1) * (height + settings.getInt(Settings.RESULT_MARGIN))) + settings.getInt(Settings.INPUT_RESULT_DISTANCE));
-            fontSize = 30;
+            fontSize = settings.getInt(Settings.RESULT_BAR_FONT_SIZE);
         }
 
         // set the size of the components on the bar
         barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-        inputField.setBounds(fontSize - 5, 4, (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
+        inputField.setBounds(fontSize - 5, settings.getInt(Settings.INPUT_BAR_FONT_SIZE) < 25 ? 0 : 4, (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
         inputField.setFont(new Font(settings.getString(Settings.BAR_FONT), Font.BOLD, fontSize));
         frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
         backgroundImageLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
