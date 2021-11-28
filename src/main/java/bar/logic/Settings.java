@@ -21,7 +21,7 @@ public class Settings {
     public Settings() {
         findSettingsFile();
         if (settingsFile == null) {
-            reset();
+            reset(false);
         } else {
             readSettingsFromFile();
             fillRequiredValues();
@@ -81,10 +81,13 @@ public class Settings {
         }
     }
 
-    public void reset() {
+    public void reset(boolean notify) {
         settings.clear();
         fillRequiredValues();
         settingsFile = new File("res/settings.json");
+        if (notify) {
+            TrayUtil.showMessage("Settings reset!");
+        }
     }
 
     private void fillRequiredValues() {
@@ -106,12 +109,9 @@ public class Settings {
         settings.putIfAbsent(RECURSION_LIMIT, 1000);
     }
 
-    public boolean hasSetting(String key) {
-        return settings.containsKey(key);
-    }
-
     public void setSetting(String key, Object value) {
         settings.put(key, value);
+        TrayUtil.showMessage(key + " set to: " + value);
         save();
     }
 

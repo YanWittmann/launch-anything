@@ -28,6 +28,8 @@ import static java.awt.Desktop.getDesktop;
 
 public class Main {
 
+    public static final String VERSION = "2.1";
+
     public static void main(String[] args) {
         Util.registerFont("font/Comfortaa-Regular.ttf");
         new Main(args);
@@ -45,7 +47,7 @@ public class Main {
         } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
         }
 
-        System.out.println("Launching application on OS [" + Util.getOS() + "]");
+        System.out.println("Launching application version [" + VERSION + "] on OS [" + Util.getOS() + "]");
         TrayUtil.init(this);
 
         settings = new Settings();
@@ -103,7 +105,7 @@ public class Main {
         if (willRestartWebServer) {
             new Thread(() -> {
                 try {
-                    TrayUtil.showMessage("LaunchAnything is now active.\nSettings page will be available in a few seconds.");
+                    TrayUtil.showMessage("LaunchAnything V" + VERSION + " is now active.\nSettings page will be available in a few seconds.");
                     Sleep.milliseconds(10000);
                     openSettingsWebServer(false);
                 } catch (Exception e) {
@@ -455,7 +457,7 @@ public class Main {
                                 if (whatToEdit.equals("resetSettings")) {
                                     String confirmation = Util.popupTextInput("Reset Settings", "Are you sure you want to reset all settings?\nEnter 'confirm' to delete the settings:", "");
                                     if (confirmation != null && confirmation.equals("confirm")) {
-                                        settings.reset();
+                                        settings.reset(true);
                                         settings.save();
                                     }
                                 } else {
