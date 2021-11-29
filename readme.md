@@ -2,7 +2,9 @@
 
 ### _A search bar for anything you need_
 
-Use this application to launch a variety of processes on your system.
+Use this application to launch a variety of processes on your system.  
+Currently only supports Windows, but might be expanded to support other platforms. This is because the global key
+detector is based on the Windows API.
 
 ## Features
 
@@ -33,6 +35,12 @@ For a more complete how-to, see this **[document](doc/how-to.md)**.
 After having started the application, open up the search bar by double-tapping `command` or `ctrl`, type in `settings`
 and hit enter. This will open up a webserver and the corresponding web page in your browser. A more detailed description
 of this settings page can be found **[here](doc/how-to.md)**.
+
+## Trouble Shooting
+
+If the activation key (double `ctrl` or `command`) is not working, try changing the activation key in the settings page
+by right-clicking the tray icon in your dock and selecting `Settings`. There, in the `Settings & Help` tab, you can
+change the activation key by clicking on the `activationKey` button.
 
 ## Build it yourself
 
