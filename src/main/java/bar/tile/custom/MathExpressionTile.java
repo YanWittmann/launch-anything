@@ -43,10 +43,11 @@ public class MathExpressionTile implements RuntimeTile {
     }
 
     private String makeResultForTileLabel(double result) {
-        return removeTrailingZeros(result) +
+        return removeTrailingZeros(replaceWithConstant(result)) +
                removeDoubles(findFractionValue(result, 0.001),
                        findFractionValue(result, 0.01)) +
-               findRoundedValue(result);
+               findRoundedValue(result) +
+               findConstant(result);
     }
 
     private String removeDoubles(String... strings) {
@@ -147,6 +148,28 @@ public class MathExpressionTile implements RuntimeTile {
         }
     }
 
+    private Double replaceWithConstant(double value) {
+        for (Map.Entry<String, Double> entry : CONSTANTS.entrySet()) {
+            double distance = Math.abs(value - entry.getValue());
+            if (distance < 0.0001) {
+                return entry.getValue();
+            }
+        }
+        return value;
+    }
+
+    private String findConstant(double value) {
+        for (Map.Entry<String, Double> entry : CONSTANTS.entrySet()) {
+            double distance = Math.abs(value - entry.getValue());
+            if (distance < 0.0001) {
+                return " = " + entry.getKey();
+            } else if (distance < 0.01) {
+                return " ≈ " + entry.getKey();
+            }
+        }
+        return "";
+    }
+
     private static class Fraction {
         private final int numerator;
         private final int denominator;
@@ -160,6 +183,13 @@ public class MathExpressionTile implements RuntimeTile {
         public String toString() {
             return numerator + "/" + denominator;
         }
+    }
+
+    private final static Map<String, Double> CONSTANTS = new HashMap<>();
+
+    static {
+        CONSTANTS.put("π", Math.PI);
+        CONSTANTS.put("e", Math.E);
     }
 
     public static String getTitle() {

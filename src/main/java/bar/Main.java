@@ -117,7 +117,7 @@ public class Main {
                 }
             }).start();
         } else {
-            TrayUtil.showMessage("LaunchAnything is now active.");
+            TrayUtil.showMessage("LaunchAnything V" + VERSION + " is now active.");
         }
     }
 
