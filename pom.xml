@@ -7,6 +7,12 @@
     <groupId>de.yanwittmann</groupId>
     <artifactId>launch-anything</artifactId>
     <version>2.2-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>launch-anything-elevator</module>
+        <module>launch-anything-application</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -55,38 +61,9 @@
             <version>0.4.8</version>
         </dependency>
         <dependency>
-        <groupId>com.github.vatbub</groupId>
-        <artifactId>mslinks</artifactId>
-        <version>1.0.2</version>
-    </dependency>
+            <groupId>com.github.vatbub</groupId>
+            <artifactId>mslinks</artifactId>
+            <version>1.0.2</version>
+        </dependency>
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>bar.Main</mainClass>
-                        </manifest>
-                    </archive>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
 </project>

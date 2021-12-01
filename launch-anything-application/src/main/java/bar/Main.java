@@ -28,7 +28,7 @@ import static java.awt.Desktop.getDesktop;
 
 public class Main {
 
-    public static final String VERSION = "2.2-SNAPSHOT";
+    public final String VERSION;
 
     public static void main(String[] args) {
         Util.registerFont("font/Comfortaa-Regular.ttf");
@@ -46,6 +46,17 @@ public class Main {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
         }
+
+        String ver;
+        try {
+            Properties props = new Properties();
+            props.load(Main.class.getClassLoader().getResourceAsStream("project.properties"));
+            ver = props.getProperty("application.version");
+        } catch (IOException e) {
+            ver = "unknown";
+            e.printStackTrace();
+        }
+        VERSION = ver;
 
         System.out.println("Launching application version [" + VERSION + "] on OS [" + Util.getOS() + "]");
         TrayUtil.init(this);
