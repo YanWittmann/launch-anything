@@ -53,7 +53,6 @@ public class Main {
             e.printStackTrace();
         }
         VERSION = ver;
-        checkForNewVersion();
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -133,17 +132,18 @@ public class Main {
             TrayUtil.showMessage("LaunchAnything V" + VERSION + " is now active.");
         }
 
-        final File elevatorFile = new File("elevator.jar");
-        if (elevatorFile.exists()) {
-            new Thread(() -> {
+        new Thread(() -> {
+            checkForNewVersion();
+            final File elevatorFile = new File("elevator.jar");
+            if (elevatorFile.exists()) {
                 Sleep.seconds(4);
                 if (elevatorFile.exists()) {
                     if (!elevatorFile.delete()) {
                         TrayUtil.showError("Failed to delete elevator.jar");
                     }
                 }
-            }).start();
-        }
+            }
+        }).start();
     }
 
     private void userInput(String input) {
