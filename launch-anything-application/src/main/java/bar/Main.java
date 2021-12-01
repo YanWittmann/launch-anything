@@ -30,6 +30,7 @@ import static java.awt.Desktop.getDesktop;
 public class Main {
 
     public final String VERSION;
+    private static String VERSION_STRING;
 
     public static void main(String[] args) {
         Util.registerFont("font/Comfortaa-Regular.ttf");
@@ -53,6 +54,7 @@ public class Main {
             e.printStackTrace();
         }
         VERSION = ver;
+        VERSION_STRING = "V" + VERSION;
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -738,5 +740,9 @@ public class Main {
                 System.out.println("Unable to check for new version: " + e.getMessage());
             }
         }
+    }
+
+    public static String getVersionString() {
+        return VERSION_STRING;
     }
 }

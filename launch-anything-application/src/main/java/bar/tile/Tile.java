@@ -138,24 +138,13 @@ public class Tile {
         if (amountSearchFound >= lowercasedSplitted.length)
             return true;
 
-        // check if the normalized search is directly contained in one of the fields
-        String[] normalizedSplitted = normalize(search).split(" ");
-        amountSearchFound = 0;
-        for (String s : normalizedSplitted) {
-            if (normalize(label).contains(s) || normalize(category).contains(s) || normalize(keywords).contains(s)) {
-                amountSearchFound++;
-            }
-        }
-        if (amountSearchFound >= lowercasedSplitted.length)
-            return true;
-
         // use smart search to check if the search is contained in one of the fields
-        if (smartSearch(normalize(id), search)) return true;
         if (smartSearch(normalize(category), search)) return true;
         if (smartSearch(normalize(label), search)) return true;
-        if (keywords != null)
+        if (keywords != null) {
             for (String keyword : keywords.split(" "))
                 if (smartSearch(normalize(keyword), search)) return true;
+        }
 
         return false;
     }
@@ -165,13 +154,17 @@ public class Tile {
         boolean mayMatchNonBeginningCharacter = false;
         char[] charArray = attribute.toCharArray();
         for (int i = 0, charArrayLength = charArray.length; i < charArrayLength; i++) {
-            if (charArray[i] == search.charAt(amountFound))
+            if (charArray[i] == search.charAt(amountFound)) {
                 if (i == 0 || charArray[i - 1] == ' ') {
                     amountFound++;
                     mayMatchNonBeginningCharacter = true;
                     if (amountFound >= search.length()) return true;
                     continue;
                 }
+            } else if (amountFound > 0 && charArray[i] == search.charAt(amountFound - 1)) {
+                mayMatchNonBeginningCharacter = true;
+                continue;
+            }
 
             if (mayMatchNonBeginningCharacter) {
                 if (charArray[i] == search.charAt(amountFound)) amountFound++;
@@ -184,7 +177,7 @@ public class Tile {
 
     private String normalize(String s) {
         if (s == null) return "";
-        return s.replaceAll("([A-Z])", " $1").toLowerCase();
+        return s.replaceAll("([A-Z./-])", " $1").toLowerCase();
     }
 
     private String normalizeLowercase(String s) {

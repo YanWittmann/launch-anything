@@ -14,15 +14,18 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 import static java.net.URLDecoder.decode;
 import static java.net.URLEncoder.encode;
@@ -308,5 +311,46 @@ public abstract class Util {
                 TrayUtil.showError("Unable to remove autostart feature");
             }
         }
+    }
+
+    private static final Pattern IPV4_PATTERN = Pattern.compile("^(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])$");
+
+    private static final String[] IPV4_SERVICES = {
+            "http://checkip.amazonaws.com/",
+            "https://ipv4.icanhazip.com/",
+            "http://bot.whatismyipaddress.com/"
+    };
+
+    public static String getExternalIpAddress() throws ExecutionException, InterruptedException {
+        List<Callable<String>> callables = new ArrayList<>();
+        for (String ipService : IPV4_SERVICES) {
+            callables.add(() -> getIpAddressFromUrl(ipService));
+        }
+
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        try {
+            return executorService.invokeAny(callables);
+        } finally {
+            executorService.shutdown();
+        }
+    }
+
+    private static String getIpAddressFromUrl(String url) throws IOException {
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(new URL(url).openStream()))) {
+            String ip = in.readLine();
+            if (IPV4_PATTERN.matcher(ip).matches()) {
+                return ip;
+            } else {
+                throw new IOException("invalid IPv4 address: " + ip);
+            }
+        }
+    }
+
+    public static String getLocalIp() throws IOException {
+        Socket socket = new Socket();
+        socket.connect(new InetSocketAddress("google.com", 80));
+        InetAddress localAddress = socket.getLocalAddress();
+        socket.close();
+        return localAddress.getHostAddress();
     }
 }

@@ -344,6 +344,8 @@ public class TileManager {
             runtimeTiles.add(new WikiSearchTile());
         if (!disabledRuntimeTiles.contains(RUNTIME_TILES[3]))
             runtimeTiles.add(new TimeoutTile());
+        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[4]))
+            runtimeTiles.add(new SystemInfoTile());
     }
 
     public void toggleRuntimeTile(String tileId) {
@@ -362,7 +364,8 @@ public class TileManager {
             GoWebsiteTile.getTitle() + " (" + GoWebsiteTile.getDescription() + ")",
             MathExpressionTile.getTitle() + " (" + MathExpressionTile.getDescription() + ")",
             WikiSearchTile.getTitle() + " (" + WikiSearchTile.getDescription() + ")",
-            TimeoutTile.getTitle() + " (" + TimeoutTile.getDescription() + ")"
+            TimeoutTile.getTitle() + " (" + TimeoutTile.getDescription() + ")",
+            SystemInfoTile.getTitle() + " (" + SystemInfoTile.getDescription() + ")"
     };
 
     public void cleanUpTileActions() {
