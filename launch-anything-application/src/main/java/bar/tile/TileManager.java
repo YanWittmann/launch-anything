@@ -31,30 +31,24 @@ public class TileManager {
     private final List<TileCategory> categories = new ArrayList<>();
     private final List<String> disabledRuntimeTiles = new ArrayList<>();
     private File tileFile;
+    private boolean isFirstLaunch = false;
 
     public TileManager() {
         findSettingsFile();
         if (tileFile == null) {
             tileFile = new File("res/tiles.json");
             generateDefaultTiles();
-            if (Util.isApplicationStartedFromJar() && !Util.isAutostartEnabled()) {
-                new Thread(() -> {
-                    String activateAutostart = Util.popupChooseButton(
-                            "LaunchAnything",
-                            "Do you want LaunchAnything to start on system startup?\n" +
-                            "This can be activated / deactivated in the settings later on.",
-                            new String[]{"Yes", "No"});
-                    if (activateAutostart != null) {
-                        if (activateAutostart.equals("Yes"))
-                            Util.setAutostartActive(true);
-                    }
-                }).start();
-            }
             createSettingsTiles();
+            isFirstLaunch = true;
+            System.out.println("Is first launch: true");
         } else {
             readTilesFromFile();
         }
         createCustomTiles();
+    }
+
+    public boolean isFirstLaunch() {
+        return isFirstLaunch;
     }
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();

@@ -143,6 +143,22 @@ public class Main {
                     }
                 }
             }
+
+            if (tileManager.isFirstLaunch()) {
+                if (Util.isApplicationStartedFromJar() && !Util.isAutostartEnabled()) {
+                    new Thread(() -> {
+                        String activateAutostart = Util.popupChooseButton(
+                                "LaunchAnything",
+                                "Do you want LaunchAnything to start on system startup?\n" +
+                                "This can be activated / deactivated in the settings later on.",
+                                new String[]{"Yes", "No"});
+                        if (activateAutostart != null) {
+                            if (activateAutostart.equals("Yes"))
+                                Util.setAutostartActive(true);
+                        }
+                    }).start();
+                }
+            }
         }).start();
     }
 
