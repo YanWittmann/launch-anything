@@ -2,7 +2,7 @@ package bar.tile.custom;
 
 import bar.tile.Tile;
 import bar.tile.TileAction;
-import bar.util.Sleep;
+import bar.common.Sleep;
 import bar.util.Util;
 import org.json.JSONObject;
 

@@ -12,6 +12,7 @@
     <modules>
         <module>launch-anything-elevator</module>
         <module>launch-anything-application</module>
+        <module>launch-anything-common</module>
     </modules>
 
     <properties>
@@ -38,32 +39,4 @@
             <url>http://yanwittmann.de/</url>
         </developer>
     </developers>
-
-    <dependencies>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20210307</version>
-        </dependency>
-        <dependency>
-            <groupId>lc.kra.system</groupId>
-            <artifactId>system-hook</artifactId>
-            <version>3.8</version>
-        </dependency>
-        <dependency>
-            <groupId>jnafilechooser</groupId>
-            <artifactId>jnafilechooser-api</artifactId>
-            <version>1.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>net.objecthunter</groupId>
-            <artifactId>exp4j</artifactId>
-            <version>0.4.8</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.vatbub</groupId>
-            <artifactId>mslinks</artifactId>
-            <version>1.0.2</version>
-        </dependency>
-    </dependencies>
 </project>

@@ -1,4 +1,4 @@
-package bar.util;
+package bar.common;
 
 import java.util.concurrent.TimeUnit;
 

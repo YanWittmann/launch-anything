@@ -17,6 +17,9 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,6 +43,11 @@ public abstract class Util {
         } catch (FontFormatException | IOException | NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void copyResource(String res, String dest) throws IOException {
+        InputStream src = Main.class.getClassLoader().getResourceAsStream(res);
+        Files.copy(src, Paths.get(dest), StandardCopyOption.REPLACE_EXISTING);
     }
 
     public static String readClassResource(String path) {

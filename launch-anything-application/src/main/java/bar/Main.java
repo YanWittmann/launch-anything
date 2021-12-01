@@ -1,12 +1,13 @@
 package bar;
 
+import bar.common.Sleep;
+import bar.common.VersionUtil;
 import bar.logic.BarManager;
 import bar.logic.Settings;
 import bar.logic.UndoHistory;
 import bar.tile.*;
 import bar.ui.TrayUtil;
 import bar.util.GlobalKeyListener;
-import bar.util.Sleep;
 import bar.util.Util;
 import bar.webserver.HTTPServer;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
@@ -42,11 +43,6 @@ public class Main {
     private int lastPressedKey = -1;
 
     private Main(String[] args) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
-        }
-
         String ver;
         try {
             Properties props = new Properties();
@@ -57,6 +53,12 @@ public class Main {
             e.printStackTrace();
         }
         VERSION = ver;
+        checkForNewVersion();
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
+        }
 
         System.out.println("Launching application version [" + VERSION + "] on OS [" + Util.getOS() + "]");
         TrayUtil.init(this);
@@ -129,6 +131,18 @@ public class Main {
             }).start();
         } else {
             TrayUtil.showMessage("LaunchAnything V" + VERSION + " is now active.");
+        }
+
+        final File elevatorFile = new File("elevator.jar");
+        if (elevatorFile.exists()) {
+            new Thread(() -> {
+                Sleep.seconds(4);
+                if (elevatorFile.exists()) {
+                    if (!elevatorFile.delete()) {
+                        TrayUtil.showError("Failed to delete elevator.jar");
+                    }
+                }
+            }).start();
         }
     }
 
@@ -665,5 +679,48 @@ public class Main {
     }
 
     private final static Pattern GET_PATTERN = Pattern.compile("GET /\\?(.+) HTTP/\\d.+");
-    private final static Pattern POST_PATTERN = Pattern.compile("POST /\\?(.+) HTTP/\\d.+");
+
+    private void checkForNewVersion() {
+        if (Util.isApplicationStartedFromJar()) {
+            try {
+                JSONObject latestVersion = new JSONObject(VersionUtil.getLatestVersionJson());
+                String version = VersionUtil.extractVersion(latestVersion);
+                String versionName = VersionUtil.extractVersionTitle(latestVersion);
+                String versionUrl = VersionUtil.findAsset(latestVersion, "launch-anything.jar");
+                String releaseDate = VersionUtil.extractReleaseDate(latestVersion);
+                String versionBody = VersionUtil.extractBody(latestVersion);
+
+                if (version != null && version.length() > 0 && !version.equals("null")) {
+                    String compareVersion = version.replace("v", "");
+                    if (!compareVersion.equals(VERSION)) {
+
+                        System.out.println("There is an update available:");
+                        System.out.println("Latest version: " + version + " (" + versionName + ")");
+                        System.out.println("Release date: " + releaseDate);
+                        System.out.println("Download URL: " + versionUrl);
+                        String updateNow = Util.popupChooseButton("Update Available",
+                                "There is an update available for the LaunchBar!\n\nLatest version: " + version + " (" + versionName + ")\nRelease date: " + releaseDate + "\nDownload URL: " + versionUrl + "\n\n" + versionBody + "\n\nDo you want to download it now?",
+                                new String[]{"Download", "Ignore"});
+                        if (updateNow != null && updateNow.equals("Download")) {
+                            System.out.println("Copying elevator to outside the jar");
+                            Util.copyResource("executables/elevator-jar-with-dependencies.jar", "elevator.jar");
+                            System.out.println("Launching elevator.jar");
+
+                            try {
+                                Desktop.getDesktop().open(new File("elevator.jar"));
+                                System.exit(0);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                TrayUtil.showError("Failed to open the elevator.jar file: " + e.getMessage());
+                            }
+                        }
+
+                    }
+                }
+
+            } catch (Exception e) {
+                System.out.println("Unable to check for new version: " + e.getMessage());
+            }
+        }
+    }
 }
