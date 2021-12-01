@@ -6,7 +6,7 @@
 
     <groupId>de.yanwittmann</groupId>
     <artifactId>launch-anything</artifactId>
-    <version>2.2-SNAPSHOT</version>
+    <version>2.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>

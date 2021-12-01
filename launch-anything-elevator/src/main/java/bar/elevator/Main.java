@@ -22,6 +22,9 @@ public class Main {
         try {
             Sleep.seconds(4);
             JSONObject latestVersion = new JSONObject(VersionUtil.getLatestVersionJson());
+            System.out.println("\n\n");
+            System.out.println(latestVersion);
+            System.out.println("\n\n");
             String version = VersionUtil.extractVersion(latestVersion);
             String versionName = VersionUtil.extractVersionTitle(latestVersion);
             String versionUrl = VersionUtil.findAsset(latestVersion, "launch-anything.jar");
