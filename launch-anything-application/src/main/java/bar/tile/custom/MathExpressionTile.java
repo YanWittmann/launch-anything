@@ -5,10 +5,7 @@ import bar.tile.TileAction;
 import bar.util.Util;
 import net.objecthunter.exp4j.tokenizer.UnknownFunctionOrVariableException;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MathExpressionTile implements RuntimeTile {
@@ -31,15 +28,36 @@ public class MathExpressionTile implements RuntimeTile {
                 return Collections.singletonList(tile);
             } else {
                 double result = evaluate(search);
-                Tile tile = new Tile(makeResultForTileLabel(result));
-                tile.setCategory("runtime");
-                TileAction action = new TileAction("copy", result + "");
-                tile.addAction(action);
-                return Collections.singletonList(tile);
+                List<Tile> tiles = new ArrayList<>();
+                tiles.add(createCopyTextTile(removeTrailingZeros(replaceWithConstant(result)), result + ""));
+
+                String f1 = findFractionValue(result, 0.001);
+                String f2 = findFractionValue(result, 0.01);
+                if (f1.length() > 0)
+                    tiles.add(createCopyTextTile(f1, f1.replace(" = ", "").replace(" ≈ ", "")));
+                if (f2.length() > 0 && !f1.equals(f2))
+                    tiles.add(createCopyTextTile(f2, f2.replace(" = ", "").replace(" ≈ ", "")));
+
+                String r = findRoundedValue(result);
+                if (r.length() > 0)
+                    tiles.add(createCopyTextTile(r, r.replace(" ≈ ", "")));
+
+                String c = findConstant(result);
+                if (c.length() > 0)
+                    tiles.add(createCopyTextTile(c, c.replace(" = ", "").replace(" ≈ ", "")));
+
+                return tiles;
             }
         } catch (UnknownFunctionOrVariableException e) {
             return Collections.emptyList();
         }
+    }
+
+    private Tile createCopyTextTile(String label, String copyText) {
+        Tile tile = new Tile(label);
+        tile.setCategory("runtime");
+        tile.addAction(new TileAction("copy", copyText));
+        return tile;
     }
 
     private String makeResultForTileLabel(double result) {
