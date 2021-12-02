@@ -340,12 +340,14 @@ public class TileManager {
         if (!disabledRuntimeTiles.contains(RUNTIME_TILES[1]))
             runtimeTiles.add(new MathExpressionTile());
         if (!disabledRuntimeTiles.contains(RUNTIME_TILES[2]))
-            runtimeTiles.add(new WikiSearchTile());
+            runtimeTiles.add(new ChartGeneratorTile());
         if (!disabledRuntimeTiles.contains(RUNTIME_TILES[3]))
-            runtimeTiles.add(new TimeoutTile());
+            runtimeTiles.add(new WikiSearchTile());
         if (!disabledRuntimeTiles.contains(RUNTIME_TILES[4]))
-            runtimeTiles.add(new SystemInfoTile());
+            runtimeTiles.add(new TimeoutTile());
         if (!disabledRuntimeTiles.contains(RUNTIME_TILES[5]))
+            runtimeTiles.add(new SystemInfoTile());
+        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[6]))
             runtimeTiles.add(new NumberBaseConverterTile());
     }
 
@@ -364,6 +366,7 @@ public class TileManager {
     public final static String[] RUNTIME_TILES = {
             GoWebsiteTile.getTitle() + " (" + GoWebsiteTile.getDescription() + ")",
             MathExpressionTile.getTitle() + " (" + MathExpressionTile.getDescription() + ")",
+            ChartGeneratorTile.getTitle() + " (" + ChartGeneratorTile.getDescription() + ")",
             WikiSearchTile.getTitle() + " (" + WikiSearchTile.getDescription() + ")",
             TimeoutTile.getTitle() + " (" + TimeoutTile.getDescription() + ")",
             SystemInfoTile.getTitle() + " (" + SystemInfoTile.getDescription() + ")",

@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class MathExpressionTile implements RuntimeTile {
 
-    private final Map<String, Double> variables = new HashMap<>();
+    private final static Map<String, Double> variables = new HashMap<>();
 
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
@@ -23,7 +23,7 @@ public class MathExpressionTile implements RuntimeTile {
 
                 Tile tile = new Tile(varName + " = " + makeResultForTileLabel(result));
                 tile.setCategory("runtime");
-                TileAction action = new TileAction(() -> variables.put(varName, result));
+                TileAction action = new TileAction(() -> setVariable(varName, result));
                 tile.addAction(action);
                 return Collections.singletonList(tile);
             } else {
@@ -96,8 +96,12 @@ public class MathExpressionTile implements RuntimeTile {
         return " ≈ " + fraction;
     }
 
-    private double evaluate(String expression) {
+    public static double evaluate(String expression) {
         return Util.evaluateMathematicalExpression(expression.trim(), variables);
+    }
+
+    public static void setVariable(String name, double value) {
+        variables.put(name, value);
     }
 
     private String removeTrailingZeros(double value) {

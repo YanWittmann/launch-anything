@@ -357,4 +357,21 @@ public abstract class Util {
     public static String[] getAvailableFonts() {
         return GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
     }
+
+    public static File getTempFile(String ending) {
+        try {
+            return File.createTempFile("launch-anything-file-" + (Math.random() + "").replace(".", ""), ending);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void cleanupTempFiles() {
+        File[] tempFiles = new File(System.getProperty("java.io.tmpdir")).listFiles((dir, name) -> name.startsWith("launch-anything-file-"));
+        if (tempFiles != null) {
+            for (File tempFile : tempFiles) {
+                tempFile.delete();
+            }
+        }
+    }
 }

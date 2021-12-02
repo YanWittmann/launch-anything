@@ -135,6 +135,7 @@ public class Main {
         }
 
         new Thread(() -> {
+            Util.cleanupTempFiles();
             checkForNewVersion();
             final File elevatorFile = new File("elevator.jar");
             if (elevatorFile.exists()) {

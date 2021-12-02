@@ -65,6 +65,11 @@
         </dependency>
         <dependency>
             <groupId>de.yanwittmann</groupId>
+            <artifactId>j2chartjs</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>de.yanwittmann</groupId>
             <artifactId>launch-anything-common</artifactId>
             <version>${version}</version>
         </dependency>
