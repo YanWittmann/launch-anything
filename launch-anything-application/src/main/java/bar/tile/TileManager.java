@@ -2,7 +2,6 @@ package bar.tile;
 
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
-import bar.util.Util;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -346,6 +345,8 @@ public class TileManager {
             runtimeTiles.add(new TimeoutTile());
         if (!disabledRuntimeTiles.contains(RUNTIME_TILES[4]))
             runtimeTiles.add(new SystemInfoTile());
+        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[5]))
+            runtimeTiles.add(new NumberBaseConverterTile());
     }
 
     public void toggleRuntimeTile(String tileId) {
@@ -365,7 +366,8 @@ public class TileManager {
             MathExpressionTile.getTitle() + " (" + MathExpressionTile.getDescription() + ")",
             WikiSearchTile.getTitle() + " (" + WikiSearchTile.getDescription() + ")",
             TimeoutTile.getTitle() + " (" + TimeoutTile.getDescription() + ")",
-            SystemInfoTile.getTitle() + " (" + SystemInfoTile.getDescription() + ")"
+            SystemInfoTile.getTitle() + " (" + SystemInfoTile.getDescription() + ")",
+            NumberBaseConverterTile.getTitle() + " (" + NumberBaseConverterTile.getDescription() + ")"
     };
 
     public void cleanUpTileActions() {

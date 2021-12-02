@@ -29,7 +29,7 @@ public class MathExpressionTile implements RuntimeTile {
             } else {
                 double result = evaluate(search);
                 List<Tile> tiles = new ArrayList<>();
-                tiles.add(createCopyTextTile(removeTrailingZeros(replaceWithConstant(result)), result + ""));
+                tiles.add(createCopyTextTile(removeTrailingZeros(replaceWithConstant(result)), removeTrailingZeros(result)));
 
                 String f1 = findFractionValue(result, 0.001);
                 String f2 = findFractionValue(result, 0.01);
