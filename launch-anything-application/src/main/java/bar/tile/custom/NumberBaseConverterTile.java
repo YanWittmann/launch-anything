@@ -32,18 +32,22 @@ public class NumberBaseConverterTile implements RuntimeTile {
                 } else {
                     // if no destination system is specified, convert to all systems
                     List<Tile> tiles = new ArrayList<>();
-                    String convertedDec = convert(originSystem, "dec", convertNumber);
-                    if (!convertedDec.equals(convertNumber))
+                    if (!originSystem.equals("dec")) {
+                        String convertedDec = convert(originSystem, "dec", convertNumber);
                         tiles.add(createCopyTextTile("DEC: " + convertedDec, convertedDec));
-                    String convertedBin = convert(originSystem, "bin", convertNumber);
-                    if (!convertedBin.equals(convertNumber))
+                    }
+                    if (!originSystem.equals("bin")) {
+                        String convertedBin = convert(originSystem, "bin", convertNumber);
                         tiles.add(createCopyTextTile("BIN: " + convertedBin, convertedBin));
-                    String convertedOct = convert(originSystem, "oct", convertNumber);
-                    if (!convertedOct.equals(convertNumber))
+                    }
+                    if (!originSystem.equals("oct")) {
+                        String convertedOct = convert(originSystem, "oct", convertNumber);
                         tiles.add(createCopyTextTile("OCT: " + convertedOct, convertedOct));
-                    String convertedHex = convert(originSystem, "hex", convertNumber).toUpperCase();
-                    if (!convertedHex.equals(convertNumber.toUpperCase()))
+                    }
+                    if (!originSystem.equals("hex")) {
+                        String convertedHex = convert(originSystem, "hex", convertNumber.toUpperCase());
                         tiles.add(createCopyTextTile("HEX: " + convertedHex, convertedHex));
+                    }
                     return tiles;
                 }
             }

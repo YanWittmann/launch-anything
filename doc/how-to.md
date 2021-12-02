@@ -69,6 +69,9 @@ currently only available:
   by right-clicking the system tray icon and selecting `Reset Timeout`.
 - System Info: `sys` with one of these behind it to get the according values: `externalip or eip` `localip or lip`
   `version or ver` `os or op` `isjar or jar` `isautostart or autostart`
+- Number Base Converter: Enter any number and the base it is in and another base to convert it to, like so
+  `10 dec to hex`, but since the keyword search is very fuzzy, something like this also works: `oct23bin`. The available
+  systems are: `dec` `hex` `oct` `bin`. You can also leave away the target system to convert to all other systems.
 
 If you have ideas for more runtime tiles, please create an issue using the link below.
 
