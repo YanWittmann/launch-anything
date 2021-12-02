@@ -6,6 +6,7 @@ import bar.tile.TileAction;
 import bar.util.Util;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -50,16 +51,27 @@ public class SystemInfoTile implements RuntimeTile {
                     case "autostart":
                         result = Util.isAutostartEnabled() + "";
                         break;
+                    case "font":
+                    case "fonts":
+                        List<Tile> tiles = new ArrayList<>();
+                        for (String availableFont : Util.getAvailableFonts()) {
+                            tiles.add(createCopyTextTile(availableFont, availableFont));
+                        }
+                        return tiles;
                 }
             }
             if (result != null) {
-                Tile tile = new Tile(result);
-                tile.setCategory("runtime");
-                tile.addAction(new TileAction("copy", result));
-                return Collections.singletonList(tile);
+                return Collections.singletonList(createCopyTextTile(result, result));
             }
         }
         return Collections.emptyList();
+    }
+
+    private Tile createCopyTextTile(String label, String copyText) {
+        Tile tile = new Tile(label);
+        tile.setCategory("runtime");
+        tile.addAction(new TileAction("copy", copyText));
+        return tile;
     }
 
     public static String getTitle() {

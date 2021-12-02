@@ -218,7 +218,11 @@ public class GlassBar extends JFrame {
         // set the size of the components on the bar
         barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
         inputField.setBounds(fontSize - 5, settings.getInt(Settings.INPUT_BAR_FONT_SIZE) < 25 ? 0 : 4, (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
-        inputField.setFont(new Font(settings.getString(Settings.BAR_FONT), Font.BOLD, fontSize));
+        if (settings.getBoolean(Settings.BAR_FONT_BOLD_BOOL)) {
+            inputField.setFont(settings.getFont(Settings.BAR_FONT).deriveFont(Font.BOLD, fontSize));
+        } else {
+            inputField.setFont(settings.getFont(Settings.BAR_FONT).deriveFont(Font.PLAIN, fontSize));
+        }
         frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
         backgroundImageLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
     }

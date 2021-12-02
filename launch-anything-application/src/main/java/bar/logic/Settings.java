@@ -4,6 +4,7 @@ import bar.ui.TrayUtil;
 import bar.util.Util;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -109,6 +110,7 @@ public class Settings {
         settings.putIfAbsent(TILE_GENERATOR_FILE_LIMIT, 1000);
         settings.putIfAbsent(INPUT_BAR_FONT_SIZE, 36);
         settings.putIfAbsent(RESULT_BAR_FONT_SIZE, 30);
+        settings.putIfAbsent(BAR_FONT_BOLD_BOOL, true);
     }
 
     public void loadTemplate(String template) {
@@ -175,6 +177,32 @@ public class Settings {
         return key + " does not exist";
     }
 
+    public boolean getBoolean(String key) {
+        if (settings.containsKey(key)) {
+            if (settings.get(key) instanceof Boolean) return (boolean) settings.get(key);
+            if (settings.get(key) instanceof String) return settings.get(key).equals("true");
+        }
+        return false;
+    }
+
+    public Font getFont(String key) {
+        if (settings.containsKey(key)) {
+            String fontValue = getString(key);
+            if (fontValue.contains("\\") || fontValue.contains("/")) {
+                try {
+                    Font font = Font.createFont(Font.TRUETYPE_FONT, new File(fontValue));
+                    GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
+                    return font;
+                } catch (FontFormatException | IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                return new Font(fontValue, Font.PLAIN, 12);
+            }
+        }
+        return new Font("Arial", Font.PLAIN, 12);
+    }
+
     public final static String INPUT_WIDTH = "inputWidth";
     public final static String INPUT_HEIGHT = "inputHeight";
     public final static String RESULT_WIDTH = "resultWidth";
@@ -193,4 +221,5 @@ public class Settings {
     public final static String TILE_GENERATOR_FILE_LIMIT = "tileGeneratorFileLimit";
     public final static String INPUT_BAR_FONT_SIZE = "inputBarFontSize";
     public final static String RESULT_BAR_FONT_SIZE = "resultBarFontSize";
+    public final static String BAR_FONT_BOLD_BOOL = "barFontBoldBool";
 }

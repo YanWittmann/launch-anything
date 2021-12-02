@@ -68,7 +68,7 @@ currently only available:
 - Timeout: `timeout` or `to` and a duration in minutes the bar should remain inactive. Timeout mode can be deactivated
   by right-clicking the system tray icon and selecting `Reset Timeout`.
 - System Info: `sys` with one of these behind it to get the according values: `externalip or eip` `localip or lip`
-  `version or ver` `os or op` `isjar or jar` `isautostart or autostart`
+  `version or ver` `os or op` `isjar or jar` `isautostart or autostart` `fonts`
 - Number Base Converter: Enter any number and the base it is in and another base to convert it to, like so
   `10 dec to hex`, but since the keyword search is very fuzzy, something like this also works: `oct23bin`. The available
   systems are: `dec` `hex` `oct` `bin`. You can also leave away the target system to convert to all other systems.

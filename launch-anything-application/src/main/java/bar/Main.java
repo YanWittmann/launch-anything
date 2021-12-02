@@ -520,6 +520,19 @@ public class Main {
                                             Sleep.milliseconds(100);
                                         }
                                         newValue = lastPressedKey;
+                                    } else if (whatToEdit.toLowerCase().contains("bool")) {
+                                        newValue = Util.popupChooseButton("Edit Setting", "True or False?", new String[]{"True", "False"});
+                                    } else if (whatToEdit.toLowerCase().contains("font")) {
+                                        String whereToPickFontFrom = Util.popupChooseButton("Choose Font", "From where do you want to load the font?", new String[]{"System Font", "From TTF File"});
+                                        if (whereToPickFontFrom != null) {
+                                            if (whereToPickFontFrom.equals("System Font")) {
+                                                newValue = Util.popupDropDown("Choose Font", "Choose the font you want to use.", GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames(), settings.getString(whatToEdit));
+                                            } else {
+                                                newValue = Util.pickFile("TTF File", "ttf");
+                                            }
+                                        } else {
+                                            newValue = null;
+                                        }
                                     } else {
                                         newValue = Util.popupTextInput("Edit Setting", "Enter the new value for the setting:", settings.getString(whatToEdit));
                                     }

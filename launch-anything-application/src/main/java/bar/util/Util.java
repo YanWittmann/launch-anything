@@ -353,4 +353,8 @@ public abstract class Util {
         socket.close();
         return localAddress.getHostAddress();
     }
+
+    public static String[] getAvailableFonts() {
+        return GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+    }
 }
