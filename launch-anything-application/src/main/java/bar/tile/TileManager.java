@@ -86,7 +86,9 @@ public class TileManager {
                     .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
                     .forEach(matchingTiles::add);
 
-            runtimeTiles.stream().map(runtimeTile -> runtimeTile.generateTiles(input, lastInputEvaluated)).forEach(matchingTiles::addAll);
+            runtimeTiles.stream()
+                    .map(runtimeTile -> runtimeTile.generateTiles(input, lastInputEvaluated))
+                    .forEach(matchingTiles::addAll);
 
             setEvaluationResults(matchingTiles);
             return null;

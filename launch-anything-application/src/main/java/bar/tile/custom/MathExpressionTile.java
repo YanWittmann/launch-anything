@@ -3,7 +3,6 @@ package bar.tile.custom;
 import bar.tile.Tile;
 import bar.tile.TileAction;
 import bar.util.Util;
-import net.objecthunter.exp4j.tokenizer.UnknownFunctionOrVariableException;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -48,9 +47,9 @@ public class MathExpressionTile implements RuntimeTile {
 
                 return tiles;
             }
-        } catch (UnknownFunctionOrVariableException e) {
-            return Collections.emptyList();
+        } catch (Exception ignored) {
         }
+        return Collections.emptyList();
     }
 
     private Tile createCopyTextTile(String label, String copyText) {
@@ -88,6 +87,7 @@ public class MathExpressionTile implements RuntimeTile {
 
     private String findFractionValue(double value, double accuracy) {
         Fraction fraction = realToFraction(value, accuracy);
+        if (fraction == null) return "";
         if (fraction.numerator == fraction.denominator || fraction.denominator == 1) return "";
         float distance = (float) Math.abs(((float) fraction.numerator / (float) fraction.denominator) - value);
         if (distance < 0.001) {
@@ -150,7 +150,7 @@ public class MathExpressionTile implements RuntimeTile {
         int upper_n = 1;
         int upper_d = 1;
 
-        while (true) {
+        for (int i = 0; i < 100000; i++) {
             // The middle fraction is (lower_n + upper_n) / (lower_d + upper_d)
             int middle_n = lower_n + upper_n;
             int middle_d = lower_d + upper_d;
@@ -168,6 +168,7 @@ public class MathExpressionTile implements RuntimeTile {
                 return new Fraction((n * middle_d + middle_n) * sign, middle_d);
             }
         }
+        return null;
     }
 
     private Double replaceWithConstant(double value) {
