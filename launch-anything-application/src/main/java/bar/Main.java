@@ -522,7 +522,7 @@ public class Main {
                                         newValue = lastPressedKey;
                                     } else if (whatToEdit.toLowerCase().contains("bool")) {
                                         newValue = Util.popupChooseButton("Edit Setting", "True or False?", new String[]{"True", "False"});
-                                    } else if (whatToEdit.toLowerCase().contains("font")) {
+                                    } else if (whatToEdit.toLowerCase().endsWith("font")) {
                                         String whereToPickFontFrom = Util.popupChooseButton("Choose Font", "From where do you want to load the font?", new String[]{"System Font", "From TTF File"});
                                         if (whereToPickFontFrom != null) {
                                             if (whereToPickFontFrom.equals("System Font")) {
@@ -538,6 +538,7 @@ public class Main {
                                     }
                                     if (newValue != null && (newValue + "").length() > 0 && !newValue.equals("null")) {
                                         settings.setSetting(whatToEdit, newValue);
+                                        barManager.barReloadRequest();
                                     }
                                 }
                             } else {
@@ -579,6 +580,7 @@ public class Main {
         if (confirmation != null && confirmation.equals("confirm")) {
             settings.reset(true);
             settings.save();
+            barManager.barReloadRequest();
         }
     }
 

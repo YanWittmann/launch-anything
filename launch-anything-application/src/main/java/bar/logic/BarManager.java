@@ -94,4 +94,9 @@ public class BarManager {
         }
         return null;
     }
+
+    public void barReloadRequest() {
+        inputGlassBar.reloadWithSettings(settings);
+        resultGlassBars.forEach(glassBar -> glassBar.reloadWithSettings(settings));
+    }
 }

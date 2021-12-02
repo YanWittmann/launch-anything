@@ -180,6 +180,8 @@ public class GlassBar extends JFrame {
         inputListeners.add(listener);
     }
 
+    private int index = 0;
+
     /**
      * Repositions the bar on the screen.<br>
      * The index determines the position of the bar on the screen:<ul>
@@ -191,7 +193,12 @@ public class GlassBar extends JFrame {
      * @param settings The settings to use for the bar.
      */
     public void setType(int index, Settings settings) {
-        // first, using the index, the positioning of the bar is determined
+        this.index = index;
+        reloadWithSettings(settings);
+    }
+
+    public void reloadWithSettings(Settings settings) {
+        // using the index, the positioning of the bar is determined
         int fontSize;
         if (index == -1) {
             int width = settings.getInt(Settings.INPUT_WIDTH), height = settings.getInt(Settings.INPUT_HEIGHT);
