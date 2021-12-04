@@ -560,7 +560,7 @@ public class Main {
                                         }
                                         newValue = lastPressedKey;
                                     } else if (whatToEdit.toLowerCase().contains("bool")) {
-                                        newValue = Util.popupChooseButton("Edit Setting", "True or False?", new String[]{"True", "False"});
+                                        newValue = Util.popupChooseButton("Edit Setting", "True or False?", new String[]{"True", "False"}).toLowerCase();
                                     } else if (whatToEdit.toLowerCase().endsWith("font")) {
                                         String whereToPickFontFrom = Util.popupChooseButton("Choose Font", "From where do you want to load the font?", new String[]{"System Font", "From TTF File"});
                                         if (whereToPickFontFrom != null) {
