@@ -101,13 +101,11 @@ public class Main {
                     if (isInputActive) {
                         modifyTopmostTile();
                     }
-                } else if (code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY) && !isModifyKeyPressed && currentResultIndex > 0 && lastTiles.size() > 0) {
-                    currentResultIndex = Math.max(0, currentResultIndex - 1);
-                    barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
-                } else if (code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY) && !isModifyKeyPressed) {
-                    if (lastTiles.size() > 0) {
-                        currentResultIndex = Math.min(currentResultIndex + 1, lastTiles.size() - 1);
-                        barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
+                } else if (code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY) || code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY)) {
+                    if (isModifyKeyPressed) {
+                        scrollThroughInputHistory(code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY));
+                    } else {
+                        scrollThroughResultBars(code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY));
                     }
                 } else if ((code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY) || code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY)) && inputHistory.size() > 0) {
                     if (code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY))
@@ -213,6 +211,23 @@ public class Main {
         }
         if (inputHistory.size() > 30) {
             inputHistory.remove(0);
+        }
+    }
+
+    private void scrollThroughInputHistory(boolean direction) {
+        if (inputHistory.size() > 0) {
+            if (direction)
+                currentInputHistoryIndex = Math.min(inputHistory.size() - 1, currentInputHistoryIndex + 1); // up
+            else currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1); // down
+            barManager.setInput(inputHistory.get(Math.max(0, currentInputHistoryIndex)));
+        }
+    }
+
+    private void scrollThroughResultBars(boolean direction) {
+        if (lastTiles.size() > 0) {
+            if (direction) currentResultIndex = Math.min(lastTiles.size() - 1, currentResultIndex + 1); // down
+            else currentResultIndex = Math.max(0, currentResultIndex - 1); // up
+            barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
         }
     }
 
