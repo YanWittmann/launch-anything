@@ -9,7 +9,6 @@ import de.yanwittmann.j2chartjs.data.ScatterChartData;
 import de.yanwittmann.j2chartjs.datapoint.ScatterChartDatapoint;
 import de.yanwittmann.j2chartjs.dataset.ScatterChartDataset;
 import de.yanwittmann.j2chartjs.options.ChartOptions;
-import net.objecthunter.exp4j.tokenizer.UnknownFunctionOrVariableException;
 import org.apache.commons.io.FileUtils;
 
 import java.awt.*;
@@ -120,7 +119,7 @@ public class ChartGeneratorTile implements RuntimeTile {
         try {
             MathExpressionTile.setVariable("x", x);
             return MathExpressionTile.evaluate(expression);
-        } catch (UnknownFunctionOrVariableException e) {
+        } catch (Exception e) {
             return ERROR_VALUE;
         }
     }
