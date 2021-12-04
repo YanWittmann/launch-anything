@@ -28,6 +28,7 @@ public class GlassBar extends JFrame {
     private final static Color TEXT_COLOR_FOR_BRIGHT_MODE = new Color(31, 31, 31);
     private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_DARK_MODE = new TextBubbleBorder(new Color(177, 182, 183), BORDER_THICKNESS_FOR_DARK_MODE, BORDER_RADIUS, 0, false);
     private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE = new TextBubbleBorder(new Color(100, 100, 100), BORDER_THICKNESS_FOR_BRIGHT_MODE, BORDER_RADIUS, 0, false);
+    private final Cursor INVISIBLE_CURSOR = getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null");
     public final static Rectangle SCREEN_RECTANGLE = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
     public final static GaussianFilter BACKGROUND_BLUR_FILTER = new GaussianFilter(20);
 
@@ -59,7 +60,6 @@ public class GlassBar extends JFrame {
         inputField.setBounds(25, 0, 10, 10);
         inputField.setBackground(new Color(0, 0, 0, 0));
         inputField.setForeground(new Color(255, 255, 255));
-        inputField.setCaretColor(new Color(0, 0, 0, 0));
         inputField.setBorder(null);
         inputField.setVisible(true);
         inputField.setOpaque(false);
@@ -209,10 +209,7 @@ public class GlassBar extends JFrame {
             fontSize = settings.getInt(Settings.Setting.INPUT_BAR_FONT_SIZE);
 
             // hide the cursor if it is on the frame
-            this.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
-            backgroundImageLabel.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
-            frameBorderLabel.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
-            inputField.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
+
             barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
             inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.INPUT_TEXT_PADDING), (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
         } else {
@@ -243,6 +240,27 @@ public class GlassBar extends JFrame {
             robot = new Robot();
         } catch (AWTException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void setCaretPositionToEnd() {
+        inputField.setCaretPosition(inputField.getText().length());
+    }
+
+    public void setCaretVisible(boolean visible) {
+        if (visible) {
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            backgroundImageLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            frameBorderLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+            inputField.setCursor(new Cursor(Cursor.TEXT_CURSOR));
+            if (isLightMode) inputField.setCaretColor(Color.BLACK);
+            else inputField.setCaretColor(Color.WHITE);
+        } else {
+            this.setCursor(INVISIBLE_CURSOR);
+            backgroundImageLabel.setCursor(INVISIBLE_CURSOR);
+            frameBorderLabel.setCursor(INVISIBLE_CURSOR);
+            inputField.setCursor(INVISIBLE_CURSOR);
+            inputField.setCaretColor(new Color(0, 0, 0, 0));
         }
     }
 

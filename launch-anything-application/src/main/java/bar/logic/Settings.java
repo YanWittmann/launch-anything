@@ -238,7 +238,9 @@ public class Settings {
         RESULT_BAR_FONT_SIZE("resultBarFontSize", 30, "result"),
         BAR_FONT_BOLD_BOOL("barFontBoldBool", true, "bar"),
         INPUT_TEXT_PADDING("inputTextPadding", 4, "input"),
-        RESULT_TEXT_PADDING("resultTextPadding", 4, "result");
+        RESULT_TEXT_PADDING("resultTextPadding", 4, "result"),
+        LEFT_ARROW_KEY("leftArrowKey", 37, "key"),
+        RIGHT_ARROW_KEY("rightArrowKey", 39, "key");
 
         public final String key;
         public final Object defaultValue;

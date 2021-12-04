@@ -114,6 +114,8 @@ public class Main {
                         currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1);
                     else currentInputHistoryIndex = Math.min(inputHistory.size() - 1, currentInputHistoryIndex + 1);
                     barManager.setInput(inputHistory.get(Math.max(0, currentInputHistoryIndex)));
+                } else if (code == settings.getInt(Settings.Setting.LEFT_ARROW_KEY) || code == settings.getInt(Settings.Setting.RIGHT_ARROW_KEY)) {
+                    barManager.setInputCaretVisible(true);
                 }
                 lastPressedKey = code;
             }

@@ -53,6 +53,7 @@ public class BarManager {
                 resultGlassBar.setOnlyVisibility(true);
             }
         }
+        inputGlassBar.setCaretVisible(false);
         inputGlassBar.setVisible(active);
     }
 
@@ -100,7 +101,12 @@ public class BarManager {
         resultGlassBars.forEach(glassBar -> glassBar.reloadWithSettings(settings));
     }
 
+    public void setInputCaretVisible(boolean visible) {
+        inputGlassBar.setCaretVisible(visible);
+    }
+
     public void setInput(String input) {
         inputGlassBar.setText(input);
+        inputGlassBar.setCaretPositionToEnd();
     }
 }
