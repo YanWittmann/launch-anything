@@ -213,6 +213,8 @@ public class GlassBar extends JFrame {
             backgroundImageLabel.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
             frameBorderLabel.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
             inputField.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
+            barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
+            inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.INPUT_TEXT_PADDING), (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
         } else {
             int width = settings.getInt(Settings.Setting.RESULT_WIDTH), height = settings.getInt(Settings.Setting.RESULT_HEIGHT);
             this.setSize(width, height);
@@ -220,11 +222,11 @@ public class GlassBar extends JFrame {
             this.setLocationRelativeTo(null);
             this.setLocation(this.getX(), (SCREEN_RECTANGLE.height / 6) + ((index + 1) * (height + settings.getInt(Settings.Setting.RESULT_MARGIN))) + settings.getInt(Settings.Setting.INPUT_RESULT_DISTANCE));
             fontSize = settings.getInt(Settings.Setting.RESULT_BAR_FONT_SIZE);
+            barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
+            inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.RESULT_TEXT_PADDING), (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
         }
 
         // set the size of the components on the bar
-        barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-        inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.INPUT_BAR_FONT_SIZE) < 25 ? 0 : 4, (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
         if (settings.getBoolean(Settings.Setting.BAR_FONT_BOLD_BOOL)) {
             inputField.setFont(settings.getFont(Settings.Setting.BAR_FONT).deriveFont(Font.BOLD, fontSize));
         } else {

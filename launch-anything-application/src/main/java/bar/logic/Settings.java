@@ -225,7 +225,9 @@ public class Settings {
         TILE_GENERATOR_FILE_LIMIT("tileGeneratorFileLimit", 1000, "tile"),
         INPUT_BAR_FONT_SIZE("inputBarFontSize", 36, "input"),
         RESULT_BAR_FONT_SIZE("resultBarFontSize", 30, "result"),
-        BAR_FONT_BOLD_BOOL("barFontBoldBool", true, "bar");
+        BAR_FONT_BOLD_BOOL("barFontBoldBool", true, "bar"),
+        INPUT_TEXT_PADDING("inputTextPadding", 4, "input"),
+        RESULT_TEXT_PADDING("resultTextPadding", 4, "result");
 
         public final String key;
         public final Object defaultValue;
