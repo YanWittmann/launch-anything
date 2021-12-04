@@ -20,6 +20,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -295,6 +296,10 @@ public class Main {
         }
     }
 
+    public void restartBar() throws URISyntaxException, IOException {
+        Util.restartApplication(isWebserverOpen());
+    }
+
     public boolean isWebserverOpen() {
         return webserver != null;
     }
@@ -344,7 +349,7 @@ public class Main {
                         if (editType != null) {
                             switch (editType) {
                                 case "restartBar":
-                                    Util.restartApplication(isWebserverOpen());
+                                    restartBar();
                                     break;
                                 case "activateAutostart":
                                     Util.setAutostartActive(true);

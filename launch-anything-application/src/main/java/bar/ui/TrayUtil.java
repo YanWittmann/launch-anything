@@ -3,6 +3,8 @@ package bar.ui;
 import bar.Main;
 
 import java.awt.*;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 public abstract class TrayUtil {
 
@@ -31,6 +33,17 @@ public abstract class TrayUtil {
         MenuItem exitItem = new MenuItem("Exit");
         exitItem.addActionListener(e -> System.exit(0));
         trayMenu.add(exitItem);
+
+        MenuItem restartBar = new MenuItem("Restart bar");
+        restartBar.addActionListener(e -> {
+            try {
+                main.restartBar();
+            } catch (URISyntaxException | IOException ex) {
+                ex.printStackTrace();
+                TrayUtil.showError("Unable to restart bar: " + ex.getMessage());
+            }
+        });
+        trayMenu.add(restartBar);
 
         MenuItem settingsItem = new MenuItem("Settings");
         settingsItem.addActionListener(e -> main.openSettingsWebServer(true));
