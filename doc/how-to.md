@@ -126,6 +126,11 @@ When entering a search term, the bar will
 If you press alt+enter (or whatever key you have configured in the settings) while the bar is active, you can quickly
 modify the name, action or both of the topmost tile.
 
+#### Get the last inputs
+
+Use arrow up and arrow down to get the last inputs. If the inputs are used to scroll through the current results, you
+can hold the modify key (`alt`) to force scroll through the last inputs.
+
 #### Execute the last executed tile
 
 To execute the last executed tile, you can leave the bar empty and hit enter. That's it.

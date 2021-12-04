@@ -23,6 +23,8 @@ public class SystemInfoTile implements RuntimeTile {
                 switch (searchValue) {
                     case "externalip":
                     case "eip":
+                    case "ipexternal":
+                    case "ipe":
                         try {
                             result = Util.getExternalIpAddress();
                         } catch (ExecutionException | InterruptedException ignored) {
@@ -30,6 +32,8 @@ public class SystemInfoTile implements RuntimeTile {
                         break;
                     case "localip":
                     case "lip":
+                    case "iplocal":
+                    case "ipl":
                         try {
                             result = Util.getLocalIp();
                         } catch (IOException ignored) {

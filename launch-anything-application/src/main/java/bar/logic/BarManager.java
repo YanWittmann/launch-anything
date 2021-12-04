@@ -99,4 +99,8 @@ public class BarManager {
         inputGlassBar.reloadWithSettings(settings);
         resultGlassBars.forEach(glassBar -> glassBar.reloadWithSettings(settings));
     }
+
+    public void setInput(String input) {
+        inputGlassBar.setText(input);
+    }
 }

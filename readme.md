@@ -14,8 +14,11 @@ detector is based on the Windows API.
 - Copy text to the clipboard
 - Tile Generators: generate tiles for files in a given directory
 - Runtime Tiles:
-    - Solve mathematical expressions
-    - Use the I'm feeling lucky functionality to open a webpage
+    - Solve mathematical expressions with variables
+    - Display charts for mathematical functions
+    - Copy system information like the local IP address
+    - Convert between number systems
+    - Use the I'm feeling lucky functionality to open any webpage
     - Directly go to a wikipedia article
 - Disable (timeout) the bar for a given amount of time
 
