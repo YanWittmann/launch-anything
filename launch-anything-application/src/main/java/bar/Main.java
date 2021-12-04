@@ -379,12 +379,15 @@ public class Main {
                                     break;
                                 case "settingsTemplateSizeSmall":
                                     settings.loadTemplate("sizeSmall");
+                                    barManager.barReloadRequest();
                                     break;
                                 case "settingsTemplateSizeMedium":
                                     settings.loadTemplate("sizeMedium");
+                                    barManager.barReloadRequest();
                                     break;
                                 case "settingsTemplateSizeNormal":
                                     settings.loadTemplate("sizeNormal");
+                                    barManager.barReloadRequest();
                                     break;
                             }
                         }

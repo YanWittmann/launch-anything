@@ -105,36 +105,36 @@ public class Settings {
     public void loadTemplate(String template) {
         switch (template) {
             case "sizeNormal":
-                setSetting(Setting.INPUT_WIDTH, 800);
-                setSetting(Setting.INPUT_HEIGHT, 80);
-                setSetting(Setting.RESULT_WIDTH, 700);
-                setSetting(Setting.RESULT_HEIGHT, 70);
-                setSetting(Setting.AMOUNT_RESULTS, 6);
-                setSetting(Setting.INPUT_RESULT_DISTANCE, 20);
-                setSetting(Setting.INPUT_BAR_FONT_SIZE, 36);
-                setSetting(Setting.RESULT_BAR_FONT_SIZE, 30);
+                setSettingSilent(Setting.INPUT_WIDTH, 800);
+                setSettingSilent(Setting.INPUT_HEIGHT, 80);
+                setSettingSilent(Setting.RESULT_WIDTH, 700);
+                setSettingSilent(Setting.RESULT_HEIGHT, 70);
+                setSettingSilent(Setting.AMOUNT_RESULTS, 6);
+                setSettingSilent(Setting.INPUT_RESULT_DISTANCE, 20);
+                setSettingSilent(Setting.INPUT_BAR_FONT_SIZE, 36);
+                setSettingSilent(Setting.RESULT_BAR_FONT_SIZE, 30);
                 TrayUtil.showMessage("Settings loaded: Size normal");
                 break;
             case "sizeMedium":
-                setSetting(Setting.INPUT_WIDTH, 800);
-                setSetting(Setting.INPUT_HEIGHT, 64);
-                setSetting(Setting.RESULT_WIDTH, 700);
-                setSetting(Setting.RESULT_HEIGHT, 62);
-                setSetting(Setting.AMOUNT_RESULTS, 7);
-                setSetting(Setting.INPUT_RESULT_DISTANCE, 20);
-                setSetting(Setting.INPUT_BAR_FONT_SIZE, 36);
-                setSetting(Setting.RESULT_BAR_FONT_SIZE, 28);
+                setSettingSilent(Setting.INPUT_WIDTH, 800);
+                setSettingSilent(Setting.INPUT_HEIGHT, 64);
+                setSettingSilent(Setting.RESULT_WIDTH, 700);
+                setSettingSilent(Setting.RESULT_HEIGHT, 62);
+                setSettingSilent(Setting.AMOUNT_RESULTS, 7);
+                setSettingSilent(Setting.INPUT_RESULT_DISTANCE, 20);
+                setSettingSilent(Setting.INPUT_BAR_FONT_SIZE, 36);
+                setSettingSilent(Setting.RESULT_BAR_FONT_SIZE, 28);
                 TrayUtil.showMessage("Settings loaded: Size medium");
                 break;
             case "sizeSmall":
-                setSetting(Setting.INPUT_WIDTH, 700);
-                setSetting(Setting.INPUT_HEIGHT, 55);
-                setSetting(Setting.RESULT_WIDTH, 600);
-                setSetting(Setting.RESULT_HEIGHT, 50);
-                setSetting(Setting.AMOUNT_RESULTS, 8);
-                setSetting(Setting.INPUT_RESULT_DISTANCE, 6);
-                setSetting(Setting.INPUT_BAR_FONT_SIZE, 26);
-                setSetting(Setting.RESULT_BAR_FONT_SIZE, 24);
+                setSettingSilent(Setting.INPUT_WIDTH, 700);
+                setSettingSilent(Setting.INPUT_HEIGHT, 55);
+                setSettingSilent(Setting.RESULT_WIDTH, 600);
+                setSettingSilent(Setting.RESULT_HEIGHT, 50);
+                setSettingSilent(Setting.AMOUNT_RESULTS, 8);
+                setSettingSilent(Setting.INPUT_RESULT_DISTANCE, 6);
+                setSettingSilent(Setting.INPUT_BAR_FONT_SIZE, 26);
+                setSettingSilent(Setting.RESULT_BAR_FONT_SIZE, 24);
                 TrayUtil.showMessage("Settings loaded: Size small");
                 break;
         }
@@ -151,6 +151,17 @@ public class Settings {
     public void setSetting(String key, Object value) {
         settings.put(key, value);
         TrayUtil.showMessage(Util.capitalizeWords(key.replaceAll("([A-Z])", " $1")) + " set to: " + value);
+        save();
+    }
+
+    public void setSettingSilent(Setting setting, Object value) {
+        String key = setting.key;
+        settings.put(key, value);
+        save();
+    }
+
+    public void setSettingSilent(String key, Object value) {
+        settings.put(key, value);
         save();
     }
 
