@@ -23,7 +23,7 @@ public class BarManager {
         inputGlassBar.setAllowInput(true);
 
         // create the result bars
-        setAmountResultBars(settings.getInt(Settings.AMOUNT_RESULTS));
+        setAmountResultBars(settings.getInt(Settings.Setting.AMOUNT_RESULTS));
     }
 
     private void setAmountResultBars(int amount) {
@@ -67,7 +67,7 @@ public class BarManager {
     public void setTiles(List<Tile> tiles, int index, List<TileCategory> categories) {
         try {
             if (!isInputActive) return;
-            setAmountResultBars(settings.getInt(Settings.AMOUNT_RESULTS));
+            setAmountResultBars(settings.getInt(Settings.Setting.AMOUNT_RESULTS));
             for (int i = 0; i < resultGlassBars.size(); i++) {
                 if (tiles.size() > i + index) {
                     resultGlassBars.get(i).setText(tiles.get(i + index).getLabel());

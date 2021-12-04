@@ -222,7 +222,7 @@ public abstract class Util {
                     files.addAll(recursivelyListFiles(file, amount));
                 } else {
                     files.add(file);
-                    if (amount.incrementAndGet() > (settings != null ? settings.getInt(Settings.TILE_GENERATOR_FILE_LIMIT) : 1000)) {
+                    if (amount.incrementAndGet() > (settings != null ? settings.getInt(Settings.Setting.TILE_GENERATOR_FILE_LIMIT) : 1000)) {
                         return files;
                     }
                 }
@@ -245,7 +245,7 @@ public abstract class Util {
                     files.addAll(recursivelyListFiles(file, extension));
                 } else if (extension == null || extension.length == 0 || Arrays.stream(extension).anyMatch(file.getName()::endsWith)) {
                     files.add(file);
-                    if (amount.incrementAndGet() > (settings != null ? settings.getInt(Settings.TILE_GENERATOR_FILE_LIMIT) : 1000)) {
+                    if (amount.incrementAndGet() > (settings != null ? settings.getInt(Settings.Setting.TILE_GENERATOR_FILE_LIMIT) : 1000)) {
                         return files;
                     }
                 }

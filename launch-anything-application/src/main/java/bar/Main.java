@@ -78,39 +78,39 @@ public class Main {
             @Override
             public void keyPressed(GlobalKeyEvent e) {
                 int code = e.getVirtualKeyCode();
-                if (code == settings.getInt(Settings.MODIFY_KEY)) {
+                if (code == settings.getInt(Settings.Setting.MODIFY_KEY)) {
                     isModifyKeyPressed = true;
-                } else if (code == settings.getInt(Settings.ACTIVATION_KEY)) {
+                } else if (code == settings.getInt(Settings.Setting.ACTIVATION_KEY)) {
                     long currentTime = System.currentTimeMillis();
-                    if (timeoutUntil < currentTime && currentTime - lastCommandInput[0] < settings.getInt(Settings.ACTIVATION_DELAY) && currentTime - lastCommandInput[0] > 50) {
+                    if (timeoutUntil < currentTime && currentTime - lastCommandInput[0] < settings.getInt(Settings.Setting.ACTIVATION_DELAY) && currentTime - lastCommandInput[0] > 50) {
                         TrayUtil.setMenuItemActive(0, false);
                         barManager.setInputActive(true);
                         currentInputHistoryIndex = inputHistory.size();
                     }
                     lastCommandInput[0] = currentTime;
-                } else if (code == settings.getInt(Settings.CANCEL_KEY)) {
+                } else if (code == settings.getInt(Settings.Setting.CANCEL_KEY)) {
                     barManager.setInputActive(false);
-                } else if (code == settings.getInt(Settings.CONFIRM_KEY) && !isModifyKeyPressed) {
+                } else if (code == settings.getInt(Settings.Setting.CONFIRM_KEY) && !isModifyKeyPressed) {
                     boolean isInputActive = barManager.isInputActive();
                     if (isInputActive) {
                         barManager.setInputActive(false);
                         executeTopmostTile();
                     }
-                } else if (code == settings.getInt(Settings.CONFIRM_KEY) && isModifyKeyPressed) {
+                } else if (code == settings.getInt(Settings.Setting.CONFIRM_KEY) && isModifyKeyPressed) {
                     boolean isInputActive = barManager.isInputActive();
                     if (isInputActive) {
                         modifyTopmostTile();
                     }
-                } else if (code == settings.getInt(Settings.PREVIOUS_RESULT_KEY) && !isModifyKeyPressed && currentResultIndex > 0 && lastTiles.size() > 0) {
+                } else if (code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY) && !isModifyKeyPressed && currentResultIndex > 0 && lastTiles.size() > 0) {
                     currentResultIndex = Math.max(0, currentResultIndex - 1);
                     barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
-                } else if (code == settings.getInt(Settings.NEXT_RESULT_KEY) && !isModifyKeyPressed) {
+                } else if (code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY) && !isModifyKeyPressed) {
                     if (lastTiles.size() > 0) {
                         currentResultIndex = Math.min(currentResultIndex + 1, lastTiles.size() - 1);
                         barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
                     }
-                } else if ((code == settings.getInt(Settings.PREVIOUS_RESULT_KEY) || code == settings.getInt(Settings.NEXT_RESULT_KEY)) && inputHistory.size() > 0) {
-                    if (code == settings.getInt(Settings.PREVIOUS_RESULT_KEY))
+                } else if ((code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY) || code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY)) && inputHistory.size() > 0) {
+                    if (code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY))
                         currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1);
                     else currentInputHistoryIndex = Math.min(inputHistory.size() - 1, currentInputHistoryIndex + 1);
                     barManager.setInput(inputHistory.get(Math.max(0, currentInputHistoryIndex)));
@@ -121,7 +121,7 @@ public class Main {
             @Override
             public void keyReleased(GlobalKeyEvent e) {
                 int code = e.getVirtualKeyCode();
-                if (code == settings.getInt(Settings.MODIFY_KEY)) {
+                if (code == settings.getInt(Settings.Setting.MODIFY_KEY)) {
                     isModifyKeyPressed = false;
                 }
             }
@@ -340,7 +340,7 @@ public class Main {
                                 "tiles",
                                 tileManager.toJSON()
                                         .put("runtime-tiles", TileManager.RUNTIME_TILES)
-                                        .put("settings", settings.toJSON()));
+                                        .put("settings", settings.toSettingsJSON()));
 
                     } else if (action.equals("metaInteraction")) {
 

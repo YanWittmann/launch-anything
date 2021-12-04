@@ -444,15 +444,22 @@
             list.innerHTML = '';
             let keys = Object.keys(settings);
             for (let i = 0; i < keys.length; i++) {
-                let li = document.createElement('li');
-                li.innerText = keys[i] + ' = ' + settings[keys[i]];
-                li.classList.add('badge');
-                li.classList.add('clickable');
-                li.onclick = function () {
-                    editSettingIntent(keys[i]);
-                };
-                list.appendChild(li);
-                list.appendChild(document.createElement('br'));
+                let title = document.createElement('li');
+                title.innerText = keys[i];
+                list.appendChild(title);
+
+                let values = Object.keys(settings[keys[i]]);
+                for (let j = 0; j < values.length; j++) {
+                    let li = document.createElement('li');
+                    li.innerText = values[j] + ' = ' + settings[keys[i]][values[j]];
+                    li.classList.add('badge');
+                    li.classList.add('clickable');
+                    li.onclick = function () {
+                        editSettingIntent(values[j]);
+                    };
+                    list.appendChild(li);
+                    list.appendChild(document.createElement('br'));
+                }
             }
             let badge = document.createElement('span');
             badge.classList.add('badge');

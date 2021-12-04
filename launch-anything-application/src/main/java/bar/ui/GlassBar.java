@@ -201,12 +201,12 @@ public class GlassBar extends JFrame {
         // using the index, the positioning of the bar is determined
         int fontSize;
         if (index == -1) {
-            int width = settings.getInt(Settings.INPUT_WIDTH), height = settings.getInt(Settings.INPUT_HEIGHT);
+            int width = settings.getInt(Settings.Setting.INPUT_WIDTH), height = settings.getInt(Settings.Setting.INPUT_HEIGHT);
             this.setSize(width, height);
             contentPane.setPreferredSize(new Dimension(width, height));
             this.setLocationRelativeTo(null);
             this.setLocation(this.getX(), SCREEN_RECTANGLE.height / 6);
-            fontSize = settings.getInt(Settings.INPUT_BAR_FONT_SIZE);
+            fontSize = settings.getInt(Settings.Setting.INPUT_BAR_FONT_SIZE);
 
             // hide the cursor if it is on the frame
             this.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
@@ -214,21 +214,21 @@ public class GlassBar extends JFrame {
             frameBorderLabel.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
             inputField.setCursor(this.getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null"));
         } else {
-            int width = settings.getInt(Settings.RESULT_WIDTH), height = settings.getInt(Settings.RESULT_HEIGHT);
+            int width = settings.getInt(Settings.Setting.RESULT_WIDTH), height = settings.getInt(Settings.Setting.RESULT_HEIGHT);
             this.setSize(width, height);
             contentPane.setPreferredSize(new Dimension(width, height));
             this.setLocationRelativeTo(null);
-            this.setLocation(this.getX(), (SCREEN_RECTANGLE.height / 6) + ((index + 1) * (height + settings.getInt(Settings.RESULT_MARGIN))) + settings.getInt(Settings.INPUT_RESULT_DISTANCE));
-            fontSize = settings.getInt(Settings.RESULT_BAR_FONT_SIZE);
+            this.setLocation(this.getX(), (SCREEN_RECTANGLE.height / 6) + ((index + 1) * (height + settings.getInt(Settings.Setting.RESULT_MARGIN))) + settings.getInt(Settings.Setting.INPUT_RESULT_DISTANCE));
+            fontSize = settings.getInt(Settings.Setting.RESULT_BAR_FONT_SIZE);
         }
 
         // set the size of the components on the bar
         barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-        inputField.setBounds(fontSize - 5, settings.getInt(Settings.INPUT_BAR_FONT_SIZE) < 25 ? 0 : 4, (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
-        if (settings.getBoolean(Settings.BAR_FONT_BOLD_BOOL)) {
-            inputField.setFont(settings.getFont(Settings.BAR_FONT).deriveFont(Font.BOLD, fontSize));
+        inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.INPUT_BAR_FONT_SIZE) < 25 ? 0 : 4, (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
+        if (settings.getBoolean(Settings.Setting.BAR_FONT_BOLD_BOOL)) {
+            inputField.setFont(settings.getFont(Settings.Setting.BAR_FONT).deriveFont(Font.BOLD, fontSize));
         } else {
-            inputField.setFont(settings.getFont(Settings.BAR_FONT).deriveFont(Font.PLAIN, fontSize));
+            inputField.setFont(settings.getFont(Settings.Setting.BAR_FONT).deriveFont(Font.PLAIN, fontSize));
         }
         frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
         backgroundImageLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());

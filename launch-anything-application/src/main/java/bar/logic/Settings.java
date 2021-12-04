@@ -2,6 +2,7 @@ package bar.logic;
 
 import bar.ui.TrayUtil;
 import bar.util.Util;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -66,8 +67,12 @@ public class Settings {
         }
     }
 
-    public JSONObject toJSON() {
-        return new JSONObject(settings);
+    public JSONObject toSettingsJSON() {
+        Map<String, Map<String, String>> categorySettings = new LinkedHashMap<>();
+        for (Setting setting : Setting.values()) {
+            categorySettings.computeIfAbsent(setting.category, k -> new LinkedHashMap<>()).put(setting.key, getString(setting));
+        }
+        return new JSONObject(categorySettings);
     }
 
     public void save() {
@@ -92,63 +97,54 @@ public class Settings {
     }
 
     private void fillRequiredValues() {
-        settings.putIfAbsent(INPUT_WIDTH, 800);
-        settings.putIfAbsent(INPUT_HEIGHT, 80);
-        settings.putIfAbsent(RESULT_WIDTH, 700);
-        settings.putIfAbsent(RESULT_HEIGHT, 70);
-        settings.putIfAbsent(AMOUNT_RESULTS, 6);
-        settings.putIfAbsent(RESULT_MARGIN, 10);
-        settings.putIfAbsent(INPUT_RESULT_DISTANCE, 20);
-        settings.putIfAbsent(BAR_FONT, "Comfortaa Regular");
-        settings.putIfAbsent(ACTIVATION_DELAY, 250);
-        settings.putIfAbsent(ACTIVATION_KEY, 162);
-        settings.putIfAbsent(CANCEL_KEY, 27);
-        settings.putIfAbsent(CONFIRM_KEY, 13);
-        settings.putIfAbsent(MODIFY_KEY, 164);
-        settings.putIfAbsent(NEXT_RESULT_KEY, 40);
-        settings.putIfAbsent(PREVIOUS_RESULT_KEY, 38);
-        settings.putIfAbsent(TILE_GENERATOR_FILE_LIMIT, 1000);
-        settings.putIfAbsent(INPUT_BAR_FONT_SIZE, 36);
-        settings.putIfAbsent(RESULT_BAR_FONT_SIZE, 30);
-        settings.putIfAbsent(BAR_FONT_BOLD_BOOL, true);
+        for (Setting value : Setting.values()) {
+            settings.putIfAbsent(value.key, value.defaultValue);
+        }
     }
 
     public void loadTemplate(String template) {
         switch (template) {
             case "sizeNormal":
-                settings.put(INPUT_WIDTH, 800);
-                settings.put(INPUT_HEIGHT, 80);
-                settings.put(RESULT_WIDTH, 700);
-                settings.put(RESULT_HEIGHT, 70);
-                settings.put(AMOUNT_RESULTS, 6);
-                settings.put(INPUT_RESULT_DISTANCE, 20);
-                settings.put(INPUT_BAR_FONT_SIZE, 36);
-                settings.put(RESULT_BAR_FONT_SIZE, 30);
+                setSetting(Setting.INPUT_WIDTH, 800);
+                setSetting(Setting.INPUT_HEIGHT, 80);
+                setSetting(Setting.RESULT_WIDTH, 700);
+                setSetting(Setting.RESULT_HEIGHT, 70);
+                setSetting(Setting.AMOUNT_RESULTS, 6);
+                setSetting(Setting.INPUT_RESULT_DISTANCE, 20);
+                setSetting(Setting.INPUT_BAR_FONT_SIZE, 36);
+                setSetting(Setting.RESULT_BAR_FONT_SIZE, 30);
                 TrayUtil.showMessage("Settings loaded: Size normal");
                 break;
             case "sizeMedium":
-                settings.put(INPUT_WIDTH, 800);
-                settings.put(INPUT_HEIGHT, 64);
-                settings.put(RESULT_WIDTH, 700);
-                settings.put(RESULT_HEIGHT, 62);
-                settings.put(AMOUNT_RESULTS, 7);
-                settings.put(INPUT_RESULT_DISTANCE, 20);
-                settings.put(INPUT_BAR_FONT_SIZE, 36);
-                settings.put(RESULT_BAR_FONT_SIZE, 28);
+                setSetting(Setting.INPUT_WIDTH, 800);
+                setSetting(Setting.INPUT_HEIGHT, 64);
+                setSetting(Setting.RESULT_WIDTH, 700);
+                setSetting(Setting.RESULT_HEIGHT, 62);
+                setSetting(Setting.AMOUNT_RESULTS, 7);
+                setSetting(Setting.INPUT_RESULT_DISTANCE, 20);
+                setSetting(Setting.INPUT_BAR_FONT_SIZE, 36);
+                setSetting(Setting.RESULT_BAR_FONT_SIZE, 28);
                 TrayUtil.showMessage("Settings loaded: Size medium");
                 break;
             case "sizeSmall":
-                settings.put(INPUT_WIDTH, 700);
-                settings.put(INPUT_HEIGHT, 55);
-                settings.put(RESULT_WIDTH, 600);
-                settings.put(RESULT_HEIGHT, 50);
-                settings.put(AMOUNT_RESULTS, 8);
-                settings.put(INPUT_RESULT_DISTANCE, 6);
-                settings.put(INPUT_BAR_FONT_SIZE, 26);
-                settings.put(RESULT_BAR_FONT_SIZE, 24);
+                setSetting(Setting.INPUT_WIDTH, 700);
+                setSetting(Setting.INPUT_HEIGHT, 55);
+                setSetting(Setting.RESULT_WIDTH, 600);
+                setSetting(Setting.RESULT_HEIGHT, 50);
+                setSetting(Setting.AMOUNT_RESULTS, 8);
+                setSetting(Setting.INPUT_RESULT_DISTANCE, 6);
+                setSetting(Setting.INPUT_BAR_FONT_SIZE, 26);
+                setSetting(Setting.RESULT_BAR_FONT_SIZE, 24);
                 TrayUtil.showMessage("Settings loaded: Size small");
                 break;
         }
+        save();
+    }
+
+    public void setSetting(Setting setting, Object value) {
+        String key = setting.key;
+        settings.put(key, value);
+        TrayUtil.showMessage(Util.capitalizeWords(key.replaceAll("([A-Z])", " $1")) + " set to: " + value);
         save();
     }
 
@@ -158,7 +154,8 @@ public class Settings {
         save();
     }
 
-    public int getInt(String key) {
+    public int getInt(Setting setting) {
+        String key = setting.key;
         if (settings.containsKey(key)) {
             if (settings.get(key) instanceof Integer) return (int) settings.get(key);
             if (settings.get(key) instanceof Long) return (int) settings.get(key);
@@ -169,6 +166,10 @@ public class Settings {
         return -1;
     }
 
+    public String getString(Setting setting) {
+        return getString(setting.key);
+    }
+
     public String getString(String key) {
         if (settings.containsKey(key)) {
             if (settings.get(key) instanceof String) return (String) settings.get(key);
@@ -177,7 +178,8 @@ public class Settings {
         return key + " does not exist";
     }
 
-    public boolean getBoolean(String key) {
+    public boolean getBoolean(Setting setting) {
+        String key = setting.key;
         if (settings.containsKey(key)) {
             if (settings.get(key) instanceof Boolean) return (boolean) settings.get(key);
             if (settings.get(key) instanceof String) return settings.get(key).equals("true");
@@ -185,9 +187,10 @@ public class Settings {
         return false;
     }
 
-    public Font getFont(String key) {
+    public Font getFont(Setting setting) {
+        String key = setting.key;
         if (settings.containsKey(key)) {
-            String fontValue = getString(key);
+            String fontValue = getString(setting);
             if (fontValue.contains("\\") || fontValue.contains("/")) {
                 try {
                     Font font = Font.createFont(Font.TRUETYPE_FONT, new File(fontValue));
@@ -203,23 +206,35 @@ public class Settings {
         return new Font("Arial", Font.PLAIN, 12);
     }
 
-    public final static String INPUT_WIDTH = "inputWidth";
-    public final static String INPUT_HEIGHT = "inputHeight";
-    public final static String RESULT_WIDTH = "resultWidth";
-    public final static String RESULT_HEIGHT = "resultHeight";
-    public final static String AMOUNT_RESULTS = "amountResults";
-    public final static String RESULT_MARGIN = "resultMargin";
-    public final static String INPUT_RESULT_DISTANCE = "inputResultDistance";
-    public final static String BAR_FONT = "barFont";
-    public final static String ACTIVATION_DELAY = "activationDelay";
-    public final static String ACTIVATION_KEY = "activationKey";
-    public final static String CANCEL_KEY = "cancelKey";
-    public final static String CONFIRM_KEY = "confirmKey";
-    public final static String MODIFY_KEY = "modifyKeyMetaChar";
-    public final static String NEXT_RESULT_KEY = "nextResultKey";
-    public final static String PREVIOUS_RESULT_KEY = "previousResultKey";
-    public final static String TILE_GENERATOR_FILE_LIMIT = "tileGeneratorFileLimit";
-    public final static String INPUT_BAR_FONT_SIZE = "inputBarFontSize";
-    public final static String RESULT_BAR_FONT_SIZE = "resultBarFontSize";
-    public final static String BAR_FONT_BOLD_BOOL = "barFontBoldBool";
+    public enum Setting {
+        INPUT_WIDTH("inputWidth", 800, "input"),
+        INPUT_HEIGHT("inputHeight", 80, "input"),
+        RESULT_WIDTH("resultWidth", 700, "result"),
+        RESULT_HEIGHT("resultHeight", 70, "result"),
+        AMOUNT_RESULTS("amountResults", 6, "result"),
+        RESULT_MARGIN("resultMargin", 10, "result"),
+        INPUT_RESULT_DISTANCE("inputResultDistance", 20, "bar"),
+        BAR_FONT("barFont", "Comfortaa Regular", "bar"),
+        ACTIVATION_DELAY("activationDelay", 250, "time"),
+        ACTIVATION_KEY("activationKey", 162, "key"),
+        CANCEL_KEY("cancelKey", 27, "key"),
+        CONFIRM_KEY("confirmKey", 13, "key"),
+        MODIFY_KEY("modifyKeyMetaChar", 164, "key"),
+        NEXT_RESULT_KEY("nextResultKey", 40, "key"),
+        PREVIOUS_RESULT_KEY("previousResultKey", 38, "key"),
+        TILE_GENERATOR_FILE_LIMIT("tileGeneratorFileLimit", 1000, "tile"),
+        INPUT_BAR_FONT_SIZE("inputBarFontSize", 36, "input"),
+        RESULT_BAR_FONT_SIZE("resultBarFontSize", 30, "result"),
+        BAR_FONT_BOLD_BOOL("barFontBoldBool", true, "bar");
+
+        public final String key;
+        public final Object defaultValue;
+        public final String category;
+
+        Setting(String key, Object defaultValue, String category) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+            this.category = category;
+        }
+    }
 }
