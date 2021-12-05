@@ -1,9 +1,12 @@
 package bar.tile;
 
+import bar.logic.Settings;
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.File;
@@ -31,6 +34,7 @@ public class TileManager {
     private final List<String> disabledRuntimeTiles = new ArrayList<>();
     private File tileFile;
     private boolean isFirstLaunch = false;
+    private static final Logger logger = LoggerFactory.getLogger(TileManager.class);
 
     public TileManager() {
         findSettingsFile();
@@ -39,7 +43,7 @@ public class TileManager {
             generateDefaultTiles();
             createSettingsTiles();
             isFirstLaunch = true;
-            System.out.println("Is first launch: true");
+            logger.info("Is first launch: true");
         } else {
             readTilesFromFile();
         }
@@ -65,7 +69,7 @@ public class TileManager {
                 currentFuture = evaluate(input);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error ", e);
         }
     }
 
@@ -107,7 +111,7 @@ public class TileManager {
             File candidate = new File(possibleSettingsFile).getAbsoluteFile();
             if (candidate.exists()) {
                 tileFile = candidate;
-                System.out.println("Loaded tiles in " + tileFile.getAbsolutePath());
+                logger.info("Loaded tiles in {}", tileFile.getAbsolutePath());
                 return;
             }
         }
@@ -127,7 +131,7 @@ public class TileManager {
             loadTilesFromJson(tilesRoot);
         } catch (FileNotFoundException e) {
             TrayUtil.showError("Something went wrong while reading the tiles: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("error ", e);
         }
     }
 
@@ -179,7 +183,7 @@ public class TileManager {
         regenerateGeneratedTiles();
         createSettingsTiles();
 
-        System.out.println("Loaded " + tiles.size() + " tile(s), " + tileGenerators.size() + " tile generator(s) and " + categories.size() + " category/ies.");
+        logger.info("Loaded {} tile(s), {} tile generator(s) and {} category/ies.", tiles.size(), tileGenerators.size(), categories.size());
     }
 
     public void regenerateGeneratedTiles() {
@@ -188,7 +192,7 @@ public class TileManager {
             for (TileGenerator tileGenerator : tileGenerators) {
                 generatedTiles.addAll(tileGenerator.generateTiles());
             }
-            System.out.println("Done generating " + generatedTiles.size() + " tile(s).");
+            logger.info("Done generating {} tile(s).", generatedTiles.size());
         }).start();
     }
 
@@ -254,7 +258,7 @@ public class TileManager {
             myWriter.close();
         } catch (IOException e) {
             TrayUtil.showError("Unable to save tiles: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("error ", e);
         }
     }
 
@@ -332,7 +336,7 @@ public class TileManager {
         categories.add(new TileCategory("copy", new Color(252, 186, 3)));
         categories.add(new TileCategory("runtime", new Color(59, 196, 57)));
         categories.add(new TileCategory("settings", new Color(222, 40, 0)));
-        System.out.println("Generated default tiles and categories");
+        logger.info("Generated default tiles and categories");
     }
 
     private void createCustomTiles() {

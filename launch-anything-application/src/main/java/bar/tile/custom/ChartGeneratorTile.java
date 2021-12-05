@@ -10,6 +10,8 @@ import de.yanwittmann.j2chartjs.datapoint.ScatterChartDatapoint;
 import de.yanwittmann.j2chartjs.dataset.ScatterChartDataset;
 import de.yanwittmann.j2chartjs.options.ChartOptions;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.File;
@@ -23,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class ChartGeneratorTile implements RuntimeTile {
 
     private String lastExpression = null;
+    private static final Logger logger = LoggerFactory.getLogger(ChartGeneratorTile.class);
 
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
@@ -54,7 +57,7 @@ public class ChartGeneratorTile implements RuntimeTile {
     }
 
     private void generateGraph(String range, String... expressions) {
-        System.out.println("Generating graph for " + Arrays.toString(expressions) + " in range " + range);
+        logger.info("Generating graph for {} in range {}", Arrays.toString(expressions), range);
         lastExpression = expressions[0];
 
         ScatterChartData data = new ScatterChartData();
@@ -110,7 +113,7 @@ public class ChartGeneratorTile implements RuntimeTile {
             FileUtils.write(tempFile, String.join("\n", htmlLines), StandardCharsets.UTF_8);
             Desktop.getDesktop().browse(tempFile.toURI());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error ", e);
             TrayUtil.showError("Something went wrong while generating the graph: " + e.getMessage());
         }
     }

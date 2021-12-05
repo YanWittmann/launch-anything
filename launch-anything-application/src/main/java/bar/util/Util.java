@@ -10,6 +10,10 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -32,8 +36,9 @@ import static java.net.URLEncoder.encode;
 import static javax.swing.JOptionPane.*;
 
 public abstract class Util {
-
-    private static Settings settings = null;
+	
+	private static Settings settings = null;
+	private static final Logger logger = LoggerFactory.getLogger(Util.class);
 
     public static void setSettings(Settings settings) {
         Util.settings = settings;
@@ -44,7 +49,7 @@ public abstract class Util {
             Font font = Font.createFont(Font.TRUETYPE_FONT, Main.class.getClassLoader().getResourceAsStream(path));
             GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
         } catch (FontFormatException | IOException | NullPointerException e) {
-            e.printStackTrace();
+            logger.error("error ", e);
         }
     }
 
@@ -63,7 +68,7 @@ public abstract class Util {
                 out.add(line);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+           logger.error("error ", e);
         }
         return out.toString();
     }
@@ -302,7 +307,7 @@ public abstract class Util {
                 TrayUtil.showMessage("Application will run on system startup");
             } catch (IOException | URISyntaxException e) {
                 TrayUtil.showError("Unable to add autostart feature: " + e.getMessage());
-                e.printStackTrace();
+                logger.error("error ", e);
             }
         } else {
             if (file.delete()) {

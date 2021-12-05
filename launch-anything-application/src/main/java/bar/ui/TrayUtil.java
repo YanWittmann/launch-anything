@@ -1,10 +1,14 @@
 package bar.ui;
 
 import bar.Main;
+import bar.logic.Settings;
 
 import java.awt.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class TrayUtil {
 
@@ -14,14 +18,15 @@ public abstract class TrayUtil {
 
     private static PopupMenu trayMenu;
     private static MenuItem resetTimeoutIcon;
+    private static final Logger logger = LoggerFactory.getLogger(TrayUtil.class);
 
     public static void showMessage(String message) {
-        System.out.println("Showing message tray: " + message.replace("\n", "\n   "));
+    	logger.info("Showing message tray: {}", message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything", message, TrayIcon.MessageType.INFO);
     }
 
     public static void showError(String message) {
-        System.out.println("Showing error message tray: " + message.replace("\n", "\n   "));
+    	logger.info("Showing error message tray: {}", message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything Error", message, TrayIcon.MessageType.ERROR);
     }
 
@@ -77,7 +82,7 @@ public abstract class TrayUtil {
         TrayUtil.main = main;
 
         if (!SystemTray.isSupported()) {
-            System.out.println("System tray not supported on this platform");
+        	logger.info("System tray not supported on this platform");
         }
 
         try {
@@ -85,11 +90,11 @@ public abstract class TrayUtil {
             trayIcon = createTrayIconFromResource();
             sysTray.add(trayIcon);
         } catch (AWTException e) {
-            System.out.println("Unable to add icon to the system tray: " + e.getMessage());
-            e.printStackTrace();
+        	logger.info("Unable to add icon to the system tray: {}", e.getMessage());
+            logger.error("error ", e);
         } catch (Exception e) {
-            System.out.println("Something went wrong while adding the icon to the system tray: " + e.getMessage());
-            e.printStackTrace();
+        	logger.info("Something went wrong while adding the icon to the system tray: {}", e.getMessage());
+        	logger.error("error ", e);
         }
     }
 }

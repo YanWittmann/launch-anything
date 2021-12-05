@@ -7,6 +7,10 @@ import bar.util.ImageUtil;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
@@ -40,6 +44,7 @@ public class GlassBar extends JFrame {
     private boolean allowInput = true;
 
     private final List<InputListener> inputListeners = new ArrayList<>();
+    private static final Logger logger = LoggerFactory.getLogger(GlassBar.class);
 
     public GlassBar() {
         // set the general properties of the frame
@@ -239,7 +244,7 @@ public class GlassBar extends JFrame {
         try {
             robot = new Robot();
         } catch (AWTException e) {
-            e.printStackTrace();
+            logger.error("error ", e);
         }
     }
 

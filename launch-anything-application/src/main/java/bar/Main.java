@@ -12,6 +12,8 @@ import bar.util.Util;
 import bar.webserver.HTTPServer;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -32,6 +34,7 @@ public class Main {
 
     public final String VERSION;
     private static String VERSION_STRING;
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
         Util.registerFont("font/Comfortaa-Regular.ttf");
@@ -53,7 +56,7 @@ public class Main {
             ver = props.getProperty("application.version");
         } catch (IOException e) {
             ver = "unknown";
-            e.printStackTrace();
+            logger.error("error ", e);
         }
         VERSION = ver;
         VERSION_STRING = "V" + VERSION;
@@ -63,7 +66,7 @@ public class Main {
         } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
         }
 
-        System.out.println("Launching application version [" + VERSION + "] on OS [" + Util.getOS() + "]");
+        logger.info("Launching application version [{}] on OS [{}]", VERSION, Util.getOS());
         TrayUtil.init(this);
 
         settings = new Settings();
@@ -146,7 +149,7 @@ public class Main {
                     openSettingsWebServer(false);
                 } catch (Exception e) {
                     TrayUtil.showError("Failed to start web server: " + e.getMessage());
-                    e.printStackTrace();
+                    logger.error("error ", e);
                 }
             }).start();
         } else {
@@ -282,10 +285,10 @@ public class Main {
                     webserver.open();
                 } catch (IOException e) {
                     TrayUtil.showError("Unable to start settings webserver on port " + port);
-                    e.printStackTrace();
+                    logger.error("error ", e);
                 }
             }).start();
-            System.out.println("Settings webserver started on port " + port);
+            logger.info("Settings webserver started on port {}", port);
         }
         if (openWebpage) {
             Sleep.milliseconds(300);
@@ -293,7 +296,7 @@ public class Main {
                 getDesktop().browse(new URI(webserver.getUrl() + "/?p=" + port));
             } catch (Exception e) {
                 TrayUtil.showError("Unable to open url " + webserver.getUrl() + "/?p=" + port);
-                e.printStackTrace();
+                logger.error("error ", e);
             }
         }
     }
@@ -329,8 +332,8 @@ public class Main {
                     }
                 }
             }
-            System.out.println("- - - - - - - - - - - - - - - - - - - - - - - - - -");
-            getParams.forEach((k, v) -> System.out.println(k + ": " + v));
+            logger.info("- - - - - - - - - - - - - - - - - - - - - - - - - -");
+            getParams.forEach((k, v) -> logger.info("{}: {}",k, v));
 
             if (getParams.containsKey("action")) {
                 try {
@@ -599,7 +602,7 @@ public class Main {
                 } catch (Exception e) {
                     TrayUtil.showError("Something went wrong: " + e.getMessage());
                     setResponseError(500, "Something went wrong: " + e.getMessage() + ", " + Arrays.toString(e.getStackTrace()), out);
-                    e.printStackTrace();
+                    logger.error("error ", e);
                 }
             } else {
                 out.write("HTTP/1.0 200 OK\r\n");
@@ -610,8 +613,8 @@ public class Main {
                 out.write(Util.readClassResource("web/settings.html"));
             }
         } catch (Exception e) {
-            System.out.println("Something went wrong while answering to the client: " + e.getMessage());
-            e.printStackTrace();
+            logger.info("Something went wrong while answering to the client: {}", e.getMessage());
+            logger.error("error ", e);
             openSettingsWebServer(false);
         }
     }
@@ -728,7 +731,7 @@ public class Main {
             timeoutUntil = 0;
             TrayUtil.setMenuItemActive(0, false);
         } else {
-            System.out.println("Disabling input for " + duration + " minute(s)");
+            logger.info("Disabling input for {} minute(s)", duration);
             timeoutUntil = System.currentTimeMillis() + ((long) duration * 60 * 1000);
             TrayUtil.showMessage("LaunchBar is now disabled for " + duration + " minute" + (duration == 1 ? "" : "s"));
             TrayUtil.setMenuItemActive(0, true);
@@ -768,23 +771,23 @@ public class Main {
                     String compareVersion = version.replace("v", "");
                     if (!compareVersion.equals(VERSION)) {
 
-                        System.out.println("There is an update available:");
-                        System.out.println("Latest version: " + version + " (" + versionName + ")");
-                        System.out.println("Release date: " + releaseDate);
-                        System.out.println("Download URL: " + versionUrl);
+                        logger.info("There is an update available:");
+                        logger.info("Latest version: {} ({})", version, versionName);
+                        logger.info("Release date: {}", releaseDate);
+                        logger.info("Download URL: {}", versionUrl);
                         String updateNow = Util.popupChooseButton("Update Available",
                                 "There is an update available for the LaunchBar!\n\nLatest version: " + version + " (" + versionName + ")\nRelease date: " + releaseDate + "\nDownload URL: " + versionUrl + "\n\n" + versionBody + "\n\nDo you want to download it now?",
                                 new String[]{"Download", "Ignore"});
                         if (updateNow != null && updateNow.equals("Download")) {
-                            System.out.println("Copying elevator to outside the jar");
+                        	logger.info("Copying elevator to outside the jar");
                             Util.copyResource("executables/elevator-jar-with-dependencies.jar", "elevator.jar");
-                            System.out.println("Launching elevator.jar");
+                            logger.info("Launching elevator.jar");
 
                             try {
                                 Desktop.getDesktop().open(new File("elevator.jar"));
                                 System.exit(0);
                             } catch (IOException e) {
-                                e.printStackTrace();
+                            	logger.error("error ", e);
                                 TrayUtil.showError("Failed to open the elevator.jar file: " + e.getMessage());
                             }
                         }
@@ -793,7 +796,7 @@ public class Main {
                 }
 
             } catch (Exception e) {
-                System.out.println("Unable to check for new version: " + e.getMessage());
+            	logger.info("Unable to check for new version: {}", e.getMessage());
             }
         }
     }

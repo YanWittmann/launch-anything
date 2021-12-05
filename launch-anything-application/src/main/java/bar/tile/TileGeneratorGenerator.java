@@ -1,7 +1,10 @@
 package bar.tile;
 
+import bar.logic.Settings;
 import bar.util.Util;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -11,6 +14,7 @@ import java.util.UUID;
 public class TileGeneratorGenerator {
 
     private final JSONObject json;
+    private static final Logger logger = LoggerFactory.getLogger(TileGeneratorGenerator.class);
 
 
     public TileGeneratorGenerator(JSONObject json) {
@@ -107,7 +111,7 @@ public class TileGeneratorGenerator {
                     break;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error ", e);
         }
 
         return tiles;
