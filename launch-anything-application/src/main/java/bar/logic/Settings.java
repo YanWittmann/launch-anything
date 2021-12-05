@@ -4,6 +4,8 @@ import bar.ui.TrayUtil;
 import bar.util.Util;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.File;
@@ -20,6 +22,8 @@ public class Settings {
     private final Map<String, Object> settings = new LinkedHashMap<>();
     private File settingsFile;
 
+    private static final Logger logger = LoggerFactory.getLogger(Settings.class);
+    
     public Settings() {
         findSettingsFile();
         if (settingsFile == null) {
@@ -45,7 +49,7 @@ public class Settings {
             File candidate = new File(possibleSettingsFile).getAbsoluteFile();
             if (candidate.exists()) {
                 settingsFile = candidate;
-                System.out.println("Loaded settings in " + settingsFile.getAbsolutePath());
+                logger.info("Loaded settings in {}", settingsFile.getAbsolutePath());
                 return;
             }
         }
@@ -63,7 +67,7 @@ public class Settings {
             settings.putAll(new JSONObject(fileContent.toString()).toMap());
         } catch (FileNotFoundException e) {
             TrayUtil.showError("Unable to read settings file: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("error: ", e);
         }
     }
 
@@ -83,7 +87,7 @@ public class Settings {
             myWriter.close();
         } catch (IOException e) {
             TrayUtil.showError("Unable to save settings file: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("error ", e);
         }
     }
 
@@ -208,7 +212,7 @@ public class Settings {
                     GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
                     return font;
                 } catch (FontFormatException | IOException e) {
-                    e.printStackTrace();
+                    logger.error("error ", e);
                 }
             } else {
                 return new Font(fontValue, Font.PLAIN, 12);

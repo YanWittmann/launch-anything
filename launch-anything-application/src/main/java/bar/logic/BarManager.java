@@ -7,13 +7,17 @@ import bar.ui.GlassBar;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BarManager {
 
     private final Settings settings;
     private final GlassBar inputGlassBar;
     private final List<GlassBar> resultGlassBars = new ArrayList<>();
     private boolean isInputActive = false;
-
+    private static final Logger logger = LoggerFactory.getLogger(BarManager.class);
+    
     public BarManager(Settings settings) {
         this.settings = settings;
 
@@ -85,7 +89,7 @@ public class BarManager {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error ", e);
         }
     }
 
