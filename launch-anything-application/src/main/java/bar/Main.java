@@ -110,11 +110,6 @@ public class Main {
                     } else {
                         scrollThroughResultBars(code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY));
                     }
-                } else if ((code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY) || code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY)) && inputHistory.size() > 0) {
-                    if (code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY))
-                        currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1);
-                    else currentInputHistoryIndex = Math.min(inputHistory.size() - 1, currentInputHistoryIndex + 1);
-                    barManager.setInput(inputHistory.get(Math.max(0, currentInputHistoryIndex)));
                 } else if (code == settings.getInt(Settings.Setting.LEFT_ARROW_KEY) || code == settings.getInt(Settings.Setting.RIGHT_ARROW_KEY)) {
                     barManager.setInputCaretVisible(true);
                 }
@@ -218,15 +213,24 @@ public class Main {
         }
     }
 
+    private long lastHistoryScroll = 0;
+
     private void scrollThroughInputHistory(boolean direction) {
-        if (inputHistory.size() > 0) {
-        	if (storedUserInput == null) storedUserInput = currentInput;
+        if (inputHistory.size() > 0 && System.currentTimeMillis() - lastHistoryScroll > 100) {
+            lastHistoryScroll = System.currentTimeMillis();
+            if (storedUserInput == null) storedUserInput = currentInput;
+            int oldIndex = currentInputHistoryIndex;
             if (direction) currentInputHistoryIndex = Math.min(inputHistory.size(), currentInputHistoryIndex + 1); // up
             else currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1); // down
-            if (currentInputHistoryIndex == inputHistory.size()) {
-                barManager.setInput(storedUserInput);
-                storedUserInput = null;
-            } else barManager.setInput(inputHistory.get(currentInputHistoryIndex));
+            if (oldIndex != currentInputHistoryIndex) {
+                if (currentInputHistoryIndex == inputHistory.size()) {
+                    barManager.setInput(storedUserInput);
+                    currentInput = storedUserInput;
+                    storedUserInput = null;
+                } else {
+                    barManager.setInput(inputHistory.get(currentInputHistoryIndex));
+                }
+            }
         }
     }
 
@@ -352,7 +356,7 @@ public class Main {
                 }
             }
             logger.info("- - - - - - - - - - - - - - - - - - - - - - - - - -");
-            getParams.forEach((k, v) -> logger.info("{}: {}",k, v));
+            getParams.forEach((k, v) -> logger.info("{}: {}", k, v));
 
             if (getParams.containsKey("action")) {
                 try {
@@ -798,7 +802,7 @@ public class Main {
                                 "There is an update available for the LaunchBar!\n\nLatest version: " + version + " (" + versionName + ")\nRelease date: " + releaseDate + "\nDownload URL: " + versionUrl + "\n\n" + versionBody + "\n\nDo you want to download it now?",
                                 new String[]{"Download", "Ignore"});
                         if (updateNow != null && updateNow.equals("Download")) {
-                        	logger.info("Copying elevator to outside the jar");
+                            logger.info("Copying elevator to outside the jar");
                             Util.copyResource("executables/elevator-jar-with-dependencies.jar", "elevator.jar");
                             logger.info("Launching elevator.jar");
 
@@ -806,7 +810,7 @@ public class Main {
                                 Desktop.getDesktop().open(new File("elevator.jar"));
                                 System.exit(0);
                             } catch (IOException e) {
-                            	logger.error("error ", e);
+                                logger.error("error ", e);
                                 TrayUtil.showError("Failed to open the elevator.jar file: " + e.getMessage());
                             }
                         }
@@ -815,7 +819,7 @@ public class Main {
                 }
 
             } catch (Exception e) {
-            	logger.info("Unable to check for new version: {}", e.getMessage());
+                logger.info("Unable to check for new version: {}", e.getMessage());
             }
         }
     }
