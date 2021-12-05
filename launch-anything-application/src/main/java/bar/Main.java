@@ -196,6 +196,7 @@ public class Main {
     private String currentInput;
     private int currentInputHistoryIndex = 0;
     private int currentResultIndex = 0;
+    private String storedUserInput = null;
 
     private void executeTopmostTile() {
         if (currentResultIndex < lastTiles.size()) {
@@ -219,10 +220,13 @@ public class Main {
 
     private void scrollThroughInputHistory(boolean direction) {
         if (inputHistory.size() > 0) {
-            if (direction)
-                currentInputHistoryIndex = Math.min(inputHistory.size() - 1, currentInputHistoryIndex + 1); // up
+        	if (storedUserInput == null) storedUserInput = currentInput;
+            if (direction) currentInputHistoryIndex = Math.min(inputHistory.size(), currentInputHistoryIndex + 1); // up
             else currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1); // down
-            barManager.setInput(inputHistory.get(currentInputHistoryIndex));
+            if (currentInputHistoryIndex == inputHistory.size()) {
+                barManager.setInput(storedUserInput);
+                storedUserInput = null;
+            } else barManager.setInput(inputHistory.get(currentInputHistoryIndex));
         }
     }
 
