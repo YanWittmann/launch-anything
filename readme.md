@@ -52,7 +52,7 @@ To build the launch bar yourself, perform these actions:
 1. Clone and install the entirety of **[steos jnafilechooser](https://github.com/steos/jnafilechooser.git)** using Maven
    (`mvn install`)
 2. Build this project using Maven (`mvn package`)
-3. The jar will be located in the `target` directory
+3. The jar will be located in the `launch-anything-application/target` directory
 
 ## Have fun using the LaunchAnything bar!
 
