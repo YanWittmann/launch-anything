@@ -219,7 +219,7 @@ public class Main {
             if (direction)
                 currentInputHistoryIndex = Math.min(inputHistory.size() - 1, currentInputHistoryIndex + 1); // up
             else currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1); // down
-            barManager.setInput(inputHistory.get(Math.max(0, currentInputHistoryIndex)));
+            barManager.setInput(inputHistory.get(currentInputHistoryIndex));
         }
     }
 
