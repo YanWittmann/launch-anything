@@ -163,8 +163,10 @@ public class GlassBar extends JFrame {
             BufferedImage tintedImage;
             if (isLightMode) {
                 tintedImage = ImageUtil.overlayColor(lastBackgroundImage, color, BACKGROUND_TINT_FACTOR_FOR_BRIGHT_MODE);
+                tintedImage = ImageUtil.makeRoundedCorner(tintedImage, BORDER_RADIUS + BORDER_THICKNESS_FOR_BRIGHT_MODE + 5);
             } else {
                 tintedImage = ImageUtil.overlayColor(lastBackgroundImage, color, BACKGROUND_TINT_FACTOR_FOR_DARK_MODE);
+                tintedImage = ImageUtil.makeRoundedCorner(tintedImage, BORDER_RADIUS + BORDER_THICKNESS_FOR_DARK_MODE + 5);
             }
             backgroundImageLabel.setIcon(new ImageIcon(tintedImage));
         }
