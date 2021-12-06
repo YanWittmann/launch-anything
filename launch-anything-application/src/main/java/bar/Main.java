@@ -32,21 +32,24 @@ import static java.awt.Desktop.getDesktop;
 
 public class Main {
 
-    public final String VERSION;
-    private static String VERSION_STRING;
+    private static String versionString;
     private static final Logger logger = LoggerFactory.getLogger(Main.class);
-
-    public static void main(String[] args) {
-        Util.registerFont("font/Comfortaa-Regular.ttf");
-        new Main(args);
-    }
-
+    private static final Pattern GET_PATTERN = Pattern.compile("GET /\\?(.+) HTTP/\\d.+");
+    public final String version;
+    private List<Tile> lastTiles = new ArrayList<>();
+    private Tile lastExecutedTile;
+    private List<String> inputHistory = new ArrayList<>();
+    private String currentInput;
+    private int currentInputHistoryIndex = 0;
+    private int currentResultIndex = 0;
+    private String storedUserInput = null;
+    private int lastPressedKey = -1;
+    private boolean isModifyKeyPressed = false;
     private final Settings settings;
     private final BarManager barManager;
     private final TileManager tileManager;
     private final UndoHistory undoHistory = new UndoHistory();
-    private int lastPressedKey = -1;
-    private boolean isModifyKeyPressed = false;
+
 
     private Main(String[] args) {
         String ver;
@@ -58,15 +61,16 @@ public class Main {
             ver = "unknown";
             logger.error("error ", e);
         }
-        VERSION = ver;
-        VERSION_STRING = "V" + VERSION;
+        version = ver;
+        versionString = "V" + version;
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
+            //Do nothing
         }
 
-        logger.info("Launching application version [{}] on OS [{}]", VERSION, Util.getOS());
+        logger.info("Launching application version [{}] on OS [{}]", version, Util.getOS());
         TrayUtil.init(this);
 
         settings = new Settings();
@@ -110,7 +114,7 @@ public class Main {
                     } else {
                         scrollThroughResultBars(code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY));
                     }
-                } else if ((code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY) || code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY)) && inputHistory.size() > 0) {
+                } else if ((code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY) || code == settings.getInt(Settings.Setting.NEXT_RESULT_KEY)) && !inputHistory.isEmpty()) {
                     if (code == settings.getInt(Settings.Setting.PREVIOUS_RESULT_KEY))
                         currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1);
                     else currentInputHistoryIndex = Math.min(inputHistory.size() - 1, currentInputHistoryIndex + 1);
@@ -142,7 +146,7 @@ public class Main {
         if (willRestartWebServer) {
             new Thread(() -> {
                 try {
-                    TrayUtil.showMessage("LaunchAnything V" + VERSION + " is now active.\nSettings page will be available in a few seconds.");
+                    TrayUtil.showMessage("LaunchAnything V" + version + " is now active.\nSettings page will be available in a few seconds.");
                     Sleep.milliseconds(10000);
                     openSettingsWebServer(false);
                 } catch (Exception e) {
@@ -151,7 +155,7 @@ public class Main {
                 }
             }).start();
         } else {
-            TrayUtil.showMessage("LaunchAnything V" + VERSION + " is now active.");
+            TrayUtil.showMessage("LaunchAnything V" + version + " is now active.");
         }
 
         new Thread(() -> {
@@ -160,42 +164,35 @@ public class Main {
             final File elevatorFile = new File("elevator.jar");
             if (elevatorFile.exists()) {
                 Sleep.seconds(4);
-                if (elevatorFile.exists()) {
-                    if (!elevatorFile.delete()) {
-                        TrayUtil.showError("Failed to delete elevator.jar");
-                    }
+                if (elevatorFile.exists() && !elevatorFile.delete()) {
+                    TrayUtil.showError("Failed to delete elevator.jar");
                 }
             }
 
-            if (tileManager.isFirstLaunch()) {
-                if (Util.isApplicationStartedFromJar() && !Util.isAutostartEnabled()) {
-                    new Thread(() -> {
-                        String activateAutostart = Util.popupChooseButton(
-                                "LaunchAnything",
-                                "Do you want LaunchAnything to start on system startup?\n" +
-                                "This can be activated / deactivated in the settings later on.",
-                                new String[]{"Yes", "No"});
-                        if (activateAutostart != null) {
-                            if (activateAutostart.equals("Yes"))
-                                Util.setAutostartActive(true);
-                        }
-                    }).start();
-                }
+            if (tileManager.isFirstLaunch() && isStartedFromJarAndIsAutostartDisabled()) {
+                new Thread(() -> {
+                    String activateAutostart = Util.popupChooseButton(
+                            "LaunchAnything",
+                            "Do you want LaunchAnything to start on system startup?\n" +
+                                    "This can be activated / deactivated in the settings later on.",
+                            new String[]{"Yes", "No"});
+                    if ("Yes".equals(activateAutostart)) {
+                        Util.setAutostartActive(true);
+                    }
+                }).start();
             }
         }).start();
+    }
+
+    public static void main(String[] args) {
+        Util.registerFont("font/Comfortaa-Regular.ttf");
+        new Main(args);
     }
 
     private void userInput(String input) {
         tileManager.evaluateUserInput(input);
         currentInput = input;
     }
-
-    private List<Tile> lastTiles = new ArrayList<>();
-    private Tile lastExecutedTile;
-    private List<String> inputHistory = new ArrayList<>();
-    private String currentInput;
-    private int currentInputHistoryIndex = 0;
-    private int currentResultIndex = 0;
 
     private void executeTopmostTile() {
         if (currentResultIndex < lastTiles.size()) {
@@ -209,7 +206,7 @@ public class Main {
     }
 
     private void addInputToHistory() {
-        if (inputHistory.size() == 0 || !currentInput.equals(inputHistory.get(inputHistory.size() - 1))) {
+        if (inputHistory.isEmpty() || !currentInput.equals(inputHistory.get(inputHistory.size() - 1))) {
             inputHistory.add(currentInput);
         }
         if (inputHistory.size() > 30) {
@@ -218,16 +215,24 @@ public class Main {
     }
 
     private void scrollThroughInputHistory(boolean direction) {
-        if (inputHistory.size() > 0) {
-            if (direction)
-                currentInputHistoryIndex = Math.min(inputHistory.size() - 1, currentInputHistoryIndex + 1); // up
-            else currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1); // down
-            barManager.setInput(inputHistory.get(currentInputHistoryIndex));
+        if (!inputHistory.isEmpty()) {
+        	if (storedUserInput == null)
+                storedUserInput = currentInput;
+            if (direction) {
+                currentInputHistoryIndex = Math.min(inputHistory.size(), currentInputHistoryIndex + 1); // up
+            }
+            else {
+                currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1); // down
+            }
+            if (currentInputHistoryIndex == inputHistory.size()) {
+                barManager.setInput(storedUserInput);
+                storedUserInput = null;
+            } else barManager.setInput(inputHistory.get(currentInputHistoryIndex));
         }
     }
 
     private void scrollThroughResultBars(boolean direction) {
-        if (lastTiles.size() > 0) {
+        if (!lastTiles.isEmpty()) {
             if (direction) currentResultIndex = Math.min(lastTiles.size() - 1, currentResultIndex + 1); // down
             else currentResultIndex = Math.max(0, currentResultIndex - 1); // up
             barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
@@ -243,44 +248,59 @@ public class Main {
                 if (selectedOption != null) {
                     switch (selectedOption) {
                         case "Action":
+                            if (!isToBeContinuedAfterEvaluatingEditType())
+                                return;
+                            break;
                         case "Both":
-                            TileAction firstAction = lastExecutedTile.getFirstAction();
-                            String param1 = null, param2 = null;
-                            if (firstAction != null) {
-                                String editType = Util.popupChooseButton("LaunchAnything", "Do you want to modify the action type or only the parameters?", new String[]{"Parameters", "Type and Parameters", "Cancel"});
-                                if (editType != null) {
-                                    if (editType.equals("Parameters")) {
-                                        param1 = firstAction.getParam1();
-                                        param2 = firstAction.getParam2();
-                                    } else if (editType.equals("Type and Parameters")) {
-                                        lastExecutedTile.removeAction(firstAction);
-                                    } else if (editType.equals("Cancel")) {
-                                        return;
-                                    }
-                                }
+                            if (!isToBeContinuedAfterEvaluatingEditType())
+                                return;
+                            if (lastExecutedTile.getFirstAction() != null) {
+                                setLabelToLastExecutedTile(lastExecutedTile.getFirstAction().getExampleTileLabel());
+                            }else{
+                                setLabelToLastExecutedTile(lastExecutedTile.getLabel());
                             }
-                            createOrEditNewTileAction(lastExecutedTile, param1, param2);
-                            if (!selectedOption.equals("Both")) {
-                                break;
-                            }
+                            break;
                         case "Name":
-                            String templateName = lastExecutedTile.getLabel();
-                            if (selectedOption.equals("Both") && lastExecutedTile.getFirstAction() != null) {
-                                templateName = lastExecutedTile.getFirstAction().getExampleTileLabel();
-                            }
-                            String newName = Util.popupTextInput("LaunchAnything", "Enter new name:", templateName);
-                            if (newName != null && !newName.isEmpty() && !newName.equals("null")) {
-                                lastExecutedTile.setLabel(newName);
-                            }
+                            setLabelToLastExecutedTile(lastExecutedTile.getLabel());
                             break;
                         case "Cancel":
                             return;
+                        default:
+                            break;
                     }
                 }
                 tileManager.save();
             }
         }
     }
+
+    private boolean isToBeContinuedAfterEvaluatingEditType(){
+        TileAction firstAction = lastExecutedTile.getFirstAction();
+        String param1 = null;
+        String param2 = null;
+        if (firstAction != null) {
+            String editType = Util.popupChooseButton("LaunchAnything", "Do you want to modify the action type or only the parameters?", new String[]{"Parameters", "Type and Parameters", "Cancel"});
+            if ("Parameters".equals(editType)) {
+                param1 = firstAction.getParam1();
+                param2 = firstAction.getParam2();
+            } else if ("Type and Parameters".equals(editType)) {
+                lastExecutedTile.removeAction(firstAction);
+            } else if ("Cancel".equals("Cancel")) {
+                return false;
+            }
+        }
+        createOrEditNewTileAction(lastExecutedTile, param1, param2);
+        return true;
+    }
+
+    private void setLabelToLastExecutedTile(String templateName){
+        String newName = Util.popupTextInput("LaunchAnything", "Enter new name:", templateName);
+        if (newName != null && !newName.isEmpty() && !newName.equals("null")) {
+            lastExecutedTile.setLabel(newName);
+        }
+    }
+
+
 
     private void onInputEvaluated(List<Tile> tiles) {
         lastTiles = tiles;
@@ -409,6 +429,8 @@ public class Main {
                                     settings.loadTemplate("sizeNormal");
                                     barManager.barReloadRequest();
                                     break;
+                                default:
+                                    break;
                             }
                         }
 
@@ -469,6 +491,8 @@ public class Main {
                                         case "deleteKeyword":
                                             tile.removeKeyword(additionalValue);
                                             break;
+                                        default:
+                                            break;
                                     }
                                 } else {
                                     if (whatToEdit.equals("createTile")) {
@@ -488,6 +512,8 @@ public class Main {
                                             break;
                                         case "deleteCategory":
                                             tileManager.removeCategory(category);
+                                            break;
+                                        default:
                                             break;
                                     }
                                 } else {
@@ -549,6 +575,8 @@ public class Main {
                                                 tileGenerator.removeGenerator(tileGeneratorGenerator);
                                                 tileManager.regenerateGeneratedTiles();
                                             }
+                                            break;
+                                        default:
                                             break;
                                     }
                                 } else {
@@ -655,16 +683,14 @@ public class Main {
         String generatorType = Util.popupDropDown("Generator", "Select the generator type", TileGeneratorGenerator.GENERATOR_TYPES, tileGeneratorGenerator != null ? tileGeneratorGenerator.getType() : null);
 
         if (generatorType != null) {
-            switch (generatorType) {
-                case "file":
-                    File file = Util.pickDirectory();
-                    if (file != null) {
-                        String filter = Util.popupTextInput("Generator", "Leave empty or enter file extensions", tileGeneratorGenerator != null ? tileGeneratorGenerator.getParam2() : null);
-                        if (filter != null) {
-                            tileGeneratorGenerator = new TileGeneratorGenerator(generatorType, file.getAbsolutePath(), filter.length() > 0 ? filter : null);
-                        }
+            if (generatorType.equals("file")) {
+                File file = Util.pickDirectory();
+                if (file != null) {
+                    String filter = Util.popupTextInput("Generator", "Leave empty or enter file extensions", tileGeneratorGenerator != null ? tileGeneratorGenerator.getParam2() : null);
+                    if (filter != null) {
+                        tileGeneratorGenerator = new TileGeneratorGenerator(generatorType, file.getAbsolutePath(), filter.length() > 0 ? filter : null);
                     }
-                    break;
+                }
             }
             if (tileGeneratorGenerator != null) {
                 generator.addGenerator(tileGeneratorGenerator);
@@ -713,6 +739,8 @@ public class Main {
                 case "copy":
                     param1 = Util.popupTextInput("Tile Action", "Enter the text to copy", previousValue);
                     break;
+                default:
+                    break;
             }
 
             if (param1 != null) {
@@ -756,11 +784,13 @@ public class Main {
     private void setResponseError(int errorCode, String message, BufferedWriter out) throws IOException {
         switch (errorCode) {
             case 400:
-            default:
                 out.write("HTTP/1.0 400 Bad Request\r\n");
                 break;
             case 500:
                 out.write("HTTP/1.0 500 Internal Server Error\r\n");
+                break;
+            default:
+                out.write("HTTP/1.0 400 Bad Request\r\n");
                 break;
         }
 
@@ -769,8 +799,6 @@ public class Main {
         out.write("Content-Type: application/json\r\n");
         out.write("\r\n{\"error\":\"" + message + "\"}");
     }
-
-    private final static Pattern GET_PATTERN = Pattern.compile("GET /\\?(.+) HTTP/\\d.+");
 
     private void checkForNewVersion() {
         if (Util.isApplicationStartedFromJar()) {
@@ -784,7 +812,7 @@ public class Main {
 
                 if (version != null && version.length() > 0 && !version.equals("null")) {
                     String compareVersion = version.replace("v", "");
-                    if (!compareVersion.equals(VERSION)) {
+                    if (!compareVersion.equals(this.version)) {
 
                         logger.info("There is an update available:");
                         logger.info("Latest version: {} ({})", version, versionName);
@@ -817,6 +845,10 @@ public class Main {
     }
 
     public static String getVersionString() {
-        return VERSION_STRING;
+        return versionString;
+    }
+
+    private static boolean isStartedFromJarAndIsAutostartDisabled(){
+        return Util.isApplicationStartedFromJar() && !Util.isAutostartEnabled();
     }
 }
