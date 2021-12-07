@@ -1,13 +1,21 @@
 # How To use: Tips and Tricks
 
-## Settings overview
+## Controls: Interact with the bar
+
+- Double-tap the `ctrl` or `command` key to open the bar. Here you can enter your search query.
+- Use the arrow keys to navigate through the result tiles.
+- Press `enter` to execute the topmost result tile.
+- Press `esc` to cancel the search and close the bar.
+- Use `alt` + `arrow up` and `arrow down` to scroll through your last inputs.
+
+## Adjust everything: Settings overview
 
 To get to the settings page, enter `settings` in the bar and hit enter. A web page will open up. These are the
 navigation items:
 
 ![Settings navigation](img/settingsNavigation.png)
 
-## General
+### General
 
 - Click on the navigation items to switch between the different pages.
 - You can use `ctrl + z` and `ctrl + y` to undo and redo your changes.
@@ -15,7 +23,7 @@ navigation items:
   application to take effect. Type in `restart` to quickly restart the application.
 - If the content does not on the page, you can scroll down. I cannot believe I have to explain this.
 
-## Section: Tiles
+### Section: Tiles
 
 Tiles are the entries you can search for in the bar and that can execute different actions.
 
@@ -41,7 +49,7 @@ The individual values mean the following:
 To delete a tile, right-click the name of the tile. To remove a keyword or an action, right-click it. To edit any value,
 left click it.
 
-## Section: Tile Generators
+### Section: Tile Generators
 
 Tile generators can be used to dynamically generate tiles on application startup. There is currently only one type:
 
@@ -52,7 +60,7 @@ The category and the keywords of the tiles are inherited from the tile generator
 
 Similar to the tiles: to delete a tile generator, right-click the category of the tile generator.
 
-## Section: Runtime Tiles
+### Section: Runtime Tiles
 
 Runtime tiles are tiles that are generated based on the current search terms. These are predetermined and therefore the
 only thing you can change is the choice to deactivate them by left-clicking the according badge. These runtime tiles are
@@ -76,9 +84,22 @@ currently only available:
   `10 dec to hex`, but since the keyword search is very fuzzy, something like this also works: `oct23bin`. The available
   systems are: `dec` `hex` `oct` `bin`. You can also leave away the target system to convert to all other systems.
 
+The math expression and chart generator tile are a bit more complex:
+
+- You can simply enter a mathematical expression and let the application calculate the result. You can include
+  mathematical functions like `pow(2,4)` or `sqrt(4)`.
+- You can also define variables first by typing in `x = 2` and then use `x` in your expression, like `sin(x)`.
+- Custom functions can be defined by typing in `name(x) = 2*x` and then using something like `name(2)` in your
+  expression.
+- The graph generator can create charts for one or multiple expressions. You can enter multiple expressions by
+  separating them with a semicolon: `sin(x);cos(x)`.
+- The range and resolution used by the graph generator can be changed by entering `for start,end,step` after the
+  expression: `sin(x);cos(x) for 0,10,0.1`.
+- If no step size is specified, a fitting step size is being derived from the range size.
+
 If you have ideas for more runtime tiles, please create an issue using the link below.
 
-## Section: Categories
+### Section: Categories
 
 Every tile (generated tiles as well) have categories. The categories are used to determine the color of the tile and can
 be used as a search term. There are a few default categories:
@@ -91,7 +112,7 @@ be used as a search term. There are a few default categories:
 
 But of course you can add as many categories as you like.
 
-## Section: Settings & Help
+### Section: Settings & Help
 
 Here you can find some general help and most importantly: the settings for the bar. Here you can customize almost every
 value that is being used to determine the behavior of the bar. Some of these settings require a restart of the
@@ -103,11 +124,12 @@ their default values. Alternatively you can delete the `settings.json` file and 
 ## System tray
 
 While the application is running, a system tray icon is shown in the bottom right corner of the screen (or wherever your
-taskbar is located). This icon can be right-clicked to open the settings, exit the bar or end the timeout mode.
+taskbar is located). This icon can be right-clicked to open/reset the settings, exit/restart the bar or end the timeout
+mode.
 
 ![System tray](img/systemTray.png)
 
-## Advanced usage
+## Tips & Tricks: Advanced usage
 
 If you use this bar, you're most likely like me and want to reach peak efficiency. Here are some advanced tips:
 
@@ -115,21 +137,17 @@ If you use this bar, you're most likely like me and want to reach peak efficienc
 
 When entering a search term, the bar will
 
-- search for all tiles that contain all search terms (words split by spaces) in their name, keywords or category
+- search for all tiles that contain all search terms (words split by spaces) in their name, keywords or category.
 - use the search term to advance character per character in the name, keywords or category, while being able to skip to
-  the next uppercase letter or character after a space character. This means, that this search: `fiz` will find a tile
-  with this name `FileZilla`, as it first matches `fi` in `File` and then `z` in `Zilla`. You can create some elaborate
-  keywords that allow you to search for much shorter terms.
+  the next uppercase letter or character after a space character.  
+  Which means that this search: `fiz` will find a tile with this name `FileZilla`, as it first matches `fi` in `File`
+  and then `z` in `Zilla`. You can create some elaborate keywords that allow you to search for much shorter terms.
 
-#### Modify the topmost tile
+#### Fuzzy inputs
 
-If you press alt+enter (or whatever key you have configured in the settings) while the bar is active, you can quickly
-modify the name, action or both of the topmost tile.
-
-#### Get the last inputs
-
-Use arrow up and arrow down to get the last inputs. If the inputs are used to scroll through the current results, you
-can hold the modify key (`alt`) to force scroll through the last inputs.
+Most of the runtime tiles match the input very loosely. In most cases, spaces are ignored and the search is
+case-insensitive. So, this input `sys Local IP` is the same as `syslocalip` (or even better `syslip`). Another example:
+`g(x) = sin(x) + 2 * x for 1,10` --> `gx=sin(x)+2xfor1,10`. This can save a lot of time if done consistently.
 
 #### Execute the last executed tile
 
@@ -137,13 +155,20 @@ To execute the last executed tile, you can leave the bar empty and hit enter. Th
 
 #### Start the webserver on startup
 
-You can pass the `-ws` flag to the application to start the webserver on startup. This is done automatically when you
-restart the application using the `Restart LaunchAnything` tile and the webserver is open at that point.
+You can pass the `-ws` flag to the application to start the webserver on startup after a short delay. This is done
+automatically when you restart the application using the `Restart LaunchAnything` tile while the webserver is open. This
+ensures that if you restarted the application from the settings, you can still access the webserver after it has
+restarted.
 
 #### Export / Import tiles and settings
 
-The tiles and settings are stored in JSON files in the res/ directory. YOu can copy those files to a different instance
+The tiles and settings are stored in JSON files in the `res/` directory. YOu can copy those files to a different instance
 of the application and directly use them there.
+
+#### Modify the topmost tile
+
+If you press `alt+enter` (or whatever keys you have configured in the settings) while the bar is active, you can quickly
+modify the name, action or both of the topmost tile.
 
 #### Create Tiles
 
