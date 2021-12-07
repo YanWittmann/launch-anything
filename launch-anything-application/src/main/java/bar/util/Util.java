@@ -7,13 +7,12 @@ import jnafilechooser.api.JnaFileChooser;
 import mslinks.ShellLink;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
+import net.objecthunter.exp4j.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -36,9 +35,9 @@ import static java.net.URLEncoder.encode;
 import static javax.swing.JOptionPane.*;
 
 public abstract class Util {
-	
-	private static Settings settings = null;
-	private static final Logger logger = LoggerFactory.getLogger(Util.class);
+
+    private static Settings settings = null;
+    private static final Logger logger = LoggerFactory.getLogger(Util.class);
 
     public static void setSettings(Settings settings) {
         Util.settings = settings;
@@ -68,7 +67,7 @@ public abstract class Util {
                 out.add(line);
             }
         } catch (IOException e) {
-           logger.error("error ", e);
+            logger.error("error ", e);
         }
         return out.toString();
     }
@@ -195,9 +194,23 @@ public abstract class Util {
         return expr.evaluate();
     }
 
-    public static double evaluateMathematicalExpression(String expression, Map<String, Double> variables) {
-        Expression expr = new ExpressionBuilder(expression).variables(variables.keySet()).build();
-        variables.forEach(expr::setVariable);
+    public static double evaluateMathematicalExpression(String expression, Map<String, Double> variables, Map<String, String> functions) {
+        ExpressionBuilder expressionBuilder = new ExpressionBuilder(expression);
+        if (functions != null) {
+            for (String function : functions.keySet()) {
+                expressionBuilder.function(new Function(function, 1) {
+                    @Override
+                    public double apply(double... args) {
+                        final Map<String, Double> localVariables = new HashMap<>(variables);
+                        if (args.length > 0) localVariables.put("x", args[0]);
+                        return Util.evaluateMathematicalExpression(functions.get(function), localVariables, null);
+                    }
+                });
+            }
+        }
+        if (variables != null) expressionBuilder.variables(variables.keySet());
+        Expression expr = expressionBuilder.build();
+        if (variables != null) variables.forEach(expr::setVariable);
         return expr.evaluate();
     }
 

@@ -9,6 +9,7 @@ import de.yanwittmann.j2chartjs.data.ScatterChartData;
 import de.yanwittmann.j2chartjs.datapoint.ScatterChartDatapoint;
 import de.yanwittmann.j2chartjs.dataset.ScatterChartDataset;
 import de.yanwittmann.j2chartjs.options.ChartOptions;
+import de.yanwittmann.j2chartjs.options.scale.ScaleGridOption;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,64 +25,92 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ChartGeneratorTile implements RuntimeTile {
 
-    private String lastExpression = null;
     private static final Logger logger = LoggerFactory.getLogger(ChartGeneratorTile.class);
 
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
-        search = search.replaceAll("^[^^=]*=", "").trim();
-        String range = search.replaceAll(".*for ?", "");
-        search = search.replaceAll("for.*", "");
-        if (range.equals(search)) range = "-10,10,1";
-        else range = range.replace(" ", "");
-        if (solveForValue(search, 1) != ERROR_VALUE || solveForValue(search, 2) != ERROR_VALUE || solveForValue(search, 100) != ERROR_VALUE) {
-            String finalSearch = search;
-            String finalRange = range;
-
+        try {
             List<Tile> tiles = new ArrayList<>();
-            Tile tile = new Tile("Graph for " + search);
-            tile.setCategory("runtime");
-            TileAction action = new TileAction(() -> generateGraph(finalRange, finalSearch));
-            tile.addAction(action);
-            tiles.add(tile);
-            if (lastExpression != null && !lastExpression.equals(finalSearch)) {
-                Tile multiExpressionTile = new Tile("Graph for " + search + " and " + lastExpression);
-                multiExpressionTile.setCategory("runtime");
-                TileAction multiExpressionTileAction = new TileAction(() -> generateGraph(finalRange, lastExpression, finalSearch));
-                multiExpressionTile.addAction(multiExpressionTileAction);
-                tiles.add(multiExpressionTile);
+            search = search.replace(" ", "");
+            if (search.isEmpty()) {
+                return tiles;
+            } else {
+                if (search.contains("=")) {
+                    search = search.split("=", 2)[1];
+                    if (search.isEmpty()) {
+                        return tiles;
+                    }
+                }
+
+                String expression = search;
+                double start = -10;
+                double end = 10;
+                double step;
+
+                if (search.contains("for")) {
+                    String[] forSplit = search.split("for", 2);
+                    expression = forSplit[0];
+                    String[] rangeSplit = forSplit[1].split(",");
+                    if (rangeSplit[0].length() > 0) start = Double.parseDouble(rangeSplit[0]);
+                    if (rangeSplit.length > 1 && rangeSplit[1].length() > 0) end = Double.parseDouble(rangeSplit[1]);
+                    step = rangeSplit.length > 2 && rangeSplit[2].length() > 0 ? Double.parseDouble(rangeSplit[2]) : getStepSize(start, end);
+                } else {
+                    step = getStepSize(start, end);
+                }
+
+                List<String> expressions = new ArrayList<>();
+                Arrays.stream(expression.split(";")).forEach(e -> expressions.add(e.trim()));
+
+                if (expressions.size() > 0 && expressions.stream().allMatch(MathExpressionTile::checkForValidFunction)) {
+                    Tile tile = new Tile("Graph for " + String.join(", ", expressions));
+                    tile.setCategory("runtime");
+                    double finalStart = start;
+                    double finalEnd = end;
+                    TileAction action = new TileAction(() -> generateGraph(finalStart, finalEnd, step, expressions));
+                    tile.addAction(action);
+                    tiles.add(tile);
+                    return tiles;
+                }
             }
-            return tiles;
+        } catch (Exception ignored) {
         }
         return Collections.emptyList();
     }
 
-    private void generateGraph(String range, String... expressions) {
-        logger.info("Generating graph for {} in range {}", Arrays.toString(expressions), range);
-        lastExpression = expressions[0];
+    private final static double[] VALID_STEP_SIZES = {0.1, 0.2, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0};
+
+    private double getStepSize(double start, double end) {
+        double step = (end - start) / 200;
+        if (step < 0.1) step = 0.1;
+        for (double validStepSize : VALID_STEP_SIZES) {
+            if (step <= validStepSize) {
+                return validStepSize;
+            }
+        }
+        return step;
+    }
+
+    private void generateGraph(double start, double end, double step, List<String> expressions) {
+        logger.info("Generating graph for [{}] in range [{} {} {}]", String.join(", ", expressions), start, end, step);
 
         ScatterChartData data = new ScatterChartData();
-        for (int i = 0; i < expressions.length; i++) {
-            String expression = expressions[i];
+        for (String expression : expressions) {
             if (expression == null) continue;
-            String[] rangeElements = range.split(",");
-            double xMin, xMax, xStep;
-            if (rangeElements.length > 0) xMin = Double.parseDouble(rangeElements[0]);
-            else xMin = -10;
-            if (rangeElements.length > 1) xMax = Double.parseDouble(rangeElements[1]);
-            else xMax = 10;
-            if (rangeElements.length > 2) xStep = Double.parseDouble(rangeElements[2]);
-            else xStep = 1;
 
             ScatterChartDataset dataset = new ScatterChartDataset();
-            for (double x = xMin; x <= xMax; x += xStep) {
-                double y = solveForValue(expression, x);
-                if (y != ERROR_VALUE) {
+            for (double x = start; x <= end; x += step) {
+                double y = MathExpressionTile.solveForValue(expression, x);
+                if (y != MathExpressionTile.ERROR_VALUE) {
                     dataset.addData(new ScatterChartDatapoint(x, y));
                 }
             }
             dataset.setShowLine(true);
-            dataset.setLabel(new String[]{"f", "g", "h", "i", "j"}[i] + "(x) = " + expression);
+            String functionExpression = MathExpressionTile.getFunctionExpression(expression);
+            if (functionExpression == null) {
+                dataset.setLabel(expression);
+            } else {
+                dataset.setLabel(expression + " = " + functionExpression);
+            }
             data.addDataset(dataset);
         }
         data.applyDefaultStylePerDataset();
@@ -95,8 +124,8 @@ public class ChartGeneratorTile implements RuntimeTile {
         List<String> htmlLines = new ArrayList<>();
         htmlLines.add("<html>");
         htmlLines.add("<head>");
+        htmlLines.add("<title>LaunchAnything Graph</title>");
         htmlLines.add("<script src=\"https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js\"></script>");
-        htmlLines.add("</canvas>");
         htmlLines.add("</head>");
         htmlLines.add("<body>");
         htmlLines.add("<canvas id=\"canvasId\" style=\"border: gray 2px solid;\">");
@@ -117,17 +146,6 @@ public class ChartGeneratorTile implements RuntimeTile {
             TrayUtil.showError("Something went wrong while generating the graph: " + e.getMessage());
         }
     }
-
-    private double solveForValue(String expression, double x) {
-        try {
-            MathExpressionTile.setVariable("x", x);
-            return MathExpressionTile.evaluate(expression);
-        } catch (Exception e) {
-            return ERROR_VALUE;
-        }
-    }
-
-    private final double ERROR_VALUE = -999999;
 
     public static String getTitle() {
         return "Chart Generator";

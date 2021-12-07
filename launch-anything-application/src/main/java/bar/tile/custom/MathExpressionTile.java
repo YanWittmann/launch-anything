@@ -3,30 +3,54 @@ package bar.tile.custom;
 import bar.tile.Tile;
 import bar.tile.TileAction;
 import bar.util.Util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MathExpressionTile implements RuntimeTile {
 
+    private static final Logger logger = LoggerFactory.getLogger(MathExpressionTile.class);
+
     private final static Map<String, Double> variables = new HashMap<>();
+    private final static Map<String, String> functions = new HashMap<>();
 
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
         try {
-            if (search.matches("[^=]+=[^=]+")) {
+            if (search.contains("=")) {
                 String[] split = search.split("=", 2);
-                String varName = split[0].trim();
+                String assignToVariable = split[0].trim();
                 String value = split[1].trim();
-                double result = evaluate(value);
 
-                Tile tile = new Tile(varName + " = " + makeResultForTileLabel(result));
-                tile.setCategory("runtime");
-                TileAction action = new TileAction(() -> setVariable(varName, result));
-                tile.addAction(action);
-                return Collections.singletonList(tile);
+                Matcher matcher = Pattern.compile("([a-zA-Z]+)\\(?x\\)?").matcher(split[0]);
+                String functionName = null;
+                String expression = search;
+                if (matcher.find()) {
+                    functionName = matcher.group(1);
+                    expression = split[1];
+                }
+
+                if (functionName != null) {
+                    if (checkForValidFunction(expression)) {
+                        Tile tile = new Tile(functionName + "(x) = " + expression);
+                        tile.setCategory("runtime");
+                        functions.put(functionName, expression);
+                        return Collections.singletonList(tile);
+                    }
+                } else {
+                    double result = evaluate(value);
+                    Tile tile = new Tile(assignToVariable + " = " + makeResultForTileLabel(result));
+                    tile.setCategory("runtime");
+                    tile.addAction(new TileAction(() -> setVariable(assignToVariable, result)));
+                    return Collections.singletonList(tile);
+                }
+
             } else {
-                double result = evaluate(search);
+                double result = evaluate(search.replaceAll("[^=]+=([^=]+)", "$1"));
                 List<Tile> tiles = new ArrayList<>();
                 tiles.add(createCopyTextTile(removeTrailingZeros(replaceWithConstant(result)), removeTrailingZeros(result)));
 
@@ -97,11 +121,36 @@ public class MathExpressionTile implements RuntimeTile {
     }
 
     public static double evaluate(String expression) {
-        return Util.evaluateMathematicalExpression(expression.trim(), variables);
+        return Util.evaluateMathematicalExpression(expression.trim(), variables, functions);
     }
+
+    public static double solveForValue(String expression, double x) {
+        try {
+            MathExpressionTile.setVariable("x", x);
+            return MathExpressionTile.evaluate(expression);
+        } catch (Exception e) {
+            return ERROR_VALUE;
+        }
+    }
+
+    public static boolean checkForValidFunction(String expression) {
+        return MathExpressionTile.solveForValue(expression, 1) != MathExpressionTile.ERROR_VALUE ||
+               MathExpressionTile.solveForValue(expression, 2) != MathExpressionTile.ERROR_VALUE ||
+               MathExpressionTile.solveForValue(expression, 100) != MathExpressionTile.ERROR_VALUE;
+    }
+
+    public static final double ERROR_VALUE = -999999;
 
     public static void setVariable(String name, double value) {
         variables.put(name, value);
+    }
+
+    public static String getFunctionExpression(String name) {
+        if (functions.containsKey(name)) {
+            return functions.get(name);
+        } else {
+            return functions.getOrDefault(name.replaceAll("([a-zA-Z]+)\\([^)]+\\)", "$1"), null);
+        }
     }
 
     private String removeTrailingZeros(double value) {
