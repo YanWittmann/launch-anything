@@ -3,14 +3,12 @@ package bar.ui;
 import bar.blur.GaussianFilter;
 import bar.logic.Settings;
 import bar.util.ImageUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.image.BufferedImage;
@@ -71,28 +69,16 @@ public class GlassBar extends JFrame {
         inputField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                if (ignoreNextInputChange) {
-                    ignoreNextInputChange = false;
-                    return;
-                }
                 inputListeners.forEach(listener -> listener.onInput(inputField.getText()));
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                if (ignoreNextInputChange) {
-                    ignoreNextInputChange = false;
-                    return;
-                }
                 inputListeners.forEach(listener -> listener.onInput(inputField.getText()));
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                if (ignoreNextInputChange) {
-                    ignoreNextInputChange = false;
-                    return;
-                }
                 inputListeners.forEach(listener -> listener.onInput(inputField.getText()));
             }
         });
@@ -177,8 +163,10 @@ public class GlassBar extends JFrame {
             BufferedImage tintedImage;
             if (isLightMode) {
                 tintedImage = ImageUtil.overlayColor(lastBackgroundImage, color, BACKGROUND_TINT_FACTOR_FOR_BRIGHT_MODE);
+                tintedImage = ImageUtil.makeRoundedCorner(tintedImage, BORDER_RADIUS + BORDER_THICKNESS_FOR_BRIGHT_MODE + 5);
             } else {
                 tintedImage = ImageUtil.overlayColor(lastBackgroundImage, color, BACKGROUND_TINT_FACTOR_FOR_DARK_MODE);
+                tintedImage = ImageUtil.makeRoundedCorner(tintedImage, BORDER_RADIUS + BORDER_THICKNESS_FOR_DARK_MODE + 5);
             }
             backgroundImageLabel.setIcon(new ImageIcon(tintedImage));
         }
@@ -189,10 +177,7 @@ public class GlassBar extends JFrame {
         inputField.setEditable(allowInput);
     }
 
-    private boolean ignoreNextInputChange = false;
-
     public void setText(String text) {
-        ignoreNextInputChange = true;
         inputField.setText(text);
     }
 

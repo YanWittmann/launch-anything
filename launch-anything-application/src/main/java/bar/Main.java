@@ -67,7 +67,7 @@ public class Main {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
-            //Do nothing
+            // do nothing
         }
 
         logger.info("Launching application version [{}] on OS [{}]", version, Util.getOS());
@@ -174,7 +174,7 @@ public class Main {
                     String activateAutostart = Util.popupChooseButton(
                             "LaunchAnything",
                             "Do you want LaunchAnything to start on system startup?\n" +
-                                    "This can be activated / deactivated in the settings later on.",
+                            "This can be activated / deactivated in the settings later on.",
                             new String[]{"Yes", "No"});
                     if ("Yes".equals(activateAutostart)) {
                         Util.setAutostartActive(true);
@@ -214,20 +214,28 @@ public class Main {
         }
     }
 
+    private long lastHistoryScroll = 0;
+
     private void scrollThroughInputHistory(boolean direction) {
-        if (!inputHistory.isEmpty()) {
-        	if (storedUserInput == null)
+        if (!inputHistory.isEmpty() && System.currentTimeMillis() - lastHistoryScroll > 100) {
+            lastHistoryScroll = System.currentTimeMillis();
+            if (storedUserInput == null) {
                 storedUserInput = currentInput;
+            }
+            int oldIndex = currentInputHistoryIndex;
             if (direction) {
                 currentInputHistoryIndex = Math.min(inputHistory.size(), currentInputHistoryIndex + 1); // up
-            }
-            else {
+            } else {
                 currentInputHistoryIndex = Math.max(0, currentInputHistoryIndex - 1); // down
             }
-            if (currentInputHistoryIndex == inputHistory.size()) {
-                barManager.setInput(storedUserInput);
-                storedUserInput = null;
-            } else barManager.setInput(inputHistory.get(currentInputHistoryIndex));
+            if (oldIndex != currentInputHistoryIndex) {
+                if (currentInputHistoryIndex == inputHistory.size()) {
+                    barManager.setInput(storedUserInput);
+                    storedUserInput = null;
+                } else {
+                    barManager.setInput(inputHistory.get(currentInputHistoryIndex));
+                }
+            }
         }
     }
 
@@ -256,7 +264,7 @@ public class Main {
                                 return;
                             if (lastExecutedTile.getFirstAction() != null) {
                                 setLabelToLastExecutedTile(lastExecutedTile.getFirstAction().getExampleTileLabel());
-                            }else{
+                            } else {
                                 setLabelToLastExecutedTile(lastExecutedTile.getLabel());
                             }
                             break;
@@ -274,7 +282,7 @@ public class Main {
         }
     }
 
-    private boolean isToBeContinuedAfterEvaluatingEditType(){
+    private boolean isToBeContinuedAfterEvaluatingEditType() {
         TileAction firstAction = lastExecutedTile.getFirstAction();
         String param1 = null;
         String param2 = null;
@@ -285,7 +293,7 @@ public class Main {
                 param2 = firstAction.getParam2();
             } else if ("Type and Parameters".equals(editType)) {
                 lastExecutedTile.removeAction(firstAction);
-            } else if ("Cancel".equals("Cancel")) {
+            } else if ("Cancel".equals(editType)) {
                 return false;
             }
         }
@@ -293,14 +301,12 @@ public class Main {
         return true;
     }
 
-    private void setLabelToLastExecutedTile(String templateName){
+    private void setLabelToLastExecutedTile(String templateName) {
         String newName = Util.popupTextInput("LaunchAnything", "Enter new name:", templateName);
         if (newName != null && !newName.isEmpty() && !newName.equals("null")) {
             lastExecutedTile.setLabel(newName);
         }
     }
-
-
 
     private void onInputEvaluated(List<Tile> tiles) {
         lastTiles = tiles;
@@ -368,7 +374,7 @@ public class Main {
                 }
             }
             logger.info("- - - - - - - - - - - - - - - - - - - - - - - - - -");
-            getParams.forEach((k, v) -> logger.info("{}: {}",k, v));
+            getParams.forEach((k, v) -> logger.info("{}: {}", k, v));
 
             if (getParams.containsKey("action")) {
                 try {
@@ -822,7 +828,7 @@ public class Main {
                                 "There is an update available for the LaunchBar!\n\nLatest version: " + version + " (" + versionName + ")\nRelease date: " + releaseDate + "\nDownload URL: " + versionUrl + "\n\n" + versionBody + "\n\nDo you want to download it now?",
                                 new String[]{"Download", "Ignore"});
                         if (updateNow != null && updateNow.equals("Download")) {
-                        	logger.info("Copying elevator to outside the jar");
+                            logger.info("Copying elevator to outside the jar");
                             Util.copyResource("executables/elevator-jar-with-dependencies.jar", "elevator.jar");
                             logger.info("Launching elevator.jar");
 
@@ -830,7 +836,7 @@ public class Main {
                                 Desktop.getDesktop().open(new File("elevator.jar"));
                                 System.exit(0);
                             } catch (IOException e) {
-                            	logger.error("error ", e);
+                                logger.error("error ", e);
                                 TrayUtil.showError("Failed to open the elevator.jar file: " + e.getMessage());
                             }
                         }
@@ -839,7 +845,7 @@ public class Main {
                 }
 
             } catch (Exception e) {
-            	logger.info("Unable to check for new version: {}", e.getMessage());
+                logger.info("Unable to check for new version: {}", e.getMessage());
             }
         }
     }

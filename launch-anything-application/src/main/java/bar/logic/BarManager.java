@@ -3,12 +3,11 @@ package bar.logic;
 import bar.tile.Tile;
 import bar.tile.TileCategory;
 import bar.ui.GlassBar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class BarManager {
 
@@ -17,7 +16,7 @@ public class BarManager {
     private final List<GlassBar> resultGlassBars = new ArrayList<>();
     private boolean isInputActive = false;
     private static final Logger logger = LoggerFactory.getLogger(BarManager.class);
-    
+
     public BarManager(Settings settings) {
         this.settings = settings;
 
