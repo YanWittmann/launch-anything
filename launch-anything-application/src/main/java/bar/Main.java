@@ -32,19 +32,24 @@ import static java.awt.Desktop.getDesktop;
 
 public class Main {
 
-    private static String versionString;
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     private static final Pattern GET_PATTERN = Pattern.compile("GET /\\?(.+) HTTP/\\d.+");
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
+
+    private static String versionString;
     public final String version;
+
     private List<Tile> lastTiles = new ArrayList<>();
-    private Tile lastExecutedTile;
-    private List<String> inputHistory = new ArrayList<>();
-    private String currentInput;
-    private int currentInputHistoryIndex = 0;
     private int currentResultIndex = 0;
-    private String storedUserInput = null;
+    private Tile lastExecutedTile;
+
+    private final List<String> inputHistory = new ArrayList<>();
+    private int currentInputHistoryIndex = 0;
+    private String currentInput;
+    private String storedUserInput;
+
     private int lastPressedKey = -1;
     private boolean isModifyKeyPressed = false;
+
     private final Settings settings;
     private final BarManager barManager;
     private final TileManager tileManager;
@@ -147,7 +152,7 @@ public class Main {
         if (willRestartWebServer) {
             new Thread(() -> {
                 try {
-                    TrayUtil.showMessage("LaunchAnything V" + version + " is now active.\nSettings page will be available in a few seconds.");
+                    TrayUtil.showMessage("LaunchAnything " + versionString + " is now active.\nSettings page will be available in a few seconds.");
                     Sleep.milliseconds(10000);
                     openSettingsWebServer(false);
                 } catch (Exception e) {
@@ -156,7 +161,7 @@ public class Main {
                 }
             }).start();
         } else {
-            TrayUtil.showMessage("LaunchAnything V" + version + " is now active.");
+            TrayUtil.showMessage("LaunchAnything " + versionString + " is now active.");
         }
 
         new Thread(() -> {
@@ -290,18 +295,21 @@ public class Main {
         TileAction firstAction = lastExecutedTile.getFirstAction();
         String param1 = null;
         String param2 = null;
+        boolean removeActionAfterwards = false;
         if (firstAction != null) {
             String editType = Util.popupChooseButton("LaunchAnything", "Do you want to modify the action type or only the parameters?", new String[]{"Parameters", "Type and Parameters", "Cancel"});
             if ("Parameters".equals(editType)) {
                 param1 = firstAction.getParam1();
                 param2 = firstAction.getParam2();
             } else if ("Type and Parameters".equals(editType)) {
-                lastExecutedTile.removeAction(firstAction);
+                removeActionAfterwards = true;
             } else if ("Cancel".equals(editType)) {
                 return false;
             }
         }
-        createOrEditNewTileAction(lastExecutedTile, param1, param2);
+        if (createOrEditNewTileAction(lastExecutedTile, param1, param2) != null && removeActionAfterwards) {
+            lastExecutedTile.removeAction(firstAction);
+        }
         return true;
     }
 
@@ -719,7 +727,6 @@ public class Main {
             tileAction = null;
         } else {
             tileAction = tile.findTileAction(param1, param2);
-            tile.removeAction(tileAction);
             param1 = null;
             param2 = null;
         }
@@ -858,7 +865,7 @@ public class Main {
         return versionString;
     }
 
-    private static boolean isStartedFromJarAndIsAutostartDisabled(){
+    private static boolean isStartedFromJarAndIsAutostartDisabled() {
         return Util.isApplicationStartedFromJar() && !Util.isAutostartEnabled();
     }
 }

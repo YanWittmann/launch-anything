@@ -43,10 +43,10 @@ public class TileManager {
             generateDefaultTiles();
             createSettingsTiles();
             isFirstLaunch = true;
-            logger.info("Is first launch: true");
         } else {
             readTilesFromFile();
         }
+        logger.info("Is first launch: [{}]", isFirstLaunch);
         createCustomTiles();
     }
 
@@ -183,7 +183,7 @@ public class TileManager {
         regenerateGeneratedTiles();
         createSettingsTiles();
 
-        logger.info("Loaded {} tile(s), {} tile generator(s) and {} category/ies.", tiles.size(), tileGenerators.size(), categories.size());
+        logger.info("Loaded [{}] tile(s), [{}] tile generator(s) and [{}] category/ies.", tiles.size(), tileGenerators.size(), categories.size());
     }
 
     public void regenerateGeneratedTiles() {
@@ -192,7 +192,7 @@ public class TileManager {
             for (TileGenerator tileGenerator : tileGenerators) {
                 generatedTiles.addAll(tileGenerator.generateTiles());
             }
-            logger.info("Done generating {} tile(s).", generatedTiles.size());
+            logger.info("Done generating [{}] tile(s).", generatedTiles.size());
         }).start();
     }
 
