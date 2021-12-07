@@ -92,6 +92,7 @@ public class Main {
                     if (timeoutUntil < currentTime && currentTime - lastCommandInput[0] < settings.getInt(Settings.Setting.ACTIVATION_DELAY) && currentTime - lastCommandInput[0] > 50) {
                         TrayUtil.setMenuItemActive(0, false);
                         barManager.setInputActive(true);
+                        storedUserInput = null;
                         currentInputHistoryIndex = inputHistory.size();
                     }
                     lastCommandInput[0] = currentTime;
@@ -219,9 +220,6 @@ public class Main {
     private void scrollThroughInputHistory(boolean direction) {
         if (!inputHistory.isEmpty() && System.currentTimeMillis() - lastHistoryScroll > 100) {
             lastHistoryScroll = System.currentTimeMillis();
-            if (storedUserInput == null) {
-                storedUserInput = currentInput;
-            }
             int oldIndex = currentInputHistoryIndex;
             if (direction) {
                 currentInputHistoryIndex = Math.min(inputHistory.size(), currentInputHistoryIndex + 1); // up
@@ -233,6 +231,9 @@ public class Main {
                     barManager.setInput(storedUserInput);
                     storedUserInput = null;
                 } else {
+                    if (storedUserInput == null) {
+                        storedUserInput = currentInput;
+                    }
                     barManager.setInput(inputHistory.get(currentInputHistoryIndex));
                 }
             }
@@ -241,8 +242,11 @@ public class Main {
 
     private void scrollThroughResultBars(boolean direction) {
         if (!lastTiles.isEmpty()) {
-            if (direction) currentResultIndex = Math.min(lastTiles.size() - 1, currentResultIndex + 1); // down
-            else currentResultIndex = Math.max(0, currentResultIndex - 1); // up
+            if (direction) {
+                currentResultIndex = Math.min(lastTiles.size() - 1, currentResultIndex + 1); // down
+            } else {
+                currentResultIndex = Math.max(0, currentResultIndex - 1); // up
+            }
             barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
         }
     }
