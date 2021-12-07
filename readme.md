@@ -47,12 +47,19 @@ change the activation key by clicking on the `activationKey` button.
 
 ## Build it yourself
 
-To build the launch bar yourself, perform these actions:
+You will need to download maven and git to build this application. Then, run these commands:
 
-1. Clone and install the entirety of **[steos jnafilechooser](https://github.com/steos/jnafilechooser.git)** using Maven
-   (`mvn install`)
-2. Build this project using Maven (`mvn package`)
-3. The jar will be located in the `launch-anything-application/target` directory
+```shell
+git clone https://github.com/steos/jnafilechooser.git
+cd jnafilechooser
+mvn clean install
+cd ..
+git clone https://github.com/Skyball2000/launch-anything.git
+cd launch-anything
+mvn clean install
+cd launch-anything-application/target
+java -jar launch-anything-application-2.5-SNAPSHOT-jar-with-dependencies.jar
+```
 
 ## Have fun using the LaunchAnything bar!
 
