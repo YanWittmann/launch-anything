@@ -48,6 +48,22 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <followSymLinks>false</followSymLinks>
+                    <filesets>
+                        <fileset>
+                            <directory>../launch-anything-application/src/main/resources/executables</directory>
+                            <includes>
+                                <include>**/elevator-jar-with-dependencies.jar</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.3.0</version>
                 <executions>
