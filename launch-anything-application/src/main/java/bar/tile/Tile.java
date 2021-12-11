@@ -192,12 +192,10 @@ public class Tile {
     }
 
     public void addAction(TileAction action) {
-        logger.info("Adding action [{}] to tile [{}]", action.getType(), label);
         tileActions.add(action);
     }
 
     public void removeAction(TileAction tileAction) {
-        logger.info("Removing action [{}] from tile [{}]", tileAction.getType(), label);
         tileActions.remove(tileAction);
     }
 

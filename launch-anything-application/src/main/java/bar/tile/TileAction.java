@@ -132,8 +132,8 @@ public class TileAction {
                                 case "timeout":
                                     main.timeout(Integer.parseInt(param2));
                                     break;
-                                case "selfDirectory":
-
+                                case "update":
+                                    main.checkForNewVersion();
                                     break;
                                 case "restartBar":
                                     try {
@@ -172,7 +172,13 @@ public class TileAction {
                     case "url":
                         if (param1 != null) {
                             URL url = new URL(param1);
-                            return url.getHost() + " -> " + url.getPath().replace("/", " ").replaceAll("\\?.*", "").replaceAll(" +", " ");
+                            StringBuilder sb = new StringBuilder();
+                            if (url.getHost() != null) sb.append(url.getHost());
+                            if (url.getPath() != null) {
+                                sb.append(" ->");
+                                sb.append(url.getPath().replace("/", " ").replaceAll("\\?.*", "").replaceAll(" +", " "));
+                            }
+                            return sb.toString();
                         }
                         break;
                     case "copy":

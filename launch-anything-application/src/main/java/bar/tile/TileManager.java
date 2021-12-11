@@ -1,6 +1,6 @@
 package bar.tile;
 
-import bar.logic.Settings;
+import bar.Main;
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
 import org.json.JSONArray;
@@ -299,6 +299,9 @@ public class TileManager {
         selfDir.setKeywords("");
         selfDir.addAction(new TileAction("file", System.getProperty("user.dir")));
         tiles.add(selfDir);
+
+        if (Main.isVersionSnapshot())
+            addSettingsTile("Check for update", "elevate", "update");
 
         addSettingsTile("Restart LaunchAnything", "relaunch", "restartBar");
         addSettingsTile("Exit LaunchAnything", "leave quit stop", "exit");

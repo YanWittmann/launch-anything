@@ -166,7 +166,7 @@ public class Main {
 
         new Thread(() -> {
             Util.cleanupTempFiles();
-            checkForNewVersion();
+            if (!isVersionSnapshot()) checkForNewVersion();
             final File elevatorFile = new File("elevator.jar");
             if (elevatorFile.exists()) {
                 Sleep.seconds(4);
@@ -193,6 +193,10 @@ public class Main {
     public static void main(String[] args) {
         Util.registerFont("font/Comfortaa-Regular.ttf");
         new Main(args);
+    }
+
+    public static boolean isVersionSnapshot() {
+        return versionString.contains("SNAPSHOT");
     }
 
     private void userInput(String input) {
@@ -817,7 +821,7 @@ public class Main {
         out.write("\r\n{\"error\":\"" + message + "\"}");
     }
 
-    private void checkForNewVersion() {
+    public void checkForNewVersion() {
         if (Util.isApplicationStartedFromJar()) {
             try {
                 JSONObject latestVersion = new JSONObject(VersionUtil.getLatestVersionJson());
