@@ -9,7 +9,7 @@ import de.yanwittmann.j2chartjs.data.ScatterChartData;
 import de.yanwittmann.j2chartjs.datapoint.ScatterChartDatapoint;
 import de.yanwittmann.j2chartjs.dataset.ScatterChartDataset;
 import de.yanwittmann.j2chartjs.options.ChartOptions;
-import de.yanwittmann.j2chartjs.options.scale.ScaleGridOption;
+import de.yanwittmann.j2chartjs.options.interaction.InteractionOption;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,9 +99,10 @@ public class ChartGeneratorTile implements RuntimeTile {
 
             ScatterChartDataset dataset = new ScatterChartDataset();
             for (double x = start; x <= end; x += step) {
-                double y = MathExpressionTile.solveForValue(expression, x);
+                double displayX = roundToDisplay(x, step);
+                double y = MathExpressionTile.solveForValue(expression, displayX);
                 if (y != MathExpressionTile.ERROR_VALUE) {
-                    dataset.addData(new ScatterChartDatapoint(x, y));
+                    dataset.addData(new ScatterChartDatapoint(displayX, y));
                 }
             }
             dataset.setShowLine(true);
@@ -116,6 +117,7 @@ public class ChartGeneratorTile implements RuntimeTile {
         data.applyDefaultStylePerDataset();
 
         ChartOptions options = new ChartOptions();
+        options.setInteraction(new InteractionOption().setMode("index").setIntersect(false));
 
         ScatterChart chart = new ScatterChart();
         chart.setChartData(data);
@@ -145,6 +147,16 @@ public class ChartGeneratorTile implements RuntimeTile {
             logger.error("error ", e);
             TrayUtil.showError("Something went wrong while generating the graph: " + e.getMessage());
         }
+    }
+
+    private double roundToDisplay(double value, double stepSize) {
+        // round to the nearest stepSize
+        double rounded = Math.round(value / stepSize) * stepSize;
+        // if the distance to the next whole number is smaller than 0.01, round to the next whole number
+        if (Math.abs(rounded - Math.round(value)) < 0.01) {
+            rounded = Math.round(value);
+        }
+        return rounded;
     }
 
     public static String getTitle() {
