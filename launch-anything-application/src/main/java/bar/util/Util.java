@@ -189,6 +189,72 @@ public abstract class Util {
         clipboard.setContents(stringSelection, null);
     }
 
+    private final static List<Function> directFunctions = new ArrayList<>();
+
+    static {
+        directFunctions.add(new Function("root", 2) {
+            @Override
+            public double apply(double... args) {
+                double xPre = Math.random() % 10;
+                double error = 0.0000001;
+                double delX = 2147483647;
+                double current = 0.0;
+
+                while (delX > error) {
+                    current = ((args[1] - 1.0) * xPre + args[0] / Math.pow(xPre, args[1] - 1)) / args[1];
+                    delX = Math.abs(current - xPre);
+                    xPre = current;
+                }
+                return current;
+            }
+        });
+        directFunctions.add(new Function("fac", 1) {
+            @Override
+            public double apply(double... args) {
+                if (args[0] > 170) return Double.POSITIVE_INFINITY;
+                double result = 1.0;
+                for (int i = 1; i <= args[0]; i++) result *= i;
+                return result;
+            }
+        });
+        directFunctions.add(new Function("log", 2) {
+            @Override
+            public double apply(double... args) {
+                return Math.log(args[1]) / Math.log(args[0]);
+            }
+        });
+        directFunctions.add(new Function("ln", 1) {
+            @Override
+            public double apply(double... args) {
+                return Math.log(args[0]);
+            }
+        });
+        directFunctions.add(new Function("max", 2) {
+            @Override
+            public double apply(double... args) {
+                return Math.max(args[0], args[1]);
+            }
+        });
+        directFunctions.add(new Function("min", 2) {
+            @Override
+            public double apply(double... args) {
+                return Math.min(args[0], args[1]);
+            }
+        });
+        directFunctions.add(new Function("random", 2) {
+            @Override
+            public double apply(double... args) {
+                return Math.random() * (args[1] - args[0]) + args[0];
+            }
+        });
+        directFunctions.add(new Function("round", 1) {
+            @Override
+            public double apply(double... args) {
+                return Math.round(args[0]);
+            }
+        });
+    }
+
     public static double evaluateMathematicalExpression(String expression) {
         Expression expr = new ExpressionBuilder(expression).build();
         return expr.evaluate();
@@ -196,6 +262,7 @@ public abstract class Util {
 
     public static double evaluateMathematicalExpression(String expression, Map<String, Double> variables, Map<String, String> functions) {
         ExpressionBuilder expressionBuilder = new ExpressionBuilder(expression);
+        directFunctions.forEach(expressionBuilder::function);
         if (functions != null) {
             for (String function : functions.keySet()) {
                 expressionBuilder.function(new Function(function, 1) {
