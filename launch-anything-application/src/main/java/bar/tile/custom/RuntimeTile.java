@@ -7,4 +7,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public interface RuntimeTile {
     List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated);
+
+    String getName();
+
+    String getDescription();
 }

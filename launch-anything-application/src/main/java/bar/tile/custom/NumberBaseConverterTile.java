@@ -108,11 +108,11 @@ public class NumberBaseConverterTile implements RuntimeTile {
         return convertNumber;
     }
 
-    public static String getTitle() {
+    public String getName() {
         return "Number Base Converter";
     }
 
-    public static String getDescription() {
+    public String getDescription() {
         return "Enter something like 'dec 13 bin' to convert 13 to binary (available: 'dec/bin/oct/hex')";
     }
 }

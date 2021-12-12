@@ -78,11 +78,11 @@ public class SystemInfoTile implements RuntimeTile {
         return tile;
     }
 
-    public static String getTitle() {
+    public String getName() {
         return "System Info";
     }
 
-    public static String getDescription() {
+    public String getDescription() {
         return "Enter 'sys' and some value you want (see documentation)";
     }
 }

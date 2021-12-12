@@ -22,11 +22,11 @@ public class TimeoutTile implements RuntimeTile {
         return Collections.emptyList();
     }
 
-    public static String getTitle() {
+    public String getName() {
         return "Timeout";
     }
 
-    public static String getDescription() {
+    public String getDescription() {
         return "'timeout' or 'to' and a duration in minutes the bar should remain inactive.";
     }
 }

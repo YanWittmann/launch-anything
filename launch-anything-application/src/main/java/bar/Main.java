@@ -401,7 +401,7 @@ public class Main {
                         response.put(
                                 "tiles",
                                 tileManager.toJSON()
-                                        .put("runtime-tiles", TileManager.RUNTIME_TILES)
+                                        .put("runtime-tiles", TileManager.getRuntimeTilesNames())
                                         .put("settings", settings.toSettingsJSON()));
 
                     } else if (action.equals("metaInteraction")) {

@@ -13,10 +13,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -47,7 +45,7 @@ public class TileManager {
             readTilesFromFile();
         }
         logger.info("Is first launch: [{}]", isFirstLaunch);
-        createCustomTiles();
+        addRuntimeTiles();
     }
 
     public boolean isFirstLaunch() {
@@ -342,22 +340,59 @@ public class TileManager {
         logger.info("Generated default tiles and categories");
     }
 
-    private void createCustomTiles() {
+    private void addRuntimeTiles() {
         runtimeTiles.clear();
-        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[0]))
-            runtimeTiles.add(new GoWebsiteTile());
-        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[1]))
-            runtimeTiles.add(new MathExpressionTile());
-        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[2]))
-            runtimeTiles.add(new ChartGeneratorTile());
-        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[3]))
-            runtimeTiles.add(new WikiSearchTile());
-        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[4]))
-            runtimeTiles.add(new TimeoutTile());
-        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[5]))
-            runtimeTiles.add(new SystemInfoTile());
-        if (!disabledRuntimeTiles.contains(RUNTIME_TILES[6]))
-            runtimeTiles.add(new NumberBaseConverterTile());
+        for (RuntimeTiles value : RuntimeTiles.values()) {
+            if (!disabledRuntimeTiles.contains(value.getName())) {
+                runtimeTiles.add(value.getProvider().getTile());
+            }
+        }
+    }
+
+    private enum RuntimeTiles {
+        GO_WEBSITE(GoWebsiteTile::new),
+        MATH_EXPRESSION(MathExpressionTile::new),
+        CHART_GENERATOR(ChartGeneratorTile::new),
+        WIKI_SEARCH(WikiSearchTile::new),
+        TIMEOUT(TimeoutTile::new),
+        SYSTEM_INFO(SystemInfoTile::new),
+        NUMBER_BASE_CONVERTER(NumberBaseConverterTile::new),
+        DIRECTORY_PATH(URIOpenerTile::new);
+
+        private final String name;
+        private final String description;
+        private final RuntimeTileProvider provider;
+
+        RuntimeTiles(RuntimeTileProvider provider) {
+            this.provider = provider;
+            RuntimeTile tile = this.provider.getTile();
+            this.name = tile.getName();
+            this.description = tile.getDescription();
+        }
+
+        public RuntimeTileProvider getProvider() {
+            return provider;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        interface RuntimeTileProvider {
+            RuntimeTile getTile();
+        }
+    }
+
+    public static Map<String, String> getRuntimeTilesNames() {
+        Map<String, String> names = new HashMap<>();
+        for (RuntimeTiles value : RuntimeTiles.values()) {
+            names.put(value.getName(), value.getDescription());
+        }
+        return names;
     }
 
     public void toggleRuntimeTile(String tileId) {
@@ -369,18 +404,8 @@ public class TileManager {
         List<String> distinct = disabledRuntimeTiles.stream().distinct().collect(Collectors.toList());
         disabledRuntimeTiles.clear();
         disabledRuntimeTiles.addAll(distinct);
-        createCustomTiles();
+        addRuntimeTiles();
     }
-
-    public final static String[] RUNTIME_TILES = {
-            GoWebsiteTile.getTitle() + " (" + GoWebsiteTile.getDescription() + ")",
-            MathExpressionTile.getTitle() + " (" + MathExpressionTile.getDescription() + ")",
-            ChartGeneratorTile.getTitle() + " (" + ChartGeneratorTile.getDescription() + ")",
-            WikiSearchTile.getTitle() + " (" + WikiSearchTile.getDescription() + ")",
-            TimeoutTile.getTitle() + " (" + TimeoutTile.getDescription() + ")",
-            SystemInfoTile.getTitle() + " (" + SystemInfoTile.getDescription() + ")",
-            NumberBaseConverterTile.getTitle() + " (" + NumberBaseConverterTile.getDescription() + ")"
-    };
 
     public void cleanUpTileActions() {
         for (Tile tile : tiles) {

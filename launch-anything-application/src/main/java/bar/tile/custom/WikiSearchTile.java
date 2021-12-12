@@ -1,8 +1,8 @@
 package bar.tile.custom;
 
+import bar.common.Sleep;
 import bar.tile.Tile;
 import bar.tile.TileAction;
-import bar.common.Sleep;
 import bar.util.Util;
 import org.json.JSONObject;
 
@@ -39,11 +39,11 @@ public class WikiSearchTile implements RuntimeTile {
         return Collections.emptyList();
     }
 
-    public static String getTitle() {
+    public String getName() {
         return "Wiki Search";
     }
 
-    public static String getDescription() {
+    public String getDescription() {
         return "Enter 'wiki' and any search term";
     }
 }

@@ -159,11 +159,11 @@ public class ChartGeneratorTile implements RuntimeTile {
         return rounded;
     }
 
-    public static String getTitle() {
+    public String getName() {
         return "Chart Generator";
     }
 
-    public static String getDescription() {
+    public String getDescription() {
         return "Enter an expression and a graph will be generated";
     }
 }

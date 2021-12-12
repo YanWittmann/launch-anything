@@ -422,18 +422,21 @@
             let disabledRuntimeTiles = parsedResponse.tiles['disabled-runtime-tiles'];
             let list = document.getElementById('runtime-tile-selection');
             list.innerHTML = '';
-            for (let i = 0; i < runtimeTiles.length; i++) {
+            let runtimeTilesKeys = Object.keys(runtimeTiles);
+            for (let i = 0; i < runtimeTilesKeys.length; i++) {
+                let tileKey = runtimeTilesKeys[i];
+                let tileDescription = runtimeTiles[runtimeTilesKeys[i]];
                 let li = document.createElement('li');
-                li.innerText = runtimeTiles[i];
+                li.innerText = tileKey + ' (' + tileDescription + ')';
                 li.classList.add('badge');
                 li.classList.add('clickable');
-                if (disabledRuntimeTiles.indexOf(runtimeTiles[i]) !== -1) {
+                if (disabledRuntimeTiles.indexOf(tileKey) !== -1) {
                     li.classList.add('bg-red');
                 } else {
                     li.classList.add('bg-green');
                 }
                 li.onclick = function () {
-                    editRuntimeTileIntent(runtimeTiles[i], 'toggleActive');
+                    editRuntimeTileIntent(tileKey, 'toggleActive');
                 };
                 list.appendChild(li);
                 list.appendChild(document.createElement('br'));

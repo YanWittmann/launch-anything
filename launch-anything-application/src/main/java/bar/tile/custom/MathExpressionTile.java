@@ -264,11 +264,11 @@ public class MathExpressionTile implements RuntimeTile {
         CONSTANTS.put("e", Math.E);
     }
 
-    public static String getTitle() {
+    public String getName() {
         return "Math Expression";
     }
 
-    public static String getDescription() {
+    public String getDescription() {
         return "Enter any mathematical expression";
     }
 }
