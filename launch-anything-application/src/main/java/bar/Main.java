@@ -256,8 +256,12 @@ public class Main {
             } else {
                 currentResultIndex = Math.max(0, currentResultIndex - 1); // up
             }
-            barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
+            updateResultBars();
         }
+    }
+
+    private void updateResultBars() {
+        barManager.setTiles(lastTiles, currentResultIndex, tileManager.getCategories());
     }
 
     private void modifyTopmostTile() {
@@ -664,6 +668,10 @@ public class Main {
                     out.write("Content-Type: application/json\r\n");
                     out.write("\r\n");
                     out.write(response.toString());
+
+                    if (barManager.isInputActive()) {
+                        userInput(currentInput);
+                    }
                 } catch (Exception e) {
                     TrayUtil.showError("Something went wrong: " + e.getMessage());
                     setResponseError(500, "Something went wrong: " + e.getMessage() + ", " + Arrays.toString(e.getStackTrace()), out);
