@@ -54,7 +54,7 @@
             padding: calc(var(--glass-bar-padding-vertical) / 2) var(--glass-bar-padding-horizontal);
             margin-right: 10px;
             border-radius: 3px;
-            box-shadow: 0 0 0 2px #383838,  0 0 0 0 rgba(153, 192, 192, 0.32), inset 0 0 3px 1px #ffffff;
+            box-shadow: 0 0 0 2px #383838, 0 0 0 0 rgba(90, 96, 103, 0.32), inset 0 0 3px 1px #a8a8a8;
             background: radial-gradient(at 88% 100%, hsl(220, 3%, 23%) 0, transparent 42%),
             radial-gradient(at 9% 12%, hsl(135, 4%, 20%) 0, transparent 47%),
             radial-gradient(at 24% 68%, hsla(193, 5%, 23%, 1) 0, transparent 49%),
@@ -66,8 +66,19 @@
             transition: all 0.2s ease-in-out;
         }
 
+        .glass-bar-small:hover {
+            box-shadow: 0 0 0 2px #7a898a, 1px 1px 0 1px rgba(100, 105, 105, 0.55), inset 0 0 5px 0 #646464;
+        }
+
         .glass-bar-small.selected {
             box-shadow: 0 0 0 2px #bedadc, 2px 2px 0 2px rgba(100, 105, 105, 0.55), inset 0 0 5px 0 #d3d3d1;
+        }
+
+        .glass-bar-small.runtime-tile {
+            width: 300px;
+            height: 75px;
+            padding-top: 10px;
+            padding-bottom: 10px;
         }
 
         .clickable {
@@ -264,8 +275,9 @@
     </section>
 
     <section id="runtime" class="hidden">
-        <ul id="runtime-tile-selection">
-        </ul>
+        <br>Left-click the runtime tiles to toggle them on and off.<br><br>
+        <span id="runtime-tile-selection">
+        </span>
     </section>
 
     <section id="categories" class="hidden">
@@ -420,37 +432,37 @@
 
             let runtimeTiles = parsedResponse.tiles['runtime-tiles'];
             let disabledRuntimeTiles = parsedResponse.tiles['disabled-runtime-tiles'];
-            let list = document.getElementById('runtime-tile-selection');
-            list.innerHTML = '';
+            let runtimeSelection = document.getElementById('runtime-tile-selection');
+            runtimeSelection.innerHTML = '';
             let runtimeTilesKeys = Object.keys(runtimeTiles);
             for (let i = 0; i < runtimeTilesKeys.length; i++) {
                 let tileKey = runtimeTilesKeys[i];
                 let tileDescription = runtimeTiles[runtimeTilesKeys[i]];
-                let li = document.createElement('li');
-                li.innerText = tileKey + ' (' + tileDescription + ')';
-                li.classList.add('badge');
-                li.classList.add('clickable');
-                if (disabledRuntimeTiles.indexOf(tileKey) !== -1) {
-                    li.classList.add('bg-red');
-                } else {
-                    li.classList.add('bg-green');
+                let span = document.createElement('span');
+                span.classList.add('glass-bar-small');
+                span.classList.add('runtime-tile');
+                span.classList.add('hide-scrollbar');
+                span.classList.add('clickable');
+                console.log(disabledRuntimeTiles);
+                console.log(tileKey);
+                if (disabledRuntimeTiles.indexOf(tileKey) === -1) {
+                    span.classList.add('selected');
                 }
-                li.onclick = function () {
+                span.onclick = function () {
                     editRuntimeTileIntent(tileKey, 'toggleActive');
                 };
-                list.appendChild(li);
-                list.appendChild(document.createElement('br'));
+                span.innerHTML = '<b>' + tileKey + '</b><br>' + tileDescription;
+                runtimeSelection.appendChild(span);
             }
 
             let settings = parsedResponse.tiles['settings'];
-            list = document.getElementById('settings-selection');
-            list.innerHTML = '';
+            let settingsSelection = document.getElementById('settings-selection');
+            settingsSelection.innerHTML = '';
             let keys = Object.keys(settings);
             for (let i = 0; i < keys.length; i++) {
                 let title = document.createElement('li');
                 title.innerText = keys[i];
-                list.appendChild(title);
-
+                settingsSelection.appendChild(title);
                 let values = Object.keys(settings[keys[i]]);
                 for (let j = 0; j < values.length; j++) {
                     let li = document.createElement('li');
@@ -460,8 +472,8 @@
                     li.onclick = function () {
                         editSettingIntent(values[j]);
                     };
-                    list.appendChild(li);
-                    list.appendChild(document.createElement('br'));
+                    settingsSelection.appendChild(li);
+                    settingsSelection.appendChild(document.createElement('br'));
                 }
             }
             let badge = document.createElement('span');
@@ -472,8 +484,8 @@
             badge.onclick = function () {
                 editSettingIntent('resetSettings');
             };
-            list.appendChild(document.createElement('br'));
-            list.appendChild(badge);
+            settingsSelection.appendChild(document.createElement('br'));
+            settingsSelection.appendChild(badge);
         });
     }
 

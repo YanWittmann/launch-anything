@@ -18,7 +18,7 @@ detector is based on the Windows API.
     - Display charts for mathematical functions/expressions
     - Copy system information like the local IP address
     - Convert between number systems
-    - Use the I'm feeling lucky functionality to open any webpage
+    - Use the `I'm feeling lucky` functionality to open any webpage
     - Directly go to a wikipedia article
 - Disable (timeout) the bar for a given amount of time
 

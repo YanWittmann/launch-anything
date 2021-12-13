@@ -83,6 +83,7 @@ currently only available:
 - Number Base Converter: Enter any number and the base it is in and another base to convert it to, like so
   `10 dec to hex`, but since the keyword search is very fuzzy, something like this also works: `oct23bin`. The available
   systems are: `dec` `hex` `oct` `bin`. You can also leave away the target system to convert to all other systems.
+- URI opener: Enter a path to a file, directory or URL, and it will be opened in your default application.
 
 The math expression and chart generator tile are a bit more complex:
 
@@ -162,8 +163,8 @@ restarted.
 
 #### Export / Import tiles and settings
 
-The tiles and settings are stored in JSON files in the `res/` directory. YOu can copy those files to a different instance
-of the application and directly use them there.
+The tiles and settings are stored in JSON files in the `res/` directory. YOu can copy those files to a different
+instance of the application and directly use them there.
 
 #### Modify the topmost tile
 
