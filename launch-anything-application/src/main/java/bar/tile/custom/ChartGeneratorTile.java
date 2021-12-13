@@ -99,19 +99,15 @@ public class ChartGeneratorTile implements RuntimeTile {
 
             ScatterChartDataset dataset = new ScatterChartDataset();
             double lastY = MathExpressionTile.ERROR_VALUE;
-            for (double x = start; x <= end; x += step) {
-                double displayX = roundToDisplay(x, step);
-                double y = MathExpressionTile.solveForValue(expression, displayX);
-                if (y != MathExpressionTile.ERROR_VALUE) {
-                    if (lastY == y) {
-                        dataset.addBorderWidth(1);
-                    } else {
-                        dataset.addBorderWidth(2);
-                        lastY = y;
-                    }
-                    dataset.addData(new ScatterChartDatapoint(displayX, y));
-                }
+            boolean hadStart = false, hadEnd = false;
+            for (double x = start; x < end + step; x += step) {
+                double displayX = roundToDisplay(x, start, step);
+                if (!hadStart && isStart(displayX, start)) hadStart = true;
+                if (!hadEnd && isEnd(displayX, end)) hadEnd = true;
+                lastY = calculateDatapoint(expression, dataset, lastY, displayX);
             }
+            if (!hadStart) calculateDatapoint(expression, dataset, MathExpressionTile.ERROR_VALUE, start);
+            if (!hadEnd) calculateDatapoint(expression, dataset, MathExpressionTile.ERROR_VALUE, end);
             dataset.setShowLine(true);
             String functionExpression = MathExpressionTile.getFunctionExpression(expression);
             if (functionExpression == null) {
@@ -124,7 +120,7 @@ public class ChartGeneratorTile implements RuntimeTile {
         data.applyDefaultStylePerDataset();
 
         ChartOptions options = new ChartOptions();
-        options.setInteraction(new InteractionOption().setMode("index").setIntersect(false));
+        options.setInteraction(new InteractionOption().setMode("x").setIntersect(false));
 
         ScatterChart chart = new ScatterChart();
         chart.setChartData(data);
@@ -156,9 +152,31 @@ public class ChartGeneratorTile implements RuntimeTile {
         }
     }
 
-    private double roundToDisplay(double value, double stepSize) {
+    private double calculateDatapoint(String expression, ScatterChartDataset dataset, double lastY, double displayX) {
+        double y = MathExpressionTile.solveForValue(expression, displayX);
+        if (y != MathExpressionTile.ERROR_VALUE) {
+            if (lastY == y) {
+                dataset.addBorderWidth(1);
+            } else {
+                dataset.addBorderWidth(2);
+                lastY = y;
+            }
+            dataset.addData(new ScatterChartDatapoint(displayX, y));
+        }
+        return lastY;
+    }
+
+    private boolean isStart(double value, double start) {
+        return Math.abs(value - start) < 0.01;
+    }
+
+    private boolean isEnd(double value, double end) {
+        return Math.abs(value - end) < 0.01;
+    }
+
+    private double roundToDisplay(double value, double startValue, double stepSize) {
         // round to the nearest stepSize
-        double rounded = Math.round(value / stepSize) * stepSize;
+        double rounded = Math.round(value / stepSize) * stepSize + (startValue % stepSize);
         // if the distance to the next whole number is smaller than 0.01, round to the next whole number
         if (Math.abs(rounded - Math.round(value)) < 0.01) {
             rounded = Math.round(value);
