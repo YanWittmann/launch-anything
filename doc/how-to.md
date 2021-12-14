@@ -3,7 +3,7 @@
 ## Controls: Interact with the bar
 
 - Double-tap the `ctrl` or `command` key to open the bar. Here you can enter your search query.
-- Use the arrow keys to navigate through the result tiles.
+- Use `arrow up` and `arrow down` to navigate through the result tiles.
 - Press `enter` to execute the topmost result tile.
 - Press `esc` to cancel the search and close the bar.
 - Use `alt` + `arrow up` and `arrow down` to scroll through your last inputs.
@@ -23,7 +23,10 @@ navigation items:
   application to take effect. Type in `restart` to quickly restart the application.
 - If the content does not on the page, you can scroll down. I cannot believe I have to explain this.
 
-### Section: Tiles
+### Sections
+
+<details>
+  <summary>Tiles</summary>
 
 Tiles are the entries you can search for in the bar and that can execute different actions.
 
@@ -48,8 +51,10 @@ The individual values mean the following:
 
 To delete a tile, right-click the name of the tile. To remove a keyword or an action, right-click it. To edit any value,
 left click it.
+</details>
 
-### Section: Tile Generators
+<details>
+  <summary>Tile Generators</summary>
 
 Tile generators can be used to dynamically generate tiles on application startup. There is currently only one type:
 
@@ -59,8 +64,10 @@ Tile generators can be used to dynamically generate tiles on application startup
 The category and the keywords of the tiles are inherited from the tile generator.
 
 Similar to the tiles: to delete a tile generator, right-click the category of the tile generator.
+</details>
 
-### Section: Runtime Tiles
+<details>
+  <summary>Runtime Tiles</summary>
 
 Runtime tiles are tiles that are generated based on the current search terms. These are predetermined and therefore the
 only thing you can change is the choice to deactivate them by left-clicking the according badge. These runtime tiles are
@@ -99,8 +106,10 @@ The math expression and chart generator tile are a bit more complex:
 - If no step size is specified, a fitting step size is being derived from the range size.
 
 If you have ideas for more runtime tiles, please create an issue using the link below.
+</details>
 
-### Section: Categories
+<details>
+  <summary>Categories</summary>
 
 Every tile (generated tiles as well) have categories. The categories are used to determine the color of the tile and can
 be used as a search term. There are a few default categories:
@@ -112,6 +121,7 @@ be used as a search term. There are a few default categories:
 - settings (red)
 
 But of course you can add as many categories as you like.
+</details>
 
 ### Section: Settings & Help
 
@@ -163,8 +173,8 @@ restarted.
 
 #### Export / Import tiles and settings
 
-The tiles and settings are stored in JSON files in the `res/` directory. YOu can copy those files to a different
-instance of the application and directly use them there.
+The tiles and settings are stored in JSON files in the `res` directory. You can copy those files to a different instance
+of the application and directly use them there.
 
 #### Modify the topmost tile
 
@@ -178,6 +188,6 @@ over there.
 
 ## That's it!
 
-I hope you like this bar. If you have any questions, suggestions or comments, feel free to contact me or to create an
+I hope you can put this tool to good use. If you have any questions, suggestions or comments, feel free to contact me or to create an
 issue on the **[GitHub repository](https://github.com/Skyball2000/launch-anything/issues)**.  
 If you're feeling especially generous, you can also **[buy me a coffee](https://www.paypal.com/paypalme/yanwittmann)**!
