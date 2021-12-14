@@ -99,14 +99,13 @@ public class ChartGeneratorTile implements RuntimeTile {
 
             ScatterChartDataset dataset = new ScatterChartDataset();
             double lastY = MathExpressionTile.ERROR_VALUE;
-            boolean hadStart = false, hadEnd = false;
+            boolean hadEnd = false;
+            if (roundToDisplay(start, start, step) != start) calculateDatapoint(expression, dataset, MathExpressionTile.ERROR_VALUE, start);
             for (double x = start; x < end + step; x += step) {
                 double displayX = roundToDisplay(x, start, step);
-                if (!hadStart && isStart(displayX, start)) hadStart = true;
                 if (!hadEnd && isEnd(displayX, end)) hadEnd = true;
                 lastY = calculateDatapoint(expression, dataset, lastY, displayX);
             }
-            if (!hadStart) calculateDatapoint(expression, dataset, MathExpressionTile.ERROR_VALUE, start);
             if (!hadEnd) calculateDatapoint(expression, dataset, MathExpressionTile.ERROR_VALUE, end);
             dataset.setShowLine(true);
             String functionExpression = MathExpressionTile.getFunctionExpression(expression);
