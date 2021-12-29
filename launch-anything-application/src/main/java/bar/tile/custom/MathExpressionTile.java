@@ -73,10 +73,13 @@ public class MathExpressionTile implements RuntimeTile {
                 if (search.matches("[0-9 ]+/[0-9 ]+")) {
                     int dividend = Integer.parseInt(search.split("/")[0].trim());
                     int divisor = Integer.parseInt(search.split("/")[1].trim());
-                    int quotient = dividend / divisor;
-                    int remainder = dividend % divisor;
-                    if (remainder != 0 && quotient != 0)
-                        tiles.add(createCopyTextTile(" = " + quotient + " R " + remainder, quotient + " R " + remainder));
+                    if (divisor != 0) {
+                        int quotient = dividend / divisor;
+                        int remainder = dividend % divisor;
+                        if (remainder != 0 && quotient != 0) {
+                            tiles.add(createCopyTextTile(" = " + quotient + " R " + remainder, quotient + " R " + remainder));
+                        }
+                    }
                 }
 
                 return tiles;

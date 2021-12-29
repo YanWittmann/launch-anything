@@ -16,6 +16,7 @@ public class NumberBaseConverterTile implements RuntimeTile {
 
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
+        search = search.replace(" ", "");
         if (search.length() > 2) {
             if (search.matches("[01]+")) search += "bin";
             Matcher matcher = SYSTEM_PATTERN.matcher(search);
@@ -37,8 +38,8 @@ public class NumberBaseConverterTile implements RuntimeTile {
                         String convertedDec = convert(originSystem, "dec", convertNumber);
                         tiles.add(createCopyTextTile("DEC: " + convertedDec, convertedDec));
                     }
+                    String convertedBin = convert(originSystem, "bin", convertNumber);
                     if (!originSystem.equals("bin")) {
-                        String convertedBin = convert(originSystem, "bin", convertNumber);
                         tiles.add(createCopyTextTile("BIN: " + convertedBin, convertedBin));
                     }
                     if (!originSystem.equals("oct")) {
@@ -49,6 +50,8 @@ public class NumberBaseConverterTile implements RuntimeTile {
                         String convertedHex = convert(originSystem, "hex", convertNumber.toUpperCase());
                         tiles.add(createCopyTextTile("HEX: " + convertedHex, convertedHex));
                     }
+                    String convertedBCD = binToHexBCD(convertedBin);
+                    tiles.add(createCopyTextTile("BCD: " + convertedBCD, convertedBCD));
                     return tiles;
                 }
             }
@@ -63,6 +66,15 @@ public class NumberBaseConverterTile implements RuntimeTile {
         return tile;
     }
 
+    private String binToHexBCD(String bin) {
+        StringBuilder hex = new StringBuilder();
+        for (int i = 0; i < bin.length(); i += 4) {
+            String bcd = bin.substring(i, Math.min(i + 4, bin.length()));
+            hex.append(Integer.toHexString(Integer.parseInt(bcd, 2)));
+        }
+        return hex.toString().toUpperCase();
+    }
+
     private String convert(String originSystem, String targetSystem, String convertNumber) {
         switch (originSystem) {
             case "dec":
@@ -72,7 +84,7 @@ public class NumberBaseConverterTile implements RuntimeTile {
                     case "oct":
                         return Integer.toOctalString(Integer.parseInt(convertNumber));
                     case "hex":
-                        return Integer.toHexString(Integer.parseInt(convertNumber));
+                        return Integer.toHexString(Integer.parseInt(convertNumber)).toUpperCase();
                 }
                 break;
             case "bin":
@@ -82,7 +94,7 @@ public class NumberBaseConverterTile implements RuntimeTile {
                     case "oct":
                         return Integer.toOctalString(Integer.parseInt(convertNumber, 2));
                     case "hex":
-                        return Integer.toHexString(Integer.parseInt(convertNumber, 2));
+                        return Integer.toHexString(Integer.parseInt(convertNumber, 2)).toUpperCase();
                 }
                 break;
             case "oct":
@@ -92,7 +104,7 @@ public class NumberBaseConverterTile implements RuntimeTile {
                     case "bin":
                         return Integer.toBinaryString(Integer.parseInt(convertNumber, 8));
                     case "hex":
-                        return Integer.toHexString(Integer.parseInt(convertNumber, 8));
+                        return Integer.toHexString(Integer.parseInt(convertNumber, 8)).toUpperCase();
                 }
                 break;
             case "hex":
