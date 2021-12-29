@@ -351,12 +351,12 @@ public class TileManager {
 
     private enum RuntimeTiles {
         GO_WEBSITE(GoWebsiteTile::new),
+        NUMBER_BASE_CONVERTER(NumberBaseConverterTile::new),
         MATH_EXPRESSION(MathExpressionTile::new),
         CHART_GENERATOR(ChartGeneratorTile::new),
         WIKI_SEARCH(WikiSearchTile::new),
         TIMEOUT(TimeoutTile::new),
         SYSTEM_INFO(SystemInfoTile::new),
-        NUMBER_BASE_CONVERTER(NumberBaseConverterTile::new),
         DIRECTORY_PATH(URIOpenerTile::new);
 
         private final String name;

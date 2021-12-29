@@ -16,7 +16,8 @@ public class NumberBaseConverterTile implements RuntimeTile {
 
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
-        if (search.length() > 3) {
+        if (search.length() > 2) {
+            if (search.matches("[01]+")) search += "bin";
             Matcher matcher = SYSTEM_PATTERN.matcher(search);
             if (matcher.find()) {
                 String originSystem = matcher.group(1).substring(0, 3).toLowerCase();
