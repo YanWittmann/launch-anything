@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -744,29 +745,51 @@ public class Main {
         }
 
         TileAction newTileAction;
-        String actionType = tileAction != null ? tileAction.getType() : Util.popupDropDown("Tile Action", "What type of action do you want to create?", TileAction.ACTION_TYPES, null);
+        String actionType;
+        if (tileAction != null) {
+            actionType = tileAction.getType();
+        } else {
+            String actionFromSnippet = TileAction.getActionFromSnippet(Util.getClipboardText());
+            actionType = Util.popupDropDown("Tile Action", "What type of action do you want to create?", TileAction.ACTION_TYPES, actionFromSnippet);
+        }
 
         if (actionType != null) {
             String previousValue = tileAction != null && tileAction.getParam1() != null ? tileAction.getParam1() : "";
             switch (actionType) {
                 case "file":
-                    File file = Util.pickFile(null);
+                    File file;
+                    try {
+                        File clipboardFile = new File(Util.getClipboardText());
+                        file = Util.pickFile(clipboardFile, null);
+                    } catch (Exception e) {
+                        file = Util.pickFile(null);
+                    }
                     if (file != null) {
                         param1 = file.getAbsolutePath();
                     }
                     break;
                 case "directory":
                     actionType = "file";
+                    try {
+                        File clipboardFile = new File(Util.getClipboardText());
+                        if (clipboardFile.exists() && clipboardFile.isDirectory()) Util.setPreviousFile(clipboardFile);
+                    } catch (Exception e) {
+                    }
                     file = Util.pickDirectory();
                     if (file != null) {
                         param1 = file.getAbsolutePath();
                     }
                     break;
                 case "url":
-                    param1 = Util.popupTextInput("Tile Action", "Enter the URL", previousValue);
+                    String proposedUrl = previousValue;
+                    try {
+                        proposedUrl = new URL(Util.getClipboardText()).toString();
+                    } catch (Exception e) {
+                    }
+                    param1 = Util.popupTextInput("Tile Action", "Enter the URL", proposedUrl);
                     break;
                 case "copy":
-                    param1 = Util.popupTextInput("Tile Action", "Enter the text to copy", previousValue);
+                    param1 = Util.popupTextInput("Tile Action", "Enter the text to copy", Util.getClipboardText());
                     break;
                 default:
                     break;

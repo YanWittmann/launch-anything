@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -196,6 +197,29 @@ public class TileAction {
 
     public JSONObject toJSON() {
         return json;
+    }
+
+    public static String getActionFromSnippet(String text) {
+        if (text == null) return null;
+
+        // check if text is a file
+        try {
+            File file = new File(text);
+            if (file.exists()) {
+                if (file.isDirectory()) return "directory";
+                return "file";
+            }
+        } catch (Exception ignored) {
+        }
+
+        // check if text is a url
+        try {
+            new URL(text);
+            return "url";
+        } catch (MalformedURLException ignored) {
+        }
+
+        return null;
     }
 
     @Override

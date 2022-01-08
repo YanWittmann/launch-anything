@@ -14,8 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.*;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
@@ -95,6 +94,30 @@ public abstract class Util {
         return null;
     }
 
+    public static File pickFile(File dir, String filterName, String... filters) {
+        if (isOsWindows()) {
+            JnaFileChooser fc = new JnaFileChooser();
+            fc.setCurrentDirectory(String.valueOf(dir));
+            if (filterName != null && filterName.length() > 0)
+                fc.addFilter(filterName, filters);
+            fc.showOpenDialog(null);
+            return fc.getSelectedFile();
+        } else {
+            // use the default java file chooser and return the file
+            JFileChooser fileChooser = new JFileChooser();
+            if (filterName != null && filterName.length() > 0)
+                fileChooser.setFileFilter(new FileNameExtensionFilter(filterName, filters));
+            if (previousFile != null) fileChooser.setCurrentDirectory(previousFile);
+            else fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+            boolean result = fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION;
+            if (result) {
+                previousFile = fileChooser.getSelectedFile();
+                return fileChooser.getSelectedFile();
+            }
+        }
+        return null;
+    }
+
     public static String getOS() {
         return System.getProperty("os.name").toLowerCase();
     }
@@ -144,6 +167,10 @@ public abstract class Util {
         return null;
     }
 
+    public static void setPreviousFile(File file) {
+        previousFile = file;
+    }
+
     public static String popupDropDown(String title, String message, String[] options, String preselected) {
         if (options == null || options.length == 0) return null;
         Object o = showInputDialog(null, message, title, PLAIN_MESSAGE, null, options, preselected != null ? preselected : options[0]);
@@ -187,6 +214,17 @@ public abstract class Util {
         StringSelection stringSelection = new StringSelection(text);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, null);
+    }
+
+    public static String getClipboardText() {
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable transferable = clipboard.getContents(null);
+        if (transferable == null) return null;
+        try {
+            return (String) transferable.getTransferData(DataFlavor.stringFlavor);
+        } catch (UnsupportedFlavorException | IOException e) {
+            return null;
+        }
     }
 
     private final static List<Function> directFunctions = new ArrayList<>();
@@ -251,6 +289,15 @@ public abstract class Util {
             @Override
             public double apply(double... args) {
                 return Math.round(args[0]);
+            }
+        });
+        directFunctions.add(new Function("fac", 1) {
+            @Override
+            public double apply(double... args) {
+                if (args[0] > 170) return Double.POSITIVE_INFINITY;
+                double result = 1.0;
+                for (int i = 1; i <= args[0]; i++) result *= i;
+                return result;
             }
         });
     }

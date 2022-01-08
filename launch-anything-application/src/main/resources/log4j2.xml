@@ -7,7 +7,7 @@
 		<!-- Console Appender -->
 		<Console name="STDOUT" target="SYSTEM_OUT">
 			<PatternLayout
-				pattern="[%-5p] [%d{yyyy-MM-dd HH:mm:ss}] [%t] %C{2} (%F:%L) - %m%n" />
+				pattern="[%p] [%d{yyyy-MM-dd HH:mm:ss}] %m%n" />
 		</Console>
 	</Appenders>
 	<Loggers>
