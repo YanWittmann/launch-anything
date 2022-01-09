@@ -506,4 +506,36 @@ public abstract class Util {
             }
         }
     }
+
+    public static Rectangle detectMonitor(Point point) {
+        GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();
+
+        GraphicsDevice[] devices = e.getScreenDevices();
+
+        Rectangle displayBounds = null;
+
+        for (GraphicsDevice device : devices) {
+
+            GraphicsConfiguration[] configurations = device.getConfigurations();
+            for (GraphicsConfiguration config : configurations) {
+                Rectangle gcBounds = config.getBounds();
+
+                if (gcBounds.contains(point)) {
+                    displayBounds = gcBounds;
+                }
+            }
+        }
+
+        if (displayBounds == null) {
+            // not found, get the bounds for the default display
+            GraphicsDevice device = e.getDefaultScreenDevice();
+            displayBounds = device.getDefaultConfiguration().getBounds();
+        }
+
+        return displayBounds;
+    }
+
+    public static Point getAbsoluteMousePosition() {
+        return MouseInfo.getPointerInfo().getLocation();
+    }
 }

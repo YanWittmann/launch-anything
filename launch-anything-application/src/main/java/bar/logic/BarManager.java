@@ -3,9 +3,11 @@ package bar.logic;
 import bar.tile.Tile;
 import bar.tile.TileCategory;
 import bar.ui.GlassBar;
+import bar.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,12 +47,22 @@ public class BarManager {
         }
     }
 
+    private Rectangle currentScreenRectangle = null;
+
     public void setInputActive(boolean active) {
         isInputActive = active;
         resultGlassBars.forEach(glassBar -> glassBar.setVisible(false));
         if (active) {
             inputGlassBar.setVisible(false);
+            Point absoluteMousePosition = Util.getAbsoluteMousePosition();
+            Rectangle monitorBounds = Util.detectMonitor(absoluteMousePosition);
+            if (monitorBounds != null && (currentScreenRectangle == null || !currentScreenRectangle.equals(monitorBounds))) {
+                logger.info("Monitor bounds updated [{} {} {} {}]", monitorBounds.x, monitorBounds.y, monitorBounds.width, monitorBounds.height);
+                currentScreenRectangle = monitorBounds;
+            }
+            inputGlassBar.setScreenRectangle(monitorBounds, settings);
             for (GlassBar resultGlassBar : resultGlassBars) {
+                resultGlassBar.setScreenRectangle(monitorBounds, settings);
                 resultGlassBar.prepareUpdateBackground();
                 resultGlassBar.setOpacity(0.0f);
                 resultGlassBar.setOnlyVisibility(true);
@@ -100,8 +112,8 @@ public class BarManager {
     }
 
     public void barReloadRequest() {
-        inputGlassBar.reloadWithSettings(settings);
-        resultGlassBars.forEach(glassBar -> glassBar.reloadWithSettings(settings));
+        inputGlassBar.reloadLayout(settings, false);
+        resultGlassBars.forEach(glassBar -> glassBar.reloadLayout(settings, false));
     }
 
     public void setInputCaretVisible(boolean visible) {

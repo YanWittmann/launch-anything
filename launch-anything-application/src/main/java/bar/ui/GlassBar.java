@@ -31,7 +31,6 @@ public class GlassBar extends JFrame {
     private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_DARK_MODE = new TextBubbleBorder(new Color(177, 182, 183), BORDER_THICKNESS_FOR_DARK_MODE, BORDER_RADIUS, 0, false);
     private final static TextBubbleBorder ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE = new TextBubbleBorder(new Color(100, 100, 100), BORDER_THICKNESS_FOR_BRIGHT_MODE, BORDER_RADIUS, 0, false);
     private final Cursor INVISIBLE_CURSOR = getToolkit().createCustomCursor(new BufferedImage(3, 3, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "null");
-    public final static Rectangle SCREEN_RECTANGLE = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
     public final static GaussianFilter BACKGROUND_BLUR_FILTER = new GaussianFilter(20);
 
     private final JPanel contentPane;
@@ -199,43 +198,73 @@ public class GlassBar extends JFrame {
      */
     public void setType(int index, Settings settings) {
         this.index = index;
-        reloadWithSettings(settings);
+        reloadLayout(settings, false);
     }
 
-    public void reloadWithSettings(Settings settings) {
+    private Rectangle screenRectangle;
+
+    public void setScreenRectangle(Rectangle screenRectangle, Settings settings) {
+        if (screenRectangle == null || this.screenRectangle != null && this.screenRectangle.equals(screenRectangle)) {
+            return;
+        }
+        this.screenRectangle = screenRectangle;
+        reloadLayout(settings, true);
+    }
+
+    private Rectangle dimensionToRectangle(Dimension dimension) {
+        return new Rectangle(dimension.width, dimension.height);
+    }
+
+    private void centerThis(Rectangle screenRectangle) {
+        Dimension dimension = getSize();
+        setLocation(screenRectangle.x + screenRectangle.width / 2 - dimension.width / 2, screenRectangle.y + screenRectangle.height / 2 - dimension.height / 2);
+    }
+
+    public void reloadLayout(Settings settings, boolean positionOnly) {
+        if (screenRectangle == null)
+            screenRectangle = dimensionToRectangle(Toolkit.getDefaultToolkit().getScreenSize());
+
         // using the index, the positioning of the bar is determined
-        int fontSize;
+        int fontSize = 22;
         if (index == -1) {
-            int width = settings.getInt(Settings.Setting.INPUT_WIDTH), height = settings.getInt(Settings.Setting.INPUT_HEIGHT);
-            this.setSize(width, height);
-            contentPane.setPreferredSize(new Dimension(width, height));
-            this.setLocationRelativeTo(null);
-            this.setLocation(this.getX(), SCREEN_RECTANGLE.height / 6);
-            fontSize = settings.getInt(Settings.Setting.INPUT_BAR_FONT_SIZE);
+            //this.setLocationRelativeTo(null);
+            centerThis(screenRectangle);
+            this.setLocation(this.getX(), screenRectangle.height / 6);
 
-            // hide the cursor if it is on the frame
-
-            barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-            inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.INPUT_TEXT_PADDING), (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
+            if (!positionOnly) {
+                int width = settings.getInt(Settings.Setting.INPUT_WIDTH), height = settings.getInt(Settings.Setting.INPUT_HEIGHT);
+                this.setSize(width, height);
+                barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
+                contentPane.setPreferredSize(new Dimension(width, height));
+                fontSize = settings.getInt(Settings.Setting.INPUT_BAR_FONT_SIZE);
+                inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.INPUT_TEXT_PADDING), (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
+            } else {
+                barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
+            }
         } else {
             int width = settings.getInt(Settings.Setting.RESULT_WIDTH), height = settings.getInt(Settings.Setting.RESULT_HEIGHT);
-            this.setSize(width, height);
-            contentPane.setPreferredSize(new Dimension(width, height));
-            this.setLocationRelativeTo(null);
-            this.setLocation(this.getX(), (SCREEN_RECTANGLE.height / 6) + ((index + 1) * (height + settings.getInt(Settings.Setting.RESULT_MARGIN))) + settings.getInt(Settings.Setting.INPUT_RESULT_DISTANCE));
-            fontSize = settings.getInt(Settings.Setting.RESULT_BAR_FONT_SIZE);
-            barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-            inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.RESULT_TEXT_PADDING), (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
+            if (!positionOnly) {
+                this.setSize(width, height);
+                contentPane.setPreferredSize(new Dimension(width, height));
+                fontSize = settings.getInt(Settings.Setting.RESULT_BAR_FONT_SIZE);
+                barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
+                inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.RESULT_TEXT_PADDING), (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
+            }
+            //this.setLocationRelativeTo(null);
+            centerThis(screenRectangle);
+            this.setLocation(this.getX(), (screenRectangle.height / 6) + ((index + 1) * (height + settings.getInt(Settings.Setting.RESULT_MARGIN))) + settings.getInt(Settings.Setting.INPUT_RESULT_DISTANCE));
         }
 
         // set the size of the components on the bar
-        if (settings.getBoolean(Settings.Setting.BAR_FONT_BOLD_BOOL)) {
-            inputField.setFont(settings.getFont(Settings.Setting.BAR_FONT).deriveFont(Font.BOLD, fontSize));
-        } else {
-            inputField.setFont(settings.getFont(Settings.Setting.BAR_FONT).deriveFont(Font.PLAIN, fontSize));
+        if (!positionOnly) {
+            if (settings.getBoolean(Settings.Setting.BAR_FONT_BOLD_BOOL)) {
+                inputField.setFont(settings.getFont(Settings.Setting.BAR_FONT).deriveFont(Font.BOLD, fontSize));
+            } else {
+                inputField.setFont(settings.getFont(Settings.Setting.BAR_FONT).deriveFont(Font.PLAIN, fontSize));
+            }
+            frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
+            backgroundImageLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
         }
-        frameBorderLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
-        backgroundImageLabel.setBounds(0, 0, (int) barRectangle.getWidth(), (int) barRectangle.getHeight());
     }
 
     private Robot robot;
