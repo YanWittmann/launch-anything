@@ -59,8 +59,8 @@ public class BarManager {
             if (monitorBounds != null && (currentScreenRectangle == null || !currentScreenRectangle.equals(monitorBounds))) {
                 logger.info("Monitor bounds updated [{} {} {} {}]", monitorBounds.x, monitorBounds.y, monitorBounds.width, monitorBounds.height);
                 currentScreenRectangle = monitorBounds;
+                inputGlassBar.setScreenRectangle(monitorBounds, settings);
             }
-            inputGlassBar.setScreenRectangle(monitorBounds, settings);
             for (GlassBar resultGlassBar : resultGlassBars) {
                 resultGlassBar.setScreenRectangle(monitorBounds, settings);
                 resultGlassBar.prepareUpdateBackground();
