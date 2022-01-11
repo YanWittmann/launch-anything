@@ -227,6 +227,7 @@ public class GlassBar extends JFrame {
     public void reloadLayout(Settings settings, boolean positionOnly) {
         if (screenRectangle == null)
             screenRectangle = dimensionToRectangle(Toolkit.getDefaultToolkit().getScreenSize());
+        System.out.println(screenRectangle);
 
         // using the index, the positioning of the bar is determined
         int fontSize = 22;
@@ -250,12 +251,16 @@ public class GlassBar extends JFrame {
             if (!positionOnly) {
                 this.setSize(width, height);
                 contentPane.setPreferredSize(new Dimension(width, height));
+                centerThis(screenRectangle);
+                this.setLocation(this.getX(), (screenRectangle.height / 6) + ((index + 1) * (height + settings.getInt(Settings.Setting.RESULT_MARGIN))) + settings.getInt(Settings.Setting.INPUT_RESULT_DISTANCE));
                 fontSize = settings.getInt(Settings.Setting.RESULT_BAR_FONT_SIZE);
                 barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
                 inputField.setBounds(fontSize - 5, settings.getInt(Settings.Setting.RESULT_TEXT_PADDING), (int) barRectangle.getWidth() - fontSize - 5, (int) barRectangle.getHeight());
+            } else {
+                centerThis(screenRectangle);
+                this.setLocation(this.getX(), (screenRectangle.height / 6) + ((index + 1) * (height + settings.getInt(Settings.Setting.RESULT_MARGIN))) + settings.getInt(Settings.Setting.INPUT_RESULT_DISTANCE));
+                barRectangle = new Rectangle(this.getX(), this.getY(), this.getWidth(), this.getHeight());
             }
-            centerThis(screenRectangle);
-            this.setLocation(this.getX(), (screenRectangle.height / 6) + ((index + 1) * (height + settings.getInt(Settings.Setting.RESULT_MARGIN))) + settings.getInt(Settings.Setting.INPUT_RESULT_DISTANCE));
         }
 
         // set the size of the components on the bar
