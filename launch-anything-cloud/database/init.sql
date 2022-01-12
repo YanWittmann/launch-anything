@@ -11,6 +11,6 @@ CREATE TABLE la_tiles (
 CREATE TABLE la_users (
     id char(36) NOT NULL,
     name varchar(45) NOT NULL,
-    password varchar(45) NOT NULL,
+    password varchar(255) NOT NULL,
     PRIMARY KEY (id)
 );
