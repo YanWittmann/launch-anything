@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS la_tiles;
+DROP TABLE IF EXISTS la_users;
