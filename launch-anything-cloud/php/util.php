@@ -74,3 +74,18 @@ function uuid() {
 function is_uuid($uuid) {
     return is_string($uuid) && preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid) === 1;
 }
+
+function is_valid_username($username) {
+    return strlen($username) > 2 && strlen($username) <= 36;
+}
+
+function is_valid_password($password) {
+    // password must be at least 8 characters long
+    // and contain at least one number and one lowercase and one uppercase letter
+    // do not allow whitespace
+    return strlen($password) >= 8 &&
+        preg_match('/[a-z]/', $password) &&
+        preg_match('/[A-Z]/', $password) &&
+        preg_match('/[0-9]/', $password) &&
+        !preg_match('/\s/', $password);
+}

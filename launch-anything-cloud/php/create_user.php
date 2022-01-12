@@ -7,6 +7,15 @@ $user_id = uuid();
 $username = post_or_get_or_die('username');
 $password = hash_pwd(post_or_get_or_die('password'));
 
+// check if new_username is valid
+if (!is_valid_username($username)) {
+    die_with_message('Invalid username ' . $username);
+}
+// check if password is valid
+if (!is_valid_password($password)) {
+    die_with_message('Invalid password, must be 8 characters long and contain at least one number, one uppercase letter, one lowercase letter and no spaces');
+}
+
 // this php file will create a new user in the database
 // start by checking if the user is already in the database
 $query = "SELECT * FROM la_users WHERE name='$username'";
