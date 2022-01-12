@@ -17,7 +17,7 @@ public class BarManager {
     private final GlassBar inputGlassBar;
     private final List<GlassBar> resultGlassBars = new ArrayList<>();
     private boolean isInputActive = false;
-    private static final Logger logger = LoggerFactory.getLogger(BarManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BarManager.class);
 
     public BarManager(Settings settings) {
         this.settings = settings;
@@ -57,7 +57,7 @@ public class BarManager {
             Point absoluteMousePosition = Util.getAbsoluteMousePosition();
             Rectangle monitorBounds = Util.detectMonitor(absoluteMousePosition);
             if (monitorBounds != null && (currentScreenRectangle == null || !currentScreenRectangle.equals(monitorBounds))) {
-                logger.info("Monitor bounds updated [{} {} {} {}]", monitorBounds.x, monitorBounds.y, monitorBounds.width, monitorBounds.height);
+                LOG.info("Monitor bounds updated [{} {} {} {}]", monitorBounds.x, monitorBounds.y, monitorBounds.width, monitorBounds.height);
                 currentScreenRectangle = monitorBounds;
                 inputGlassBar.setScreenRectangle(monitorBounds, settings);
             }
@@ -100,7 +100,7 @@ public class BarManager {
                 }
             }
         } catch (Exception e) {
-            logger.error("error ", e);
+            LOG.error("error ", e);
         }
     }
 

@@ -18,7 +18,7 @@ import java.net.URL;
 public class TileAction {
 
     private JSONObject json;
-    private static final Logger logger = LoggerFactory.getLogger(TileAction.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TileAction.class);
 
     public TileAction(JSONObject json) {
         this.json = json;
@@ -98,7 +98,7 @@ public class TileAction {
                                 desktop.open(myFile);
                             } catch (IOException e) {
                                 TrayUtil.showError("Tile action failure: unable to open file: " + e.getMessage());
-                                logger.error("error ", e);
+                                LOG.error("error ", e);
                             }
                         }
                         break;
@@ -109,7 +109,7 @@ public class TileAction {
                                 desktop.browse(new URI(param1));
                             } catch (IOException | URISyntaxException e) {
                                 TrayUtil.showError("Tile action failure: unable to open url: " + e.getMessage());
-                                logger.error("error ", e);
+                                LOG.error("error ", e);
                             }
                         }
                         break;
@@ -141,7 +141,7 @@ public class TileAction {
                                         main.restartBar();
                                     } catch (IOException | URISyntaxException e) {
                                         TrayUtil.showError("Tile action failure: unable to restart application: " + e.getMessage());
-                                        logger.error("Unable to restart application: {}" + e.getMessage());
+                                        LOG.error("Unable to restart application: {}" + e.getMessage());
                                     }
                                     break;
                                 case "exit":
@@ -153,7 +153,7 @@ public class TileAction {
             }
         } catch (Exception e) {
             TrayUtil.showError("Tile action failure: " + e.getMessage());
-            logger.error("error ", e);
+            LOG.error("error ", e);
         }
     }
 

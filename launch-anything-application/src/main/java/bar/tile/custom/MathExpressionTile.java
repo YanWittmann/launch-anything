@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 public class MathExpressionTile implements RuntimeTile {
 
-    private static final Logger logger = LoggerFactory.getLogger(MathExpressionTile.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MathExpressionTile.class);
 
     private final static Map<String, Double> variables = new HashMap<>();
     private final static Map<String, String> functions = new HashMap<>();

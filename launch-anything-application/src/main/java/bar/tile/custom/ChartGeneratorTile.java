@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class ChartGeneratorTile implements RuntimeTile {
 
-    private static final Logger logger = LoggerFactory.getLogger(ChartGeneratorTile.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ChartGeneratorTile.class);
 
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
@@ -91,7 +91,7 @@ public class ChartGeneratorTile implements RuntimeTile {
     }
 
     private void generateGraph(double start, double end, double step, List<String> expressions) {
-        logger.info("Generating graph for [{}] in range [{} {} {}]", String.join(", ", expressions), start, end, step);
+        LOG.info("Generating graph for [{}] in range [{} {} {}]", String.join(", ", expressions), start, end, step);
 
         ScatterChartData data = new ScatterChartData();
         for (String expression : expressions) {
@@ -146,7 +146,7 @@ public class ChartGeneratorTile implements RuntimeTile {
             FileUtils.write(tempFile, String.join("\n", htmlLines), StandardCharsets.UTF_8);
             Desktop.getDesktop().browse(tempFile.toURI());
         } catch (Exception e) {
-            logger.error("error ", e);
+            LOG.error("error ", e);
             TrayUtil.showError("Something went wrong while generating the graph: " + e.getMessage());
         }
     }

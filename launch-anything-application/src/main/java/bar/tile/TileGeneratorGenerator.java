@@ -14,7 +14,7 @@ import java.util.UUID;
 public class TileGeneratorGenerator {
 
     private final JSONObject json;
-    private static final Logger logger = LoggerFactory.getLogger(TileGeneratorGenerator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TileGeneratorGenerator.class);
 
 
     public TileGeneratorGenerator(JSONObject json) {
@@ -111,7 +111,7 @@ public class TileGeneratorGenerator {
                     break;
             }
         } catch (Exception e) {
-            logger.error("error ", e);
+            LOG.error("error ", e);
         }
 
         return tiles;

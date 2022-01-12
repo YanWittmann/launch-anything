@@ -41,7 +41,7 @@ public class GlassBar extends JFrame {
     private boolean allowInput = true;
 
     private final List<InputListener> inputListeners = new ArrayList<>();
-    private static final Logger logger = LoggerFactory.getLogger(GlassBar.class);
+    private static final Logger LOG = LoggerFactory.getLogger(GlassBar.class);
 
     public GlassBar() {
         // set the general properties of the frame
@@ -227,7 +227,6 @@ public class GlassBar extends JFrame {
     public void reloadLayout(Settings settings, boolean positionOnly) {
         if (screenRectangle == null)
             screenRectangle = dimensionToRectangle(Toolkit.getDefaultToolkit().getScreenSize());
-        System.out.println(screenRectangle);
 
         // using the index, the positioning of the bar is determined
         int fontSize = 22;
@@ -281,7 +280,7 @@ public class GlassBar extends JFrame {
         try {
             robot = new Robot();
         } catch (AWTException e) {
-            logger.error("error ", e);
+            LOG.error("error ", e);
         }
     }
 

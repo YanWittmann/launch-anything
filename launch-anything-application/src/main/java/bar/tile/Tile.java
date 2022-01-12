@@ -12,7 +12,7 @@ import java.util.UUID;
 
 public class Tile {
 
-    private static final Logger logger = LoggerFactory.getLogger(Tile.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Tile.class);
 
     private boolean isActive = true, exportable;
     private String id, category, label, keywords;
@@ -122,10 +122,10 @@ public class Tile {
     }
 
     public void execute(Main main) {
-        logger.info("Executing tile [{}]", label);
+        LOG.info("Executing tile [{}]", label);
         lastActivated = System.currentTimeMillis();
         for (TileAction action : tileActions) {
-            logger.info("Executing action [{} {} {}]", action.getType(), action.getParam1(), action.getParam2());
+            LOG.info("Executing action [{} {} {}]", action.getType(), action.getParam1(), action.getParam2());
             action.execute(main);
         }
     }

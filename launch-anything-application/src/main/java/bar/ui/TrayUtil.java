@@ -18,15 +18,15 @@ public abstract class TrayUtil {
 
     private static PopupMenu trayMenu;
     private static MenuItem resetTimeoutIcon;
-    private static final Logger logger = LoggerFactory.getLogger(TrayUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TrayUtil.class);
 
     public static void showMessage(String message) {
-    	logger.info("Showing message tray: {}", message.replace("\n", "\n   "));
+    	LOG.info("Showing message tray: {}", message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything", message, TrayIcon.MessageType.INFO);
     }
 
     public static void showError(String message) {
-    	logger.info("Showing error message tray: {}", message.replace("\n", "\n   "));
+    	LOG.info("Showing error message tray: {}", message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything Error", message, TrayIcon.MessageType.ERROR);
     }
 
@@ -82,7 +82,7 @@ public abstract class TrayUtil {
         TrayUtil.main = main;
 
         if (!SystemTray.isSupported()) {
-        	logger.info("System tray not supported on this platform");
+        	LOG.info("System tray not supported on this platform");
         }
 
         try {
@@ -90,11 +90,11 @@ public abstract class TrayUtil {
             trayIcon = createTrayIconFromResource();
             sysTray.add(trayIcon);
         } catch (AWTException e) {
-        	logger.info("Unable to add icon to the system tray: {}", e.getMessage());
-            logger.error("error ", e);
+        	LOG.info("Unable to add icon to the system tray: {}", e.getMessage());
+            LOG.error("error ", e);
         } catch (Exception e) {
-        	logger.info("Something went wrong while adding the icon to the system tray: {}", e.getMessage());
-        	logger.error("error ", e);
+        	LOG.info("Something went wrong while adding the icon to the system tray: {}", e.getMessage());
+        	LOG.error("error ", e);
         }
     }
 }

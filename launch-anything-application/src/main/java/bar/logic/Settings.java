@@ -22,7 +22,7 @@ public class Settings {
     private final Map<String, Object> settings = new LinkedHashMap<>();
     private File settingsFile;
 
-    private static final Logger logger = LoggerFactory.getLogger(Settings.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Settings.class);
     
     public Settings() {
         findSettingsFile();
@@ -49,7 +49,7 @@ public class Settings {
             File candidate = new File(possibleSettingsFile).getAbsoluteFile();
             if (candidate.exists()) {
                 settingsFile = candidate;
-                logger.info("Loaded settings in {}", settingsFile.getAbsolutePath());
+                LOG.info("Loaded settings in {}", settingsFile.getAbsolutePath());
                 return;
             }
         }
@@ -67,7 +67,7 @@ public class Settings {
             settings.putAll(new JSONObject(fileContent.toString()).toMap());
         } catch (FileNotFoundException e) {
             TrayUtil.showError("Unable to read settings file: " + e.getMessage());
-            logger.error("error: ", e);
+            LOG.error("error: ", e);
         }
     }
 
@@ -87,7 +87,7 @@ public class Settings {
             myWriter.close();
         } catch (IOException e) {
             TrayUtil.showError("Unable to save settings file: " + e.getMessage());
-            logger.error("error ", e);
+            LOG.error("error ", e);
         }
     }
 
@@ -212,7 +212,7 @@ public class Settings {
                     GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
                     return font;
                 } catch (FontFormatException | IOException e) {
-                    logger.error("error ", e);
+                    LOG.error("error ", e);
                 }
             } else {
                 return new Font(fontValue, Font.PLAIN, 12);

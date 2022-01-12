@@ -36,7 +36,7 @@ import static javax.swing.JOptionPane.*;
 public abstract class Util {
 
     private static Settings settings = null;
-    private static final Logger logger = LoggerFactory.getLogger(Util.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Util.class);
 
     public static void setSettings(Settings settings) {
         Util.settings = settings;
@@ -47,7 +47,7 @@ public abstract class Util {
             Font font = Font.createFont(Font.TRUETYPE_FONT, Main.class.getClassLoader().getResourceAsStream(path));
             GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(font);
         } catch (FontFormatException | IOException | NullPointerException e) {
-            logger.error("error ", e);
+            LOG.error("error ", e);
         }
     }
 
@@ -66,7 +66,7 @@ public abstract class Util {
                 out.add(line);
             }
         } catch (IOException e) {
-            logger.error("error ", e);
+            LOG.error("error ", e);
         }
         return out.toString();
     }
@@ -434,7 +434,7 @@ public abstract class Util {
                 TrayUtil.showMessage("Application will run on system startup");
             } catch (IOException | URISyntaxException e) {
                 TrayUtil.showError("Unable to add autostart feature: " + e.getMessage());
-                logger.error("error ", e);
+                LOG.error("error ", e);
             }
         } else {
             if (file.delete()) {
