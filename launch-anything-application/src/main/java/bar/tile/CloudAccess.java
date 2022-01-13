@@ -21,17 +21,28 @@ public class CloudAccess {
 
     private static final Logger LOG = LoggerFactory.getLogger(Settings.class);
 
-    private String cloudTimerUrl;
+    private final String cloudTimerUrl;
+    private final String username, password;
 
-    public CloudAccess(String cloudTimerUrl) {
+    public CloudAccess(String cloudTimerUrl, String username, String password, boolean createAccount) throws IOException {
         this.cloudTimerUrl = cloudTimerUrl;
-    }
-
-    public void setCloudTimerUrl(String cloudTimerUrl) {
-        if (cloudTimerUrl != null) {
-            this.cloudTimerUrl = cloudTimerUrl.replaceAll("/$", "");
-        } else {
-            this.cloudTimerUrl = null;
+        this.username = username;
+        this.password = password;
+        if (this.cloudTimerUrl == null || this.cloudTimerUrl.isEmpty() || this.cloudTimerUrl.equals("null")) {
+            throw new IOException("Invalid cloud timer url may not be empty or null");
+        }
+        if (!ping()) throw new IOException("Could not connect to cloud timer");
+        if (this.username.equals("") || this.password.equals("") || this.username.equals("null") || this.password.equals("null")) {
+            throw new IOException("Connection to API was established, but username or password may not be empty");
+        }
+        if (createAccount) {
+            JSONObject response = createUser();
+            if (!isSuccess(response)) {
+                throw new IOException("Could not create user: " + response.optString("message", ""));
+            }
+        }
+        if (!isSuccess(validateLoginData())) {
+            throw new IOException("Connection to API was established, but login data is incorrect");
         }
     }
 
@@ -102,21 +113,21 @@ public class CloudAccess {
         return response != null && response.optString("code", "").equals("success");
     }
 
-    public JSONObject createUser(String username, String password) throws IOException {
+    public JSONObject createUser() throws IOException {
         JSONObject post = new JSONObject();
         post.put("username", username);
         post.put("password", password);
         return makeRequestJSONObject("create_user.php", post);
     }
 
-    public JSONObject removeUser(String username, String password) throws IOException {
+    public JSONObject removeUser() throws IOException {
         JSONObject post = new JSONObject();
         post.put("username", username);
         post.put("password", password);
         return makeRequestJSONObject("remove_user.php", post);
     }
 
-    public JSONObject modifyUserName(String username, String password, String newUsername) throws IOException {
+    public JSONObject modifyUserName(String newUsername) throws IOException {
         JSONObject post = new JSONObject();
         post.put("username", username);
         post.put("password", password);
@@ -124,7 +135,7 @@ public class CloudAccess {
         return makeRequestJSONObject("modify_user_name.php", post);
     }
 
-    public JSONObject modifyUserPassword(String username, String password, String newPassword) throws IOException {
+    public JSONObject modifyUserPassword(String newPassword) throws IOException {
         JSONObject post = new JSONObject();
         post.put("username", username);
         post.put("password", password);
@@ -132,7 +143,7 @@ public class CloudAccess {
         return makeRequestJSONObject("modify_user_password.php", post);
     }
 
-    public JSONObject validateLoginData(String username, String password) throws IOException {
+    public JSONObject validateLoginData() throws IOException {
         JSONObject post = new JSONObject();
         post.put("username", username);
         post.put("password", password);
@@ -140,11 +151,11 @@ public class CloudAccess {
         return makeRequestJSONObject("validate_login_data.php", post);
     }
 
-    public JSONObject creteOrModifyTile(String username, String password, Tile tile) throws IOException {
-        return creteOrModifyTile(username, password, tile.getId(), tile.getLabel(), tile.getCategory(), tile.getTileActionsAsJSON(), tile.getKeywords());
+    public JSONObject creteOrModifyTile(Tile tile) throws IOException {
+        return creteOrModifyTile(tile.getId(), tile.getLabel(), tile.getCategory(), tile.getTileActionsAsJSON(), tile.getKeywords());
     }
 
-    public JSONObject creteOrModifyTile(String username, String password, String tile_id, String tile_label, String tile_category, JSONArray tile_action, String tile_keywords) throws IOException {
+    public JSONObject creteOrModifyTile(String tile_id, String tile_label, String tile_category, JSONArray tile_action, String tile_keywords) throws IOException {
         JSONObject post = new JSONObject();
         post.put("username", username);
         post.put("password", password);
@@ -156,14 +167,14 @@ public class CloudAccess {
         return makeRequestJSONObject("create_or_modify_tile.php", post);
     }
 
-    public JSONObject getTilesForUser(String username, String password) throws IOException {
+    public JSONObject getTilesForUser() throws IOException {
         JSONObject post = new JSONObject();
         post.put("username", username);
         post.put("password", password);
         return makeRequestJSONObject("get_tiles_for_user.php", post);
     }
 
-    public JSONObject removeTile(String username, String password, String tile_id) throws IOException {
+    public JSONObject removeTile(String tile_id) throws IOException {
         JSONObject post = new JSONObject();
         post.put("username", username);
         post.put("password", password);
@@ -171,17 +182,7 @@ public class CloudAccess {
         return makeRequestJSONObject("remove_tile.php", post);
     }
 
-    public static void main(String[] args) throws IOException {
-        CloudAccess cloudAccess = new CloudAccess("");
-        System.out.println(cloudAccess.ping());
-        System.out.println(cloudAccess.createUser("username", "Test1234"));
-        System.out.println(cloudAccess.modifyUserName("username", "Test1234", "new_username!"));
-        System.out.println(cloudAccess.modifyUserPassword("new_username!", "Test1234", "Wow1234a"));
-        System.out.println(cloudAccess.validateLoginData("new_username!", "Wow1234a"));
-        System.out.println(cloudAccess.creteOrModifyTile("new_username!", "Wow1234a", "67a1cc3a-e228-4ab0-b9c8-d9264b80b0c8", "tile_label", "", new JSONArray(), "test"));
-        System.out.println(cloudAccess.getTilesForUser("new_username!", "Wow1234a"));
-        System.out.println(cloudAccess.removeTile("new_username!", "Wow1234a", "67a1cc3a-e228-4ab0-b9c8-d9264b80b0c8"));
-        System.out.println(cloudAccess.getTilesForUser("new_username!", "Wow1234a"));
-        System.out.println(cloudAccess.removeUser("new_username!", "Wow1234a"));
+    public String getUsername() {
+        return username;
     }
 }

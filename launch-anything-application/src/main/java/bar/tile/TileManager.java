@@ -1,6 +1,7 @@
 package bar.tile;
 
 import bar.Main;
+import bar.logic.Settings;
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
 import org.json.JSONArray;
@@ -23,16 +24,21 @@ import java.util.stream.Collectors;
 
 public class TileManager {
 
+    private static final Logger LOG = LoggerFactory.getLogger(TileManager.class);
+
     private final List<Tile> tiles = new ArrayList<>();
     private final List<RuntimeTile> runtimeTiles = new ArrayList<>();
     private final List<Tile> generatedTiles = new ArrayList<>();
+    private final List<Tile> synchronizedCloudTiles = new ArrayList<>();
+    private final List<Tile> unsynchronizedCloudTiles = new ArrayList<>();
     private final List<TileGenerator> tileGenerators = new ArrayList<>();
     private final List<InputEvaluatedListener> onInputEvaluatedListeners = new ArrayList<>();
     private final List<TileCategory> categories = new ArrayList<>();
     private final List<String> disabledRuntimeTiles = new ArrayList<>();
     private File tileFile;
     private boolean isFirstLaunch = false;
-    private static final Logger LOG = LoggerFactory.getLogger(TileManager.class);
+
+    private CloudAccess cloudAccess;
 
     public TileManager() {
         findSettingsFile();
@@ -277,11 +283,19 @@ public class TileManager {
             categoriesArray.put(category.toJSON());
         }
 
+        JSONObject cloudTiles = new JSONObject();
+        cloudTiles.put("synchronizedCloudTiles", synchronizedCloudTiles.stream().map(Tile::toJSON).collect(Collectors.toList()));
+        cloudTiles.put("unsynchronizedCloudTiles", unsynchronizedCloudTiles.stream().map(Tile::toJSON).collect(Collectors.toList()));
+        if (cloudAccess != null) {
+            cloudTiles.put("username", cloudAccess.getUsername());
+        }
+
         JSONObject tilesRoot = new JSONObject();
         tilesRoot.put("tiles", tilesArray);
         tilesRoot.put("tile-generators", tileGeneratorsArray);
         tilesRoot.put("categories", categoriesArray);
         tilesRoot.put("disabled-runtime-tiles", disabledRuntimeTiles.stream().distinct().collect(Collectors.toList()));
+        tilesRoot.put("cloudTiles", cloudTiles);
 
         return tilesRoot;
     }
@@ -411,6 +425,30 @@ public class TileManager {
         for (Tile tile : tiles) {
             tile.cleanUpTileActions();
         }
+    }
+
+    public void addCloudAccess(Settings settings) throws IOException {
+        String url = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_URL);
+        String username = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_USERNAME);
+        String password = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_PASSWORD);
+
+        cloudAccess = new CloudAccess(url, username, password, false);
+    }
+
+    public void addCloudAccessCreateAccount(Settings settings) throws IOException {
+        String url = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_URL);
+        String username = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_USERNAME);
+        String password = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_PASSWORD);
+
+        cloudAccess = new CloudAccess(url, username, password, true);
+    }
+
+    public void synchronizeCloudTiles() {
+
+    }
+
+    public CloudAccess getCloudAccess() {
+        return cloudAccess;
     }
 
     public void addOnInputEvaluatedListener(InputEvaluatedListener listener) {

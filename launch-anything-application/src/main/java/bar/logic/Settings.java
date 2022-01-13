@@ -181,6 +181,14 @@ public class Settings {
         return -1;
     }
 
+    public String getStringOrNull(Setting setting) {
+        if (settings.containsKey(setting.key)) {
+            if (settings.get(setting.key) instanceof String) return (String) settings.get(setting.key);
+            else return String.valueOf(settings.get(setting.key));
+        }
+        return null;
+    }
+
     public String getString(Setting setting) {
         return getString(setting.key);
     }
