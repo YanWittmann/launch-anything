@@ -16,10 +16,13 @@ $tile_keywords = post_or_get('tile_keywords');
 
 $data_to_update = array();
 if ($tile_label != null) $data_to_update['label'] = $tile_label;
+else $data_to_update['label'] = '';
 if ($tile_category != null) $data_to_update['category'] = $tile_category;
+else $data_to_update['category'] = '';
 if ($tile_action != null) $data_to_update['action'] = $tile_action;
+else $data_to_update['action'] = '';
 if ($tile_keywords != null) $data_to_update['keywords'] = $tile_keywords;
-
+else $data_to_update['keywords'] = '';
 
 include('validate_login_data.php');
 include('get_user_id.php');
@@ -41,14 +44,10 @@ if ($result->num_rows == 0) {
 }
 
 // now update the tile data with the passed data
-$query = "UPDATE la_tiles SET ";
-$i = 0;
 foreach ($data_to_update as $key => $value) {
-    if ($i > 0) $query .= ', ';
-    $query .= "$key = '$value'";
+    $query = "UPDATE la_tiles SET $key = '$value'";
     $result = $db->query($query);
     if (!$result) die_with_message_and_error('Failed to modify tile.', $db->error);
-    $i++;
 }
 
-success_exit_with_message('Tile data modified.');
+success_exit_with_message('Tile data modified: ' . $tile_id);

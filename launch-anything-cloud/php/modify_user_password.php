@@ -8,7 +8,7 @@ $new_password = post_or_get_or_die('new_password');
 
 // check if new_username is valid
 if (!is_valid_password($new_password)) {
-    die_with_message('Invalid password, must be 8 characters long and contain at least one number, one uppercase letter, one lowercase letter and no spaces');
+    die_with_message('Invalid password, must be 8 characters long and contain at least one number, one lowercase and one uppercase letter.');
 }
 
 $new_password = hash_pwd($new_password);

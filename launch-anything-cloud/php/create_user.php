@@ -5,7 +5,7 @@ include_once('connect_database.php');
 
 $user_id = uuid();
 $username = post_or_get_or_die('username');
-$password = hash_pwd(post_or_get_or_die('password'));
+$password = post_or_get_or_die('password');
 
 // check if new_username is valid
 if (!is_valid_username($username)) {
@@ -13,8 +13,10 @@ if (!is_valid_username($username)) {
 }
 // check if password is valid
 if (!is_valid_password($password)) {
-    die_with_message('Invalid password, must be 8 characters long and contain at least one number, one uppercase letter, one lowercase letter and no spaces');
+    die_with_message('Invalid password, must be 8 characters long and contain at least one number, one lowercase and one uppercase letter.');
 }
+
+$password = hash_pwd($password);
 
 // this php file will create a new user in the database
 // start by checking if the user is already in the database

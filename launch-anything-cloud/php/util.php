@@ -81,11 +81,27 @@ function is_valid_username($username) {
 
 function is_valid_password($password) {
     // password must be at least 8 characters long
-    // and contain at least one number and one lowercase and one uppercase letter
-    // do not allow whitespace
-    return strlen($password) >= 8 &&
-        preg_match('/[a-z]/', $password) &&
-        preg_match('/[A-Z]/', $password) &&
-        preg_match('/[0-9]/', $password) &&
-        !preg_match('/\s/', $password);
+    // and contain at least one number, one lowercase and one uppercase letter
+
+    if (strlen($password) < 8) {
+        return false;
+    }
+
+    if (!preg_match("#[0-9]+#", $password)) {
+        return false;
+    }
+
+    if (!preg_match("#[a-z]+#", $password)) {
+        return false;
+    }
+
+    if (!preg_match("#[A-Z]+#", $password)) {
+        return false;
+    }
+
+    /*if (!preg_match("/['^£$%&*()}{@#~?><,|=_+!-]/", $password)) {
+        return false;
+    }*/
+
+    return true;
 }

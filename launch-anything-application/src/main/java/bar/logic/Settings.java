@@ -19,10 +19,10 @@ import java.util.StringJoiner;
 
 public class Settings {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Settings.class);
+
     private final Map<String, Object> settings = new LinkedHashMap<>();
     private File settingsFile;
-
-    private static final Logger LOG = LoggerFactory.getLogger(Settings.class);
     
     public Settings() {
         findSettingsFile();
@@ -244,7 +244,10 @@ public class Settings {
         INPUT_TEXT_PADDING("inputTextPadding", 4, "input"),
         RESULT_TEXT_PADDING("resultTextPadding", 4, "result"),
         LEFT_ARROW_KEY("leftArrowKey", 37, "key"),
-        RIGHT_ARROW_KEY("rightArrowKey", 39, "key");
+        RIGHT_ARROW_KEY("rightArrowKey", 39, "key"),
+        CLOUD_TIMER_USERNAME("cloudTimerUsername", null, "cloud"),
+        CLOUD_TIMER_PASSWORD("cloudTimerPassword", null, "cloud"),
+        CLOUD_TIMER_URL("cloudTimerUrl", null, "cloud");
 
         public final String key;
         public final Object defaultValue;

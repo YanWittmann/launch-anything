@@ -121,6 +121,14 @@ public class Tile {
         return null;
     }
 
+    public JSONArray getTileActionsAsJSON() {
+        JSONArray actions = new JSONArray();
+        for (TileAction action : tileActions) {
+            actions.put(action.toJSON());
+        }
+        return actions;
+    }
+
     public void execute(Main main) {
         LOG.info("Executing tile [{}]", label);
         lastActivated = System.currentTimeMillis();

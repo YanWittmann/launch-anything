@@ -32,4 +32,4 @@ while ($row = $result->fetch_assoc()) {
     array_push($tiles, $tile);
 }
 
-echo json_encode($tiles);
+success_exit_with_message(json_encode($tiles));
