@@ -535,9 +535,13 @@ public class Main {
                                         default:
                                             break;
                                     }
+                                    if (tileManager.isCloudTile(tile)) {
+                                        tileManager.cloudTileHasBeenEdited(tile);
+                                        tileManager.synchronizeCloudTiles();
+                                    }
                                 } else {
                                     if (whatToEdit.equals("createTile")) {
-                                        createTile();
+                                        createTile(false);
                                     }
                                 }
                             } else if (editType.equals("category")) {
@@ -683,19 +687,26 @@ public class Main {
                             switch (whatToEdit) {
                                 case "cloud-configure-server":
                                     String before = settings.getString(Settings.Setting.CLOUD_TIMER_URL);
-                                    String after = Util.popupTextInput("Cloud Configure Server", "Enter the server address:", before == null || before.equals("null") ? "" : before);
-                                    settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_URL, after);
-                                    tileManager.addCloudAccess(settings);
+                                    String after = Util.popupTextInput("Cloud Configure Server", "Enter the server address, leave empty to clear url:", before == null || before.equals("null") ? "" : before);
+                                    if (after != null && !after.equals("null")) {
+                                        settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_URL, after);
+                                        tileManager.addCloudAccess(settings);
+                                    }
                                     break;
                                 case "cloud-synchronize-tiles":
                                     break;
                                 case "cloud-login":
                                     before = settings.getString(Settings.Setting.CLOUD_TIMER_USERNAME);
-                                    after = Util.popupTextInput("Cloud Configure Server", "Enter your username:", before == null || before.equals("null") ? "" : before);
-                                    settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_USERNAME, after);
-                                    after = Util.popupTextInput("Cloud Configure Server", "Enter your password:", "");
-                                    settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_PASSWORD, after);
-                                    tileManager.addCloudAccess(settings);
+                                    String username = Util.popupTextInput("Cloud Configure Server", "Enter your username:", before == null || before.equals("null") ? "" : before);
+                                    if (username != null) {
+                                        String password = Util.popupTextInput("Cloud Configure Server", "Enter your password:", "");
+                                        if (password != null) {
+                                            settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_USERNAME, username);
+                                            settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_PASSWORD, password);
+                                            tileManager.cloudResetAll();
+                                            tileManager.addCloudAccess(settings);
+                                        }
+                                    }
                                     TrayUtil.showMessage("You have successfully logged in to the cloud server.");
                                     break;
                                 case "cloud-logout":
@@ -703,16 +714,19 @@ public class Main {
                                     if (confirmLogout.equals("Yes")) {
                                         settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_USERNAME, null);
                                         settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_PASSWORD, null);
+                                        tileManager.cloudResetAll();
+                                        tileManager.addCloudAccess(settings);
                                     }
                                     TrayUtil.showMessage("You have successfully logged out of the cloud server.");
                                     break;
                                 case "cloud-create-user":
-                                    String username = Util.popupTextInput("Cloud Configure Server", "Enter your username:", "");
+                                    username = Util.popupTextInput("Cloud Configure Server", "Enter your username:", "");
                                     String password = Util.popupTextInput("Cloud Configure Server", "Enter your password:", "");
                                     String confirmPassword = Util.popupTextInput("Cloud Configure Server", "Confirm your password:", "");
                                     if (username != null && password != null && confirmPassword != null && username.length() > 0 && password.length() > 0 && confirmPassword.length() > 0 && password.equals(confirmPassword)) {
                                         settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_USERNAME, username);
                                         settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_PASSWORD, password);
+                                        tileManager.cloudResetAll();
                                         tileManager.addCloudAccessCreateAccount(settings);
                                         TrayUtil.showMessage("You have successfully created an account on the cloud server.");
                                     }
@@ -752,6 +766,7 @@ public class Main {
                                             tileManager.getCloudAccess().removeUser();
                                             settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_USERNAME, null);
                                             settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_PASSWORD, null);
+                                            tileManager.cloudResetAll();
                                             tileManager.addCloudAccess(settings);
                                             TrayUtil.showMessage("You have successfully removed your account.");
                                         } else {
@@ -759,8 +774,17 @@ public class Main {
                                         }
                                     }
                                     break;
+                                case "add-new-cloud-tile":
+                                    if (tileManager.getCloudAccess() == null) {
+                                        TrayUtil.showError("You must login to create a new cloud tile.");
+                                    } else {
+                                        createTile(true);
+                                    }
+                                    break;
                             }
                         }
+
+                        tileManager.synchronizeCloudTiles();
                     }
 
                     out.write("HTTP/1.0 200 OK\r\n");
@@ -905,7 +929,7 @@ public class Main {
         return null;
     }
 
-    public void createTile() {
+    public void createTile(boolean isCloudTile) {
         Tile newTile = new Tile();
         TileAction newTileAction = createOrEditNewTileAction(newTile, null, null);
         if (newTileAction != null) {
@@ -913,7 +937,12 @@ public class Main {
             if (tileName != null && tileName.length() > 0 && !tileName.equals("null")) {
                 newTile.setLabel(tileName);
                 newTile.setCategory(newTileAction.getType());
-                tileManager.addTile(newTile);
+                if (isCloudTile) {
+                    tileManager.addCloudTile(newTile);
+                    tileManager.synchronizeCloudTiles();
+                } else {
+                    tileManager.addTile(newTile);
+                }
                 tileManager.save();
             }
         }

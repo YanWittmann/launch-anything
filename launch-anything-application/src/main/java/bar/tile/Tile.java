@@ -32,9 +32,20 @@ public class Tile {
                 for (int i = 0; i < actions.length(); i++) {
                     tileActions.add(new TileAction(actions.optJSONObject(i)));
                 }
+            } else {
+                String strActions = json.optString("action", null);
+                if (strActions == null) strActions = json.optString("actions", null);
+                if (strActions != null) {
+                    strActions = strActions.replace("\\", "\\\\");
+                    JSONArray arrActions = new JSONArray(strActions);
+                    for (int i = 0; i < arrActions.length(); i++) {
+                        tileActions.add(new TileAction(arrActions.optJSONObject(i)));
+                    }
+                }
             }
             lastActivated = json.optLong("lastActivated", 0);
         } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
     }
 

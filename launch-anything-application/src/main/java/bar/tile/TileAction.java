@@ -128,7 +128,7 @@ public class TileAction {
                                     main.openSettingsWebServer(true);
                                     break;
                                 case "createTile":
-                                    main.createTile();
+                                    main.createTile(false);
                                     break;
                                 case "timeout":
                                     main.timeout(Integer.parseInt(param2));

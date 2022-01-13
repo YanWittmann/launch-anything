@@ -45,7 +45,7 @@ if ($result->num_rows == 0) {
 
 // now update the tile data with the passed data
 foreach ($data_to_update as $key => $value) {
-    $query = "UPDATE la_tiles SET $key = '$value'";
+    $query = "UPDATE la_tiles SET $key = '$value' WHERE id = '$tile_id'";
     $result = $db->query($query);
     if (!$result) die_with_message_and_error('Failed to modify tile.', $db->error);
 }

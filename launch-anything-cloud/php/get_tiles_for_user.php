@@ -13,11 +13,11 @@ $query = "SELECT * FROM la_tiles WHERE user = '$user_id'";
 $result = $db->query($query);
 
 if (!$result) {
-    die_with_message_and_error('Unable to retrieve tile data.', $db->error);
+    die_with_message_and_error('Unable to retrieve tile data', $db->error);
 }
 
 if ($result->num_rows == 0) {
-    die_with_message('No tiles found.');
+    die_with_message('No tiles found');
 }
 
 // iterate through the tiles and return them as a JSON object
