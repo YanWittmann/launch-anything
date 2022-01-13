@@ -826,6 +826,10 @@ public class Main {
         }
     }
 
+    public void cloudSync() {
+        tileManager.synchronizeCloudTiles();
+    }
+
     private TileGeneratorGenerator createOrEditTileGeneratorGenerator(TileGenerator generator, String id) {
         TileGeneratorGenerator tileGeneratorGenerator;
         if (id == null) {

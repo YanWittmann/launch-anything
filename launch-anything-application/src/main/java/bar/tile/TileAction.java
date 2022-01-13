@@ -144,6 +144,9 @@ public class TileAction {
                                         LOG.error("Unable to restart application: {}" + e.getMessage());
                                     }
                                     break;
+                                case "cloud-sync":
+                                    main.cloudSync();
+                                    break;
                                 case "exit":
                                     System.exit(0);
                             }

@@ -331,6 +331,15 @@ public class TileManager {
         return tilesRoot;
     }
 
+    private final static Tile SETTINGS_TILE_CLOUD_SYNC = new Tile();
+
+    static {
+        SETTINGS_TILE_CLOUD_SYNC.addAction(new TileAction("settings", "cloud-sync"));
+        SETTINGS_TILE_CLOUD_SYNC.setExportable(false);
+        SETTINGS_TILE_CLOUD_SYNC.setLabel("Synchronize Cloud Tiles");
+        SETTINGS_TILE_CLOUD_SYNC.setCategory("settings");
+    }
+
     private void createSettingsTiles() {
         addSettingsTile("LaunchAnything Settings", "tile option editor help", "webeditor");
         addSettingsTile("Create Tile", "add new", "createTile");
@@ -464,7 +473,9 @@ public class TileManager {
         String username = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_USERNAME);
         String password = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_PASSWORD);
 
+        tiles.remove(SETTINGS_TILE_CLOUD_SYNC);
         cloudAccess = new CloudAccess(url, username, password, false);
+        tiles.add(SETTINGS_TILE_CLOUD_SYNC);
     }
 
     public void addCloudAccessCreateAccount(Settings settings) throws IOException {
@@ -472,7 +483,9 @@ public class TileManager {
         String username = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_USERNAME);
         String password = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_PASSWORD);
 
+        tiles.remove(SETTINGS_TILE_CLOUD_SYNC);
         cloudAccess = new CloudAccess(url, username, password, true);
+        tiles.add(SETTINGS_TILE_CLOUD_SYNC);
     }
 
     public void synchronizeCloudTiles() {
@@ -515,13 +528,13 @@ public class TileManager {
             JSONObject tilesForUser = cloudAccess.getTilesForUser();
             if (CloudAccess.isSuccess(tilesForUser)) {
                 JSONArray tiles = new JSONArray(tilesForUser.optString("message", ""));
+                unsynchronizedCloudTiles.clear();
+                synchronizedCloudTiles.clear();
                 for (int i = 0; i < tiles.length(); i++) {
                     JSONObject tileJson = tiles.getJSONObject(i);
                     if (tileJson != null) {
                         Tile tile = new Tile(tileJson);
                         if (tile.getId() != null) {
-                            unsynchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
-                            synchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
                             synchronizedCloudTiles.add(tile);
                         }
                     }
