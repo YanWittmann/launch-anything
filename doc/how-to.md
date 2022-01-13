@@ -123,6 +123,15 @@ be used as a search term. There are a few default categories:
 But of course you can add as many categories as you like.
 </details>
 
+<details>
+  <summary>Cloud Tiles</summary>
+
+Here, you can configure an API URL and log into your account to have your cloud tiles automatically synchronized between
+all your devices.
+
+See **[cloud-tiles.md](cloud-tiles.md)** for more information.
+</details>
+
 ### Section: Settings & Help
 
 Here you can find some general help and most importantly: the settings for the bar. Here you can customize almost every

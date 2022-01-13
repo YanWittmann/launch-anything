@@ -21,6 +21,7 @@ detector is based on the Windows API.
     - Use the `I'm feeling lucky` functionality to open any webpage
     - Directly go to a wikipedia article
 - Disable (timeout) the bar for a given amount of time
+- Cloud Tiles: Store your tiles in the cloud to access them from any device
 
 ## Quick Setup
 
@@ -58,7 +59,7 @@ git clone https://github.com/Skyball2000/launch-anything.git
 cd launch-anything
 mvn clean install
 cd launch-anything-application/target
-java -jar launch-anything-application-2.5-SNAPSHOT-jar-with-dependencies.jar
+java -jar launch-anything-application-2.6-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ## Have fun using the LaunchAnything bar!

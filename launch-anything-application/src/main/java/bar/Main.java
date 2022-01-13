@@ -733,7 +733,7 @@ public class Main {
                                     break;
                                 case "cloud-modify-username":
                                     if (tileManager.getCloudAccess() == null) {
-                                        TrayUtil.showError("You must login to modify your username.");
+                                        TrayUtil.showError("You must be logged in to modify your username.");
                                     } else {
                                         String newUsername = Util.popupTextInput("Cloud Configure Server", "Enter your new username:", "");
                                         if (newUsername != null && newUsername.length() > 0) {
@@ -746,7 +746,7 @@ public class Main {
                                     break;
                                 case "cloud-modify-password":
                                     if (tileManager.getCloudAccess() == null) {
-                                        TrayUtil.showError("You must login to modify your password.");
+                                        TrayUtil.showError("You must be logged in to modify your password.");
                                     } else {
                                         String newPassword = Util.popupTextInput("Cloud Configure Server", "Enter your new password:", "");
                                         if (newPassword != null && newPassword.length() > 0) {
@@ -759,7 +759,7 @@ public class Main {
                                     break;
                                 case "cloud-remove-user":
                                     if (tileManager.getCloudAccess() == null) {
-                                        TrayUtil.showError("You must login to delete your account.");
+                                        TrayUtil.showError("You must be logged in to delete your account.");
                                     } else {
                                         String confirmRemove = Util.popupChooseButton("Cloud Configure Server", "Are you sure you want to remove your account?\nThis is a destructive action. All your cloud tiles will be deleted.", new String[]{"Yes", "No"});
                                         if (confirmRemove.equals("Yes")) {
@@ -776,7 +776,7 @@ public class Main {
                                     break;
                                 case "add-new-cloud-tile":
                                     if (tileManager.getCloudAccess() == null) {
-                                        TrayUtil.showError("You must login to create a new cloud tile.");
+                                        TrayUtil.showError("You must be logged in to create a new cloud tile.");
                                     } else {
                                         createTile(true);
                                     }
