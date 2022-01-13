@@ -1,9 +1,11 @@
 package bar.tile;
 
 import bar.Main;
+import bar.logic.Settings;
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,16 +25,22 @@ import java.util.stream.Collectors;
 
 public class TileManager {
 
+    private static final Logger LOG = LoggerFactory.getLogger(TileManager.class);
+
     private final List<Tile> tiles = new ArrayList<>();
     private final List<RuntimeTile> runtimeTiles = new ArrayList<>();
     private final List<Tile> generatedTiles = new ArrayList<>();
+    private final List<Tile> synchronizedCloudTiles = new ArrayList<>();
+    private final List<Tile> unsynchronizedCloudTiles = new ArrayList<>();
+    private final List<Tile> deletedCloudTiles = new ArrayList<>();
     private final List<TileGenerator> tileGenerators = new ArrayList<>();
     private final List<InputEvaluatedListener> onInputEvaluatedListeners = new ArrayList<>();
     private final List<TileCategory> categories = new ArrayList<>();
     private final List<String> disabledRuntimeTiles = new ArrayList<>();
     private File tileFile;
     private boolean isFirstLaunch = false;
-    private static final Logger LOG = LoggerFactory.getLogger(TileManager.class);
+
+    private CloudAccess cloudAccess;
 
     public TileManager() {
         findSettingsFile();
@@ -78,15 +86,12 @@ public class TileManager {
     private Future<?> evaluate(String input) {
         lastInputEvaluated.set(System.currentTimeMillis());
         return executor.submit(() -> {
-            List<Tile> matchingTiles = tiles.stream()
-                    .filter(tile -> tile.matchesSearch(input))
-                    .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
-                    .collect(Collectors.toList());
+            List<Tile> matchingTiles = new ArrayList<>();
 
-            generatedTiles.stream()
-                    .filter(tile -> tile.matchesSearch(input))
-                    .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
-                    .forEach(matchingTiles::add);
+            searchTiles(tiles, matchingTiles, input);
+            searchTiles(unsynchronizedCloudTiles, matchingTiles, input);
+            searchTiles(synchronizedCloudTiles, matchingTiles, input);
+            searchTiles(generatedTiles, matchingTiles, input);
 
             runtimeTiles.stream()
                     .map(runtimeTile -> runtimeTile.generateTiles(input, lastInputEvaluated))
@@ -95,6 +100,13 @@ public class TileManager {
             setEvaluationResults(matchingTiles);
             return null;
         });
+    }
+
+    private void searchTiles(List<Tile> tiles, List<Tile> matchingTiles, String input) {
+        tiles.stream()
+                .filter(tile -> tile.matchesSearch(input))
+                .sorted(Comparator.comparing(Tile::getLastActivated).reversed())
+                .forEach(matchingTiles::add);
     }
 
     private final static String[] possibleTilesFiles = {
@@ -139,13 +151,16 @@ public class TileManager {
         categories.clear();
 
         JSONArray tilesArray = tilesRoot.optJSONArray("tiles");
-        if (tilesArray != null) {
-            for (int i = 0; i < tilesArray.length(); i++) {
-                JSONObject tileJson = tilesArray.optJSONObject(i);
-                if (tileJson == null) continue;
-                Tile tile = new Tile(tileJson);
-                if (tile.isValid()) tiles.add(tile);
-            }
+        createTilesFromJsonArray(tilesArray, tiles);
+
+        JSONObject cloudTiles = tilesRoot.optJSONObject("cloudTiles");
+        if (cloudTiles != null) {
+            JSONArray synchronizedTilesArray = cloudTiles.optJSONArray("synchronizedTiles");
+            createTilesFromJsonArray(synchronizedTilesArray, synchronizedCloudTiles);
+            JSONArray unsynchronizedTilesArray = cloudTiles.optJSONArray("unsynchronizedTiles");
+            createTilesFromJsonArray(unsynchronizedTilesArray, unsynchronizedCloudTiles);
+            JSONArray deletedCloudTilesArray = cloudTiles.optJSONArray("deletedCloudTiles");
+            createTilesFromJsonArray(deletedCloudTilesArray, deletedCloudTiles);
         }
 
         JSONArray tileGeneratorsArray = tilesRoot.optJSONArray("tile-generators");
@@ -182,6 +197,17 @@ public class TileManager {
         createSettingsTiles();
 
         LOG.info("Loaded [{}] tile(s), [{}] tile generator(s) and [{}] category/ies.", tiles.size(), tileGenerators.size(), categories.size());
+    }
+
+    private void createTilesFromJsonArray(JSONArray tilesArray, List<Tile> tiles) {
+        if (tilesArray != null) {
+            for (int i = 0; i < tilesArray.length(); i++) {
+                JSONObject tileJson = tilesArray.optJSONObject(i);
+                if (tileJson == null) continue;
+                Tile tile = new Tile(tileJson);
+                if (tile.isValid()) tiles.add(tile);
+            }
+        }
     }
 
     public void regenerateGeneratedTiles() {
@@ -240,10 +266,19 @@ public class TileManager {
     }
 
     public Tile findTile(String tileId) {
-        return tiles.stream().filter(tile -> tile.getId().equals(tileId)).findFirst().orElse(null);
+        Tile localTile = tiles.stream().filter(tile -> tile.getId().equals(tileId)).findFirst().orElse(null);
+        if (localTile != null) return localTile;
+        Tile synchronizedCloudTile = synchronizedCloudTiles.stream().filter(tile -> tile.getId().equals(tileId)).findFirst().orElse(null);
+        if (synchronizedCloudTile != null) return synchronizedCloudTile;
+        return unsynchronizedCloudTiles.stream().filter(tile -> tile.getId().equals(tileId)).findFirst().orElse(null);
     }
 
     public void removeTile(Tile tile) {
+        if (synchronizedCloudTiles.contains(tile) || unsynchronizedCloudTiles.contains(tile)) {
+            synchronizedCloudTiles.remove(tile);
+            unsynchronizedCloudTiles.remove(tile);
+            deletedCloudTiles.add(tile);
+        }
         tiles.remove(tile);
     }
 
@@ -254,6 +289,7 @@ public class TileManager {
 
             myWriter.write(toJSON().toString());
             myWriter.close();
+            LOG.info("Saved tiles");
         } catch (IOException e) {
             TrayUtil.showError("Unable to save tiles: " + e.getMessage());
             LOG.error("error ", e);
@@ -277,13 +313,31 @@ public class TileManager {
             categoriesArray.put(category.toJSON());
         }
 
+        JSONObject cloudTiles = new JSONObject();
+        cloudTiles.put("synchronizedCloudTiles", synchronizedCloudTiles.stream().map(Tile::toJSON).collect(Collectors.toList()));
+        cloudTiles.put("unsynchronizedCloudTiles", unsynchronizedCloudTiles.stream().map(Tile::toJSON).collect(Collectors.toList()));
+        cloudTiles.put("deletedCloudTiles", deletedCloudTiles.stream().map(Tile::toJSON).collect(Collectors.toList()));
+        if (cloudAccess != null) {
+            cloudTiles.put("username", cloudAccess.getUsername());
+        }
+
         JSONObject tilesRoot = new JSONObject();
         tilesRoot.put("tiles", tilesArray);
         tilesRoot.put("tile-generators", tileGeneratorsArray);
         tilesRoot.put("categories", categoriesArray);
         tilesRoot.put("disabled-runtime-tiles", disabledRuntimeTiles.stream().distinct().collect(Collectors.toList()));
+        tilesRoot.put("cloudTiles", cloudTiles);
 
         return tilesRoot;
+    }
+
+    private final static Tile SETTINGS_TILE_CLOUD_SYNC = new Tile();
+
+    static {
+        SETTINGS_TILE_CLOUD_SYNC.addAction(new TileAction("settings", "cloud-sync"));
+        SETTINGS_TILE_CLOUD_SYNC.setExportable(false);
+        SETTINGS_TILE_CLOUD_SYNC.setLabel("Synchronize Cloud Tiles");
+        SETTINGS_TILE_CLOUD_SYNC.setCategory("settings");
     }
 
     private void createSettingsTiles() {
@@ -408,9 +462,124 @@ public class TileManager {
     }
 
     public void cleanUpTileActions() {
-        for (Tile tile : tiles) {
-            tile.cleanUpTileActions();
+        for (Tile tile : tiles) tile.cleanUpTileActions();
+        for (Tile tile : synchronizedCloudTiles) tile.cleanUpTileActions();
+        for (Tile tile : unsynchronizedCloudTiles) tile.cleanUpTileActions();
+        for (Tile tile : deletedCloudTiles) tile.cleanUpTileActions();
+    }
+
+    public void addCloudAccess(Settings settings) throws IOException {
+        String url = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_URL);
+        String username = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_USERNAME);
+        String password = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_PASSWORD);
+
+        tiles.remove(SETTINGS_TILE_CLOUD_SYNC);
+        cloudAccess = new CloudAccess(url, username, password, false);
+        tiles.add(SETTINGS_TILE_CLOUD_SYNC);
+    }
+
+    public void addCloudAccessCreateAccount(Settings settings) throws IOException {
+        String url = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_URL);
+        String username = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_USERNAME);
+        String password = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_PASSWORD);
+
+        tiles.remove(SETTINGS_TILE_CLOUD_SYNC);
+        cloudAccess = new CloudAccess(url, username, password, true);
+        tiles.add(SETTINGS_TILE_CLOUD_SYNC);
+    }
+
+    public void synchronizeCloudTiles() {
+        if (cloudAccess == null) return;
+        try {
+            // upload the unsynchronized tiles into the cloud
+            for (int i = unsynchronizedCloudTiles.size() - 1; i >= 0; i--) {
+                Tile tile = unsynchronizedCloudTiles.get(i);
+                JSONObject response = cloudAccess.creteOrModifyTile(tile);
+                if (CloudAccess.isSuccess(response)) {
+                    unsynchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
+                    synchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
+                    synchronizedCloudTiles.add(tile);
+                    LOG.info("Successfully uploaded tile [{}] to cloud", tile.getId());
+                } else {
+                    LOG.warn("Failed to upload tile [{}] to cloud: [{}]", tile.getId(), response.optString("message", ""));
+                }
+            }
+
+            // delete the tiles from the cloud that have been deleted locally
+            for (int i = deletedCloudTiles.size() - 1; i >= 0; i--) {
+                Tile tile = deletedCloudTiles.get(i);
+                JSONObject response = cloudAccess.removeTile(tile.getId());
+                if (CloudAccess.isSuccess(response)) {
+                    deletedCloudTiles.remove(tile);
+                    unsynchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
+                    synchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
+                    LOG.info("Successfully deleted tile [{}] from cloud", tile.getId());
+                } else {
+                    LOG.warn("Failed to delete tile [{}] from cloud: [{}]", tile.getId(), response.optString("message", ""));
+                    if (response.optString("message", "").contains("You are not the owner of this tile")) {
+                        deletedCloudTiles.remove(tile);
+                        unsynchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
+                        synchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
+                    }
+                }
+            }
+
+            // get all tiles from the cloud
+            JSONObject tilesForUser = cloudAccess.getTilesForUser();
+            if (CloudAccess.isSuccess(tilesForUser)) {
+                JSONArray tiles = new JSONArray(tilesForUser.optString("message", ""));
+                unsynchronizedCloudTiles.clear();
+                synchronizedCloudTiles.clear();
+                for (int i = 0; i < tiles.length(); i++) {
+                    JSONObject tileJson = tiles.getJSONObject(i);
+                    if (tileJson != null) {
+                        Tile tile = new Tile(tileJson);
+                        if (tile.getId() != null) {
+                            synchronizedCloudTiles.add(tile);
+                        }
+                    }
+                }
+                LOG.info("Received [{}] tiles from cloud", tiles.length());
+            } else {
+                unsynchronizedCloudTiles.clear();
+                synchronizedCloudTiles.clear();
+                LOG.warn("Received error from cloud: [{}]", tilesForUser.optString("message", ""));
+            }
+
+        } catch (IOException e) {
+            TrayUtil.showError("Could not connect to the cloud server to synchronize tiles");
+        } catch (JSONException e) {
+            TrayUtil.showError("Unable to parse the response from the cloud server");
         }
+        save();
+    }
+
+    public void cloudResetAll() {
+        unsynchronizedCloudTiles.clear();
+        synchronizedCloudTiles.clear();
+        deletedCloudTiles.clear();
+        save();
+    }
+
+    public boolean isCloudTile(Tile tile) {
+        boolean s = synchronizedCloudTiles.stream().anyMatch(t -> t.getId().equals(tile.getId()));
+        boolean u = unsynchronizedCloudTiles.stream().anyMatch(t -> t.getId().equals(tile.getId()));
+        return s || u;
+    }
+
+    public void cloudTileHasBeenEdited(Tile tile) {
+        unsynchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
+        synchronizedCloudTiles.removeIf(t -> t.getId().equals(tile.getId()));
+        unsynchronizedCloudTiles.add(tile);
+        LOG.info("Tile [{}] has been edited locally, but not yet synchronized to the cloud", tile.getId());
+    }
+
+    public void addCloudTile(Tile tile) {
+        unsynchronizedCloudTiles.add(tile);
+    }
+
+    public CloudAccess getCloudAccess() {
+        return cloudAccess;
     }
 
     public void addOnInputEvaluatedListener(InputEvaluatedListener listener) {

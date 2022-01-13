@@ -32,9 +32,20 @@ public class Tile {
                 for (int i = 0; i < actions.length(); i++) {
                     tileActions.add(new TileAction(actions.optJSONObject(i)));
                 }
+            } else {
+                String strActions = json.optString("action", null);
+                if (strActions == null) strActions = json.optString("actions", null);
+                if (strActions != null) {
+                    strActions = strActions.replace("\\", "\\\\");
+                    JSONArray arrActions = new JSONArray(strActions);
+                    for (int i = 0; i < arrActions.length(); i++) {
+                        tileActions.add(new TileAction(arrActions.optJSONObject(i)));
+                    }
+                }
             }
             lastActivated = json.optLong("lastActivated", 0);
         } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
     }
 
@@ -119,6 +130,14 @@ public class Tile {
             return tileActions.get(0);
         }
         return null;
+    }
+
+    public JSONArray getTileActionsAsJSON() {
+        JSONArray actions = new JSONArray();
+        for (TileAction action : tileActions) {
+            actions.put(action.toJSON());
+        }
+        return actions;
     }
 
     public void execute(Main main) {

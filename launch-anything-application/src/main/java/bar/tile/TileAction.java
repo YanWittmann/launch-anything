@@ -128,7 +128,7 @@ public class TileAction {
                                     main.openSettingsWebServer(true);
                                     break;
                                 case "createTile":
-                                    main.createTile();
+                                    main.createTile(false);
                                     break;
                                 case "timeout":
                                     main.timeout(Integer.parseInt(param2));
@@ -143,6 +143,9 @@ public class TileAction {
                                         TrayUtil.showError("Tile action failure: unable to restart application: " + e.getMessage());
                                         LOG.error("Unable to restart application: {}" + e.getMessage());
                                     }
+                                    break;
+                                case "cloud-sync":
+                                    main.cloudSync();
                                     break;
                                 case "exit":
                                     System.exit(0);

@@ -230,15 +230,17 @@
 
 <div class="main-content-container glass-bar main-text-color hide-scrollbar">
     <h1>LaunchAnything Settings</h1>
-    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable selected"
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable selected" id="section-tiles"
           onclick="switchSection('tiles', this);">Tiles</span>
-    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable" id="section-generators"
           onclick="switchSection('generators', this);">Generators</span>
-    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable" id="section-runtime"
           onclick="switchSection('runtime', this);">Runtime Tiles</span>
-    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable" id="section-categories"
           onclick="switchSection('categories', this);">Categories</span>
-    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable"
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable" id="section-cloudtiles"
+          onclick="switchSection('cloudtiles', this);">Cloud Tiles</span>
+    <span class="section-selection glass-bar-small fit-content hide-scrollbar clickable" id="section-settings"
           onclick="switchSection('settings', this);">Settings & Help</span>
 
     <section id="tiles">
@@ -290,6 +292,32 @@
             </tr>
             </thead>
             <tbody id="categories-table"></tbody>
+        </table>
+    </section>
+
+    <section id="cloudtiles" class="hidden">
+        <br>
+        <span id="cloud-synchronize-tiles" class="clickable badge bg-green">Synchronize cloud tiles</span>
+        <span id="cloud-configure-server" class="clickable badge bg-green">Configure API URL</span>
+        <span id="cloud-login" class="clickable badge bg-green">Log in</span>
+        <span id="cloud-logout" class="clickable badge bg-green">Log out</span>
+        <span id="cloud-create-user" class="clickable badge bg-green">Create User</span>
+        <span id="cloud-modify-username" class="clickable badge bg-green">Change Username</span>
+        <span id="cloud-modify-password" class="clickable badge bg-green">Change Password</span>
+        <span id="cloud-remove-user" class="clickable badge bg-red">Delete User</span>
+        <br><br>
+        <span id="cloud-logged-in-as"></span>
+        <span id="add-new-cloud-tile" class="clickable badge bg-green">Create Cloud Tile</span><br><br>
+        <table class="editor-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Keywords</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="cloud-tile-table"></tbody>
         </table>
     </section>
 
@@ -367,8 +395,38 @@
             metaInteraction('redo');
         }
     });
+    document.getElementById('cloud-configure-server').onclick = function () {
+        cloudTileIntent('cloud-configure-server');
+    };
+    document.getElementById('cloud-synchronize-tiles').onclick = function () {
+        cloudTileIntent('cloud-synchronize-tiles');
+    };
+    document.getElementById('cloud-login').onclick = function () {
+        cloudTileIntent('cloud-login');
+    };
+    document.getElementById('cloud-logout').onclick = function () {
+        cloudTileIntent('cloud-logout');
+    };
+    document.getElementById('cloud-create-user').onclick = function () {
+        cloudTileIntent('cloud-create-user');
+    };
+    document.getElementById('cloud-modify-username').onclick = function () {
+        cloudTileIntent('cloud-modify-username');
+    };
+    document.getElementById('cloud-modify-password').onclick = function () {
+        cloudTileIntent('cloud-modify-password');
+    };
+    document.getElementById('cloud-remove-user').onclick = function () {
+        cloudTileIntent('cloud-remove-user');
+    };
+    document.getElementById('add-new-cloud-tile').onclick = function () {
+        cloudTileIntent('add-new-cloud-tile');
+    };
+
+    let currentSection = 'tiles';
 
     function switchSection(section, menuItem) {
+        currentSection = section;
         const sections = document.querySelectorAll('section');
         for (let i = 0; i < sections.length; i++) {
             sections[i].classList.add('hidden');
@@ -486,6 +544,24 @@
             };
             settingsSelection.appendChild(document.createElement('br'));
             settingsSelection.appendChild(badge);
+
+            let cloudUsername = parsedResponse.tiles.cloudTiles.username;
+            let cloudLoggedInAs = document.getElementById('cloud-logged-in-as');
+            if (cloudUsername === null || cloudUsername === undefined) {
+                cloudLoggedInAs.innerText = 'Not logged in. Use the buttons above to login or create an account.';
+            } else {
+                cloudLoggedInAs.innerText = 'Welcome back, ' + cloudUsername + '!';
+                let synchronizedCloudTiles = parsedResponse.tiles.cloudTiles.synchronizedCloudTiles;
+                let unsynchronizedCloudTiles = parsedResponse.tiles.cloudTiles.unsynchronizedCloudTiles;
+                let table = document.getElementById('cloud-tile-table');
+                table.innerHTML = '';
+                for (let i = 0; i < unsynchronizedCloudTiles.length; i++) {
+                    table.appendChild(createTileEntryForTable(unsynchronizedCloudTiles[i]));
+                }
+                for (let i = 0; i < synchronizedCloudTiles.length; i++) {
+                    table.appendChild(createTileEntryForTable(synchronizedCloudTiles[i]));
+                }
+            }
         });
     }
 
@@ -820,6 +896,19 @@
         checkFirstLoad();
     }
 
+    function cloudTileIntent(whatToEdit) {
+        let params = {
+            'action': 'cloudTileInteraction',
+            'whatToEdit': whatToEdit,
+        };
+
+        httpPost(requestUrl, params, function (response) {
+            refreshTiles();
+        });
+
+        checkFirstLoad();
+    }
+
     function htmlToElement(html) {
         let template = document.createElement('template');
         html = html.trim();
@@ -842,6 +931,27 @@
             };
         }
     }
+
+    function tabPressed(event) {
+        if (event.keyCode === 9) {
+            event.preventDefault();
+            if (currentSection === 'tiles') {
+                switchSection('generators', document.getElementById('section-generators'));
+            } else if (currentSection === 'generators') {
+                switchSection('runtime', document.getElementById('section-runtime'));
+            } else if (currentSection === 'runtime') {
+                switchSection('categories', document.getElementById('section-categories'));
+            } else if (currentSection === 'categories') {
+                switchSection('cloudtiles', document.getElementById('section-cloudtiles'));
+            } else if (currentSection === 'cloudtiles') {
+                switchSection('settings', document.getElementById('section-settings'));
+            } else if (currentSection === 'settings') {
+                switchSection('tiles', document.getElementById('section-tiles'));
+            }
+        }
+    }
+
+    document.addEventListener('keydown', tabPressed);
 
     refreshTiles();
 </script>
