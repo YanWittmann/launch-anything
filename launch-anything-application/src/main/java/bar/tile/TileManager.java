@@ -541,6 +541,8 @@ public class TileManager {
                 }
                 LOG.info("Received [{}] tiles from cloud", tiles.length());
             } else {
+                unsynchronizedCloudTiles.clear();
+                synchronizedCloudTiles.clear();
                 LOG.warn("Received error from cloud: [{}]", tilesForUser.optString("message", ""));
             }
 
