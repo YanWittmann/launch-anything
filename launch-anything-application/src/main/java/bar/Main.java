@@ -953,6 +953,7 @@ public class Main {
             if (param1 != null) {
                 newTileAction = new TileAction(actionType, param1, param2);
                 tile.addAction(newTileAction);
+                tile.removeAction(tileAction);
                 return newTileAction;
             }
         }
