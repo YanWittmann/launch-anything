@@ -269,7 +269,9 @@ public class Tile {
     }
 
     private String normalizeTileActionValue(String s) {
-        return s.replaceAll("\\+", "\\").replace("\\", "/").replaceAll(" +", " ").toLowerCase();
+        return s.replace("\\", "/")
+                .replaceAll(" +", " ")
+                .toLowerCase();
     }
 
     public JSONObject toJSON() {

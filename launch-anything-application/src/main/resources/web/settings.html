@@ -304,6 +304,7 @@
         <span id="cloud-create-user" class="clickable badge bg-green">Create User</span>
         <span id="cloud-modify-username" class="clickable badge bg-green">Change Username</span>
         <span id="cloud-modify-password" class="clickable badge bg-green">Change Password</span>
+        <span id="cloud-check-local-duplicates" class="clickable badge bg-red">Check local duplicates</span>
         <span id="cloud-remove-user" class="clickable badge bg-red">Delete User</span>
         <br><br>
         <span id="cloud-logged-in-as"></span>
@@ -418,6 +419,9 @@
     };
     document.getElementById('cloud-remove-user').onclick = function () {
         cloudTileIntent('cloud-remove-user');
+    };
+    document.getElementById('cloud-check-local-duplicates').onclick = function () {
+        cloudTileIntent('cloud-check-local-duplicates');
     };
     document.getElementById('add-new-cloud-tile').onclick = function () {
         cloudTileIntent('add-new-cloud-tile');

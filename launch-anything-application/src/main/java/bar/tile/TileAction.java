@@ -106,7 +106,7 @@ public class TileAction {
                         if (param1 != null) {
                             try {
                                 Desktop desktop = Desktop.getDesktop();
-                                desktop.browse(new URI(param1));
+                                desktop.browse(new URI(param1.replace(" ", "%20")));
                             } catch (IOException | URISyntaxException e) {
                                 TrayUtil.showError("Tile action failure: unable to open url: " + e.getMessage());
                                 LOG.error("error ", e);
@@ -246,11 +246,19 @@ public class TileAction {
         if (hasParam1 != thatHasParam1) return false;
         if (hasParam2 != thatHasParam2) return false;
 
-        if (hasType && !getType().equals(that.getType())) return false;
-        if (hasParam1 && !getParam1().equals(that.getParam1())) return false;
-        if (hasParam2 && !getParam2().equals(that.getParam2())) return false;
+        if (hasType && !fuzzyCompare(getType(), that.getType())) return false;
+        if (hasParam1 && !fuzzyCompare(getParam1(), that.getParam1())) return false;
+        if (hasParam2 && !fuzzyCompare(getParam2(), that.getParam2())) return false;
 
         return true;
+    }
+
+    private boolean fuzzyCompare(String s1, String s2) {
+        if (s1 == null && s2 == null) return true;
+        if (s1 == null || s2 == null) return false;
+        if (s1.equalsIgnoreCase(s2)) return true;
+        if (s1.replaceAll("[^a-zA-Z0-9]", "").equalsIgnoreCase(s2.replaceAll("[^a-zA-Z0-9]", ""))) return true;
+        return false;
     }
 
     @Override

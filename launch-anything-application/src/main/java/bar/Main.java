@@ -808,6 +808,9 @@ public class Main {
                                         createTile(true);
                                     }
                                     break;
+                                case "cloud-check-local-duplicates":
+                                    tileManager.checkLocalDuplicates();
+                                    break;
                             }
                         }
 
@@ -972,13 +975,7 @@ public class Main {
                 if (isCloudTile) {
                     tileManager.addCloudTile(newTile);
                     tileManager.synchronizeCloudTiles();
-                    Tile localTileByAction = tileManager.findLocalTileByAction(newTileAction);
-                    if (localTileByAction != null) {
-                        String selection = Util.popupChooseButton("Cloud Tile", "A local tile with this action already exists.\nDo you want to delete the local tile?", new String[]{"Yes", "No"});
-                        if (selection != null && selection.equals("Yes")) {
-                            tileManager.removeTile(localTileByAction);
-                        }
-                    }
+                    tileManager.checkLocalDuplicate(newTile);
                 } else {
                     tileManager.addTile(newTile);
                 }

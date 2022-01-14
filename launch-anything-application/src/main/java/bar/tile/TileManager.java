@@ -15,8 +15,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -576,6 +576,24 @@ public class TileManager {
             TrayUtil.showError("Unable to parse the response from the cloud server");
         }
         save();
+    }
+
+    public void checkLocalDuplicates() {
+        for (Tile tile : synchronizedCloudTiles) checkLocalDuplicate(tile);
+        for (Tile tile : unsynchronizedCloudTiles) checkLocalDuplicate(tile);
+    }
+
+    public void checkLocalDuplicate(Tile checkTile) {
+        Tile localTile = findLocalTileByAction(checkTile.getFirstAction());
+        if (localTile != null) {
+            String selection = Util.popupChooseButton("Cloud Tile",
+                    "A local tile [" + localTile.getLabel() + "] already exists.\n" +
+                    "Do you want to delete the local tile and only keep the cloud tile [" + checkTile.getLabel() + "]?",
+                    new String[]{"Yes", "No"});
+            if (selection != null && selection.equals("Yes")) {
+                removeTile(localTile);
+            }
+        }
     }
 
     public void cloudResetAll() {
