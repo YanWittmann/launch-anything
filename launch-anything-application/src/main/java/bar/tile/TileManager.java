@@ -4,6 +4,7 @@ import bar.Main;
 import bar.logic.Settings;
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
+import bar.util.Util;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -333,10 +334,28 @@ public class TileManager {
 
     private final static Tile SETTINGS_TILE_CLOUD_SYNC;
     private final static Tile SETTINGS_TILE_CLOUD_CREATE_TILE;
+    private final static Tile SETTINGS_TILE_CHECK_FOR_UPDATE;
 
     static {
         SETTINGS_TILE_CLOUD_SYNC = createSettingsTile("Synchronize Cloud Tiles", "", "cloud-sync");
         SETTINGS_TILE_CLOUD_CREATE_TILE = createSettingsTile("Create Cloud Tile", "", "cloud-create-tile");
+        SETTINGS_TILE_CHECK_FOR_UPDATE = createSettingsTile("Check for Update", "", "check-for-update");
+    }
+
+    private void setSettingsCloudTilesActive(boolean active) {
+        if (active) {
+            tiles.add(SETTINGS_TILE_CLOUD_SYNC);
+            tiles.add(SETTINGS_TILE_CLOUD_CREATE_TILE);
+        } else {
+            tiles.remove(SETTINGS_TILE_CLOUD_SYNC);
+            tiles.remove(SETTINGS_TILE_CLOUD_CREATE_TILE);
+        }
+    }
+
+    public void setSettingsTileCheckForUpdateActive(boolean active) {
+        // if the application is not launched from a jar file, then the update cannot take place anyway
+        if (active && Util.isApplicationStartedFromJar()) tiles.add(SETTINGS_TILE_CHECK_FOR_UPDATE);
+        else tiles.remove(SETTINGS_TILE_CHECK_FOR_UPDATE);
     }
 
     private void createSettingsTiles() {
@@ -350,9 +369,6 @@ public class TileManager {
         selfDir.setKeywords("");
         selfDir.addAction(new TileAction("file", System.getProperty("user.dir")));
         tiles.add(selfDir);
-
-        if (Main.isVersionSnapshot())
-            tiles.add(createSettingsTile("Check for update", "elevate", "update"));
 
         tiles.add(createSettingsTile("Restart LaunchAnything", "relaunch", "restartBar"));
         tiles.add(createSettingsTile("Exit LaunchAnything", "leave quit stop", "exit"));
@@ -485,16 +501,6 @@ public class TileManager {
         setSettingsCloudTilesActive(false);
         cloudAccess = new CloudAccess(url, username, password, true);
         setSettingsCloudTilesActive(true);
-    }
-
-    private void setSettingsCloudTilesActive(boolean active) {
-        if (active) {
-            tiles.add(SETTINGS_TILE_CLOUD_SYNC);
-            tiles.add(SETTINGS_TILE_CLOUD_CREATE_TILE);
-        } else {
-            tiles.remove(SETTINGS_TILE_CLOUD_SYNC);
-            tiles.remove(SETTINGS_TILE_CLOUD_CREATE_TILE);
-        }
     }
 
     public void synchronizeCloudTiles() {

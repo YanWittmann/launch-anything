@@ -133,9 +133,6 @@ public class TileAction {
                                 case "timeout":
                                     main.timeout(Integer.parseInt(param2));
                                     break;
-                                case "update":
-                                    main.checkForNewVersion();
-                                    break;
                                 case "restartBar":
                                     try {
                                         main.restartBar();
@@ -149,6 +146,9 @@ public class TileAction {
                                     break;
                                 case "cloud-create-tile":
                                     main.createTile(true);
+                                    break;
+                                case "check-for-update":
+                                    main.checkForNewVersion();
                                     break;
                                 case "exit":
                                     System.exit(0);

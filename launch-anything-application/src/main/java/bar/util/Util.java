@@ -501,6 +501,7 @@ public abstract class Util {
     public static void cleanupTempFiles() {
         File[] tempFiles = new File(System.getProperty("java.io.tmpdir")).listFiles((dir, name) -> name.startsWith("launch-anything-file-"));
         if (tempFiles != null) {
+            LOG.info("Cleaning up [{}] temp files", tempFiles.length);
             for (File tempFile : tempFiles) {
                 tempFile.delete();
             }

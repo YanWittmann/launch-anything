@@ -173,16 +173,21 @@ public class Main {
             Util.cleanupTempFiles();
             if (!isVersionSnapshot()) {
                 if (settings.getBoolean(Settings.Setting.CHECK_FOR_UPDATES)) {
-                    try {
-                        Thread.sleep(10000);
-                    } catch (InterruptedException ignored) {
+                    if (settings.getBoolean(Settings.Setting.SHOW_STARTUP_MESSAGE)) {
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException ignored) {
+                        }
                     }
                     checkForNewVersion();
+                    tileManager.setSettingsTileCheckForUpdateActive(true);
                 } else {
                     LOG.info("Skipping update check (disabled in settings)");
+                    tileManager.setSettingsTileCheckForUpdateActive(true);
                 }
             } else {
                 LOG.info("Skipping update check (version snapshot)");
+                tileManager.setSettingsTileCheckForUpdateActive(true);
             }
             final File elevatorFile = new File("elevator.jar");
             if (elevatorFile.exists()) {
