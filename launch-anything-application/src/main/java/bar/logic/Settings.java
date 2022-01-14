@@ -75,6 +75,7 @@ public class Settings {
         for (Setting setting : Setting.values()) {
             categorySettings.computeIfAbsent(setting.category, k -> new LinkedHashMap<>()).put(setting.key, getString(setting));
         }
+        categorySettings.remove("null");
         return new JSONObject(categorySettings);
     }
 
