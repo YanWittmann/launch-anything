@@ -331,18 +331,17 @@ public class TileManager {
         return tilesRoot;
     }
 
-    private final static Tile SETTINGS_TILE_CLOUD_SYNC = new Tile();
+    private final static Tile SETTINGS_TILE_CLOUD_SYNC;
+    private final static Tile SETTINGS_TILE_CLOUD_CREATE_TILE;
 
     static {
-        SETTINGS_TILE_CLOUD_SYNC.addAction(new TileAction("settings", "cloud-sync"));
-        SETTINGS_TILE_CLOUD_SYNC.setExportable(false);
-        SETTINGS_TILE_CLOUD_SYNC.setLabel("Synchronize Cloud Tiles");
-        SETTINGS_TILE_CLOUD_SYNC.setCategory("settings");
+        SETTINGS_TILE_CLOUD_SYNC = createSettingsTile("Synchronize Cloud Tiles", "", "cloud-sync");
+        SETTINGS_TILE_CLOUD_CREATE_TILE = createSettingsTile("Create Cloud Tile", "", "cloud-create-tile");
     }
 
     private void createSettingsTiles() {
-        addSettingsTile("LaunchAnything Settings", "tile option editor help", "webeditor");
-        addSettingsTile("Create Tile", "add new", "createTile");
+        tiles.add(createSettingsTile("LaunchAnything Settings", "tile option editor help", "webeditor"));
+        tiles.add(createSettingsTile("Create Tile", "add new", "createTile"));
 
         Tile selfDir = new Tile("LaunchAnything Directory");
         selfDir.setCategory("settings");
@@ -353,45 +352,45 @@ public class TileManager {
         tiles.add(selfDir);
 
         if (Main.isVersionSnapshot())
-            addSettingsTile("Check for update", "elevate", "update");
+            tiles.add(createSettingsTile("Check for update", "elevate", "update"));
 
-        addSettingsTile("Restart LaunchAnything", "relaunch", "restartBar");
-        addSettingsTile("Exit LaunchAnything", "leave quit stop", "exit");
-    }
-
-    private void addSettingsTile(String label, String keywords, String action) {
-        Tile tile = new Tile(label);
-        tile.setCategory("settings");
-        tile.setActive(true);
-        tile.setExportable(false);
-        tile.setKeywords(keywords);
-        tile.addAction(new TileAction("settings", action));
-        tiles.add(tile);
-    }
-
-    private void addUrlTile(String label, String keywords, String url) {
-        Tile tile = new Tile(label);
-        tile.setCategory("url");
-        tile.setActive(true);
-        tile.setExportable(true);
-        tile.setKeywords(keywords);
-        tile.addAction(new TileAction("url", url));
-        tiles.add(tile);
+        tiles.add(createSettingsTile("Restart LaunchAnything", "relaunch", "restartBar"));
+        tiles.add(createSettingsTile("Exit LaunchAnything", "leave quit stop", "exit"));
     }
 
     private void generateDefaultTiles() {
         tiles.clear();
-        addUrlTile("LaunchAnything GitHub", "readme help", "https://github.com/Skyball2000/launch-anything");
-        addUrlTile("WhatsApp", "messages", "https://web.whatsapp.com");
-        addUrlTile("GeoGebra", "graphs", "https://www.geogebra.org/calculator");
-        addUrlTile("YouTube", "video", "https://www.youtube.com");
-        addUrlTile("Timerling", "countdown", "http://yanwittmann.de/projects/timerling");
+        tiles.add(createUrlTile("LaunchAnything GitHub", "readme help", "https://github.com/Skyball2000/launch-anything"));
+        tiles.add(createUrlTile("WhatsApp", "messages", "https://web.whatsapp.com"));
+        tiles.add(createUrlTile("GeoGebra", "graphs", "https://www.geogebra.org/calculator"));
+        tiles.add(createUrlTile("YouTube", "video", "https://www.youtube.com"));
+        tiles.add(createUrlTile("Timerling", "countdown", "http://yanwittmann.de/projects/timerling"));
         categories.add(new TileCategory("file", new Color(60, 150, 199)));
         categories.add(new TileCategory("url", new Color(239, 93, 62)));
         categories.add(new TileCategory("copy", new Color(252, 186, 3)));
         categories.add(new TileCategory("runtime", new Color(59, 196, 57)));
         categories.add(new TileCategory("settings", new Color(222, 40, 0)));
         LOG.info("Generated default tiles and categories");
+    }
+
+    private static Tile createSettingsTile(String label, String keywords, String action) {
+        Tile tile = new Tile(label);
+        tile.setCategory("settings");
+        tile.setActive(true);
+        tile.setExportable(false);
+        tile.setKeywords(keywords);
+        tile.addAction(new TileAction("settings", action));
+        return tile;
+    }
+
+    private Tile createUrlTile(String label, String keywords, String url) {
+        Tile tile = new Tile(label);
+        tile.setCategory("url");
+        tile.setActive(true);
+        tile.setExportable(true);
+        tile.setKeywords(keywords);
+        tile.addAction(new TileAction("url", url));
+        return tile;
     }
 
     private void addRuntimeTiles() {
@@ -473,9 +472,9 @@ public class TileManager {
         String username = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_USERNAME);
         String password = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_PASSWORD);
 
-        tiles.remove(SETTINGS_TILE_CLOUD_SYNC);
+        setSettingsCloudTilesActive(false);
         cloudAccess = new CloudAccess(url, username, password, false);
-        tiles.add(SETTINGS_TILE_CLOUD_SYNC);
+        setSettingsCloudTilesActive(true);
     }
 
     public void addCloudAccessCreateAccount(Settings settings) throws IOException {
@@ -483,9 +482,19 @@ public class TileManager {
         String username = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_USERNAME);
         String password = settings.getStringOrNull(Settings.Setting.CLOUD_TIMER_PASSWORD);
 
-        tiles.remove(SETTINGS_TILE_CLOUD_SYNC);
+        setSettingsCloudTilesActive(false);
         cloudAccess = new CloudAccess(url, username, password, true);
-        tiles.add(SETTINGS_TILE_CLOUD_SYNC);
+        setSettingsCloudTilesActive(true);
+    }
+
+    private void setSettingsCloudTilesActive(boolean active) {
+        if (active) {
+            tiles.add(SETTINGS_TILE_CLOUD_SYNC);
+            tiles.add(SETTINGS_TILE_CLOUD_CREATE_TILE);
+        } else {
+            tiles.remove(SETTINGS_TILE_CLOUD_SYNC);
+            tiles.remove(SETTINGS_TILE_CLOUD_CREATE_TILE);
+        }
     }
 
     public void synchronizeCloudTiles() {

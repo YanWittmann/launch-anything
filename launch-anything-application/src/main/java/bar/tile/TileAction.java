@@ -147,6 +147,9 @@ public class TileAction {
                                 case "cloud-sync":
                                     main.cloudSync();
                                     break;
+                                case "cloud-create-tile":
+                                    main.createTile(true);
+                                    break;
                                 case "exit":
                                     System.exit(0);
                             }
