@@ -228,6 +228,31 @@ public class TileAction {
         return null;
     }
 
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TileAction that = (TileAction) o;
+
+        boolean hasType = json.has("type");
+        boolean hasParam1 = json.has("param1");
+        boolean hasParam2 = json.has("param2");
+
+        boolean thatHasType = that.json.has("type");
+        boolean thatHasParam1 = that.json.has("param1");
+        boolean thatHasParam2 = that.json.has("param2");
+
+        if (hasType != thatHasType) return false;
+        if (hasParam1 != thatHasParam1) return false;
+        if (hasParam2 != thatHasParam2) return false;
+
+        if (hasType && !getType().equals(that.getType())) return false;
+        if (hasParam1 && !getParam1().equals(that.getParam1())) return false;
+        if (hasParam2 && !getParam2().equals(that.getParam2())) return false;
+
+        return true;
+    }
+
     @Override
     public String toString() {
         return "TileAction{" +

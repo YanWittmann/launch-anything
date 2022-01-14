@@ -1,6 +1,5 @@
 package bar.tile;
 
-import bar.Main;
 import bar.logic.Settings;
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
@@ -16,8 +15,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -272,6 +271,16 @@ public class TileManager {
         Tile synchronizedCloudTile = synchronizedCloudTiles.stream().filter(tile -> tile.getId().equals(tileId)).findFirst().orElse(null);
         if (synchronizedCloudTile != null) return synchronizedCloudTile;
         return unsynchronizedCloudTiles.stream().filter(tile -> tile.getId().equals(tileId)).findFirst().orElse(null);
+    }
+
+    public Tile findLocalTileByAction(TileAction action) {
+        for (Tile tile : tiles) {
+            TileAction firstAction = tile.getFirstAction();
+            if (firstAction != null && firstAction.equals(action)) {
+                return tile;
+            }
+        }
+        return null;
     }
 
     public void removeTile(Tile tile) {

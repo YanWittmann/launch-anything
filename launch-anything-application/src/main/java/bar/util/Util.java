@@ -172,6 +172,7 @@ public abstract class Util {
     }
 
     public static String popupDropDown(String title, String message, String[] options, String preselected) {
+        LOG.info("popupDropDown: [{}] [{}] [{}]", title, String.valueOf(message).replace("\n", ""), preselected);
         if (options == null || options.length == 0) return null;
         Object o = showInputDialog(null, message, title, PLAIN_MESSAGE, null, options, preselected != null ? preselected : options[0]);
         if (o == null) return null;
@@ -179,11 +180,13 @@ public abstract class Util {
     }
 
     public static String popupTextInput(String title, String message, String pretext) {
+        LOG.info("popupTextInput: [{}] [{}] [{}]", title, String.valueOf(message).replace("\n", ""), pretext);
         Object o = showInputDialog(null, message, title, PLAIN_MESSAGE, null, null, pretext);
         return o == null ? null : o.toString();
     }
 
     public static String popupChooseButton(String title, String message, String[] options) {
+        LOG.info("popupChooseButton: [{}] [{}] [{}]", title, String.valueOf(message).replace("\n", ""), options);
         if (options == null || options.length == 0) return null;
         int o = showOptionDialog(null, message, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, 0);
         if (o == JOptionPane.CLOSED_OPTION) return null;
@@ -191,6 +194,7 @@ public abstract class Util {
     }
 
     public static void popupMessage(String title, String message) {
+        LOG.info("popupMessage: [{}] [{}]", title, String.valueOf(message).replace("\n", ""));
         showMessageDialog(null, message, title, PLAIN_MESSAGE);
     }
 
