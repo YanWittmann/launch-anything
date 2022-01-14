@@ -1,14 +1,12 @@
 package bar.ui;
 
 import bar.Main;
-import bar.logic.Settings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class TrayUtil {
 
@@ -21,12 +19,56 @@ public abstract class TrayUtil {
     private static final Logger LOG = LoggerFactory.getLogger(TrayUtil.class);
 
     public static void showMessage(String message) {
-    	LOG.info("Showing message tray: {}", message.replace("\n", "\n   "));
+        LOG.info("Showing message tray: {}", message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything", message, TrayIcon.MessageType.INFO);
     }
 
+    public static void showWarning(String message) {
+        LOG.warn("Showing warning message tray: {}", message.replace("\n", "\n   "));
+        trayIcon.displayMessage("LaunchAnything Warning", message, TrayIcon.MessageType.WARNING);
+    }
+
+    public interface MessageCallback {
+        void onMessage(String message);
+    }
+
+    public static void showMessage(String message, int maxDuration, MessageCallback callback) {
+        LOG.info("Showing message tray: {}", message.replace("\n", "\n   "));
+        try {
+            SystemTray sysTray = SystemTray.getSystemTray();
+            TrayIcon icon = createTrayIconFromResource();
+            setDefaultIconVisible(false);
+            sysTray.add(icon);
+            icon.addActionListener(e -> callback.onMessage(message));
+            icon.displayMessage("LaunchAnything", message, TrayIcon.MessageType.INFO);
+            new Thread(() -> {
+                try {
+                    Thread.sleep(maxDuration);
+                    sysTray.remove(icon);
+                    setDefaultIconVisible(true);
+                } catch (InterruptedException ignored) {
+                }
+            }).start();
+        } catch (Exception e) {
+            LOG.error("Error showing custom message tray", e);
+        }
+    }
+
+    private static void setDefaultIconVisible(boolean visible) {
+        try {
+            SystemTray sysTray = SystemTray.getSystemTray();
+            if (visible) {
+                sysTray.add(trayIcon);
+            } else {
+                sysTray.remove(trayIcon);
+            }
+        } catch (Exception e) {
+            LOG.error("Unable to update default tray icon visibility", e);
+        }
+    }
+
     public static void showError(String message) {
-    	LOG.info("Showing error message tray: {}", message.replace("\n", "\n   "));
+        LOG.info("Showing error message tray: {}", message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything Error", message, TrayIcon.MessageType.ERROR);
     }
 
@@ -82,7 +124,7 @@ public abstract class TrayUtil {
         TrayUtil.main = main;
 
         if (!SystemTray.isSupported()) {
-        	LOG.info("System tray not supported on this platform");
+            LOG.info("System tray not supported on this platform");
         }
 
         try {
@@ -90,11 +132,11 @@ public abstract class TrayUtil {
             trayIcon = createTrayIconFromResource();
             sysTray.add(trayIcon);
         } catch (AWTException e) {
-        	LOG.info("Unable to add icon to the system tray: {}", e.getMessage());
+            LOG.info("Unable to add icon to the system tray: {}", e.getMessage());
             LOG.error("error ", e);
         } catch (Exception e) {
-        	LOG.info("Something went wrong while adding the icon to the system tray: {}", e.getMessage());
-        	LOG.error("error ", e);
+            LOG.info("Something went wrong while adding the icon to the system tray: {}", e.getMessage());
+            LOG.error("error ", e);
         }
     }
 }

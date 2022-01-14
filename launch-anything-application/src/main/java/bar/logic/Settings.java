@@ -2,7 +2,6 @@ package bar.logic;
 
 import bar.ui.TrayUtil;
 import bar.util.Util;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,7 @@ public class Settings {
 
     private final Map<String, Object> settings = new LinkedHashMap<>();
     private File settingsFile;
-    
+
     public Settings() {
         findSettingsFile();
         if (settingsFile == null) {
@@ -230,41 +229,59 @@ public class Settings {
     }
 
     public enum Setting {
-        INPUT_WIDTH("inputWidth", 800, "input"),
-        INPUT_HEIGHT("inputHeight", 80, "input"),
-        RESULT_WIDTH("resultWidth", 700, "result"),
-        RESULT_HEIGHT("resultHeight", 70, "result"),
-        AMOUNT_RESULTS("amountResults", 6, "result"),
-        RESULT_MARGIN("resultMargin", 10, "result"),
-        INPUT_RESULT_DISTANCE("inputResultDistance", 20, "bar"),
-        BAR_FONT("barFont", "Comfortaa Regular", "bar"),
-        ACTIVATION_DELAY("activationDelay", 250, "time"),
-        ACTIVATION_KEY("activationKey", 162, "key"),
-        CANCEL_KEY("cancelKey", 27, "key"),
-        CONFIRM_KEY("confirmKey", 13, "key"),
-        MODIFY_KEY("modifyKeyMetaChar", 164, "key"),
-        NEXT_RESULT_KEY("nextResultKey", 40, "key"),
-        PREVIOUS_RESULT_KEY("previousResultKey", 38, "key"),
-        TILE_GENERATOR_FILE_LIMIT("tileGeneratorFileLimit", 1000, "tile"),
-        INPUT_BAR_FONT_SIZE("inputBarFontSize", 36, "input"),
-        RESULT_BAR_FONT_SIZE("resultBarFontSize", 30, "result"),
-        BAR_FONT_BOLD_BOOL("barFontBoldBool", true, "bar"),
-        INPUT_TEXT_PADDING("inputTextPadding", 4, "input"),
-        RESULT_TEXT_PADDING("resultTextPadding", 4, "result"),
-        LEFT_ARROW_KEY("leftArrowKey", 37, "key"),
-        RIGHT_ARROW_KEY("rightArrowKey", 39, "key"),
-        CLOUD_TIMER_USERNAME("cloudTimerUsername", null, "cloud"),
-        CLOUD_TIMER_PASSWORD("cloudTimerPassword", null, "cloud"),
-        CLOUD_TIMER_URL("cloudTimerUrl", null, "cloud");
+        INPUT_WIDTH("inputWidth", 800, "input", TYPE_INT),
+        INPUT_HEIGHT("inputHeight", 80, "input", TYPE_INT),
+        RESULT_WIDTH("resultWidth", 700, "result", TYPE_INT),
+        RESULT_HEIGHT("resultHeight", 70, "result", TYPE_INT),
+        AMOUNT_RESULTS("amountResults", 6, "result", TYPE_INT),
+        RESULT_MARGIN("resultMargin", 10, "result", TYPE_INT),
+        INPUT_RESULT_DISTANCE("inputResultDistance", 20, "bar", TYPE_INT),
+        BAR_FONT("barFont", "Comfortaa Regular", "bar", TYPE_FONT),
+        ACTIVATION_DELAY("activationDelay", 250, "time", TYPE_INT),
+        ACTIVATION_KEY("activationKey", 162, "key", TYPE_KEY),
+        CANCEL_KEY("cancelKey", 27, "key", TYPE_KEY),
+        CONFIRM_KEY("confirmKey", 13, "key", TYPE_KEY),
+        MODIFY_KEY("modifyKeyMetaChar", 164, "key", TYPE_KEY),
+        NEXT_RESULT_KEY("nextResultKey", 40, "key", TYPE_KEY),
+        PREVIOUS_RESULT_KEY("previousResultKey", 38, "key", TYPE_KEY),
+        TILE_GENERATOR_FILE_LIMIT("tileGeneratorFileLimit", 1000, "tile", TYPE_INT),
+        INPUT_BAR_FONT_SIZE("inputBarFontSize", 36, "input", TYPE_INT),
+        RESULT_BAR_FONT_SIZE("resultBarFontSize", 30, "result", TYPE_INT),
+        BAR_FONT_BOLD_BOOL("barFontBoldBool", true, "bar", TYPE_BOOLEAN),
+        INPUT_TEXT_PADDING("inputTextPadding", 4, "input", TYPE_INT),
+        RESULT_TEXT_PADDING("resultTextPadding", 4, "result", TYPE_INT),
+        LEFT_ARROW_KEY("leftArrowKey", 37, "key", TYPE_KEY),
+        RIGHT_ARROW_KEY("rightArrowKey", 39, "key", TYPE_KEY),
+        CLOUD_TIMER_USERNAME("cloudTimerUsername", null, "cloud", TYPE_STRING),
+        CLOUD_TIMER_PASSWORD("cloudTimerPassword", null, "cloud", TYPE_STRING),
+        CLOUD_TIMER_URL("cloudTimerUrl", null, "cloud", TYPE_STRING),
+        SHOW_STARTUP_MESSAGE("showStartupMessage", true, "general", TYPE_BOOLEAN),
+        CHECK_FOR_UPDATES("checkForUpdates", true, "general", TYPE_BOOLEAN),
+        NULL("null", null, "null", TYPE_INT);
 
         public final String key;
         public final Object defaultValue;
         public final String category;
+        public final int type;
 
-        Setting(String key, Object defaultValue, String category) {
+        Setting(String key, Object defaultValue, String category, int type) {
             this.key = key;
             this.defaultValue = defaultValue;
             this.category = category;
+            this.type = type;
+        }
+
+        public static Setting getSetting(String key) {
+            for (Setting setting : Setting.values()) {
+                if (setting.key.equals(key)) return setting;
+            }
+            return NULL;
         }
     }
+
+    public final static int TYPE_STRING = 1;
+    public final static int TYPE_INT = 2;
+    public final static int TYPE_BOOLEAN = 3;
+    public final static int TYPE_FONT = 4;
+    public final static int TYPE_KEY = 5;
 }

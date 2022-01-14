@@ -153,7 +153,9 @@ public class Main {
         if (willRestartWebServer) {
             new Thread(() -> {
                 try {
-                    TrayUtil.showMessage("LaunchAnything " + versionString + " is now active.\nSettings page will be available in a few seconds.");
+                    if (settings.getBoolean(Settings.Setting.SHOW_STARTUP_MESSAGE)) {
+                        TrayUtil.showMessage("LaunchAnything " + versionString + " is now active.\nSettings page will be available in a few seconds.");
+                    }
                     Sleep.milliseconds(10000);
                     openSettingsWebServer(false);
                 } catch (Exception e) {
@@ -162,12 +164,26 @@ public class Main {
                 }
             }).start();
         } else {
-            TrayUtil.showMessage("LaunchAnything " + versionString + " is now active.");
+            if (settings.getBoolean(Settings.Setting.SHOW_STARTUP_MESSAGE)) {
+                TrayUtil.showMessage("LaunchAnything " + versionString + " is now active.");
+            }
         }
 
         new Thread(() -> {
             Util.cleanupTempFiles();
-            if (!isVersionSnapshot()) checkForNewVersion();
+            if (!isVersionSnapshot()) {
+                if (settings.getBoolean(Settings.Setting.CHECK_FOR_UPDATES)) {
+                    try {
+                        Thread.sleep(10000);
+                    } catch (InterruptedException ignored) {
+                    }
+                    checkForNewVersion();
+                } else {
+                    LOG.info("Skipping update check (disabled in settings)");
+                }
+            } else {
+                LOG.info("Skipping update check (version snapshot)");
+            }
             final File elevatorFile = new File("elevator.jar");
             if (elevatorFile.exists()) {
                 Sleep.seconds(4);
@@ -201,7 +217,7 @@ public class Main {
                 tileManager.synchronizeCloudTiles();
             }
         } catch (IOException e) {
-            TrayUtil.showError("Failed to get cloud tile access: " + e.getMessage());
+            TrayUtil.showWarning("Failed to get cloud tile access: " + e.getMessage());
         }
     }
 
@@ -645,16 +661,17 @@ public class Main {
                                     resetSettings();
                                 } else {
                                     Object newValue;
-                                    if (whatToEdit.toLowerCase().contains("key")) {
+                                    int settingType = Settings.Setting.getSetting(whatToEdit).type;
+                                    if (settingType == Settings.TYPE_KEY) {
                                         Util.popupMessage("Edit Key", "After closing this popup, press any key you want to assign this action to.");
                                         lastPressedKey = -1;
                                         while (lastPressedKey == -1) {
                                             Sleep.milliseconds(100);
                                         }
                                         newValue = lastPressedKey;
-                                    } else if (whatToEdit.toLowerCase().contains("bool")) {
+                                    } else if (settingType == Settings.TYPE_BOOLEAN) {
                                         newValue = Util.popupChooseButton("Edit Setting", "True or False?", new String[]{"True", "False"}).toLowerCase();
-                                    } else if (whatToEdit.toLowerCase().endsWith("font")) {
+                                    } else if (settingType == Settings.TYPE_FONT) {
                                         String whereToPickFontFrom = Util.popupChooseButton("Choose Font", "From where do you want to load the font?", new String[]{"System Font", "From TTF File"});
                                         if (whereToPickFontFrom != null) {
                                             if (whereToPickFontFrom.equals("System Font")) {
@@ -665,8 +682,13 @@ public class Main {
                                         } else {
                                             newValue = null;
                                         }
-                                    } else {
+                                    } else if (settingType == Settings.TYPE_INT) {
                                         newValue = Util.popupTextInput("Edit Setting", "Enter the new value for the setting:", settings.getString(whatToEdit));
+                                    } else if (settingType == Settings.TYPE_STRING) {
+                                        newValue = Util.popupTextInput("Edit Setting", "Enter the new value for the setting:", settings.getString(whatToEdit));
+                                    } else {
+                                        newValue = null;
+                                        TrayUtil.showError("Unknown Setting Type. If you expected something to happen, please report this as a bug.");
                                     }
                                     if (newValue != null && (newValue + "").length() > 0 && !newValue.equals("null")) {
                                         settings.setSetting(whatToEdit, newValue);
@@ -988,44 +1010,64 @@ public class Main {
     public void checkForNewVersion() {
         if (Util.isApplicationStartedFromJar()) {
             try {
+                LOG.info("Checking for new version");
                 JSONObject latestVersion = new JSONObject(VersionUtil.getLatestVersionJson());
-                String version = VersionUtil.extractVersion(latestVersion);
-                String versionName = VersionUtil.extractVersionTitle(latestVersion);
-                String versionUrl = VersionUtil.findAsset(latestVersion, "launch-anything.jar");
-                String releaseDate = VersionUtil.extractReleaseDate(latestVersion);
-                String versionBody = VersionUtil.extractBody(latestVersion);
+                final String version = VersionUtil.extractVersion(latestVersion);
+                final String versionName = VersionUtil.extractVersionTitle(latestVersion);
+                final String versionUrl = VersionUtil.findAsset(latestVersion, "launch-anything.jar");
+                final String releaseDate = VersionUtil.extractReleaseDate(latestVersion);
+                final String versionBody = VersionUtil.extractBody(latestVersion);
 
                 if (version != null && version.length() > 0 && !version.equals("null")) {
-                    String compareVersion = version.replace("v", "");
+                    final String compareVersion = version.replace("v", "");
+                    LOG.info("Latest version: {}", compareVersion);
                     if (!compareVersion.equals(this.version)) {
+
+                        LOG.info("New version available: {}", version);
 
                         LOG.info("There is an update available:");
                         LOG.info("Latest version: {} ({})", version, versionName);
                         LOG.info("Release date: {}", releaseDate);
                         LOG.info("Download URL: {}", versionUrl);
-                        String updateNow = Util.popupChooseButton("Update Available",
-                                "There is an update available for the LaunchBar!\n\nLatest version: " + version + " (" + versionName + ")\nRelease date: " + releaseDate + "\nDownload URL: " + versionUrl + "\n\n" + versionBody + "\n\nDo you want to download it now?",
-                                new String[]{"Download", "Ignore"});
-                        if (updateNow != null && updateNow.equals("Download")) {
-                            LOG.info("Copying elevator to outside the jar");
-                            Util.copyResource("executables/elevator-jar-with-dependencies.jar", "elevator.jar");
-                            LOG.info("Launching elevator.jar");
 
-                            try {
-                                Desktop.getDesktop().open(new File("elevator.jar"));
-                                System.exit(0);
-                            } catch (IOException e) {
-                                LOG.error("error ", e);
-                                TrayUtil.showError("Failed to open the elevator.jar file: " + e.getMessage());
-                            }
-                        }
+                        TrayUtil.showMessage("Click here to download update: " + versionName + " (" + releaseDate + ")",
+                                8000,
+                                message -> showAvailableUpdateChangelog(version, versionName, versionUrl, releaseDate, versionBody));
 
+                    } else {
+                        LOG.info("No update available");
                     }
                 }
 
             } catch (Exception e) {
                 LOG.info("Unable to check for new version: {}", e.getMessage());
             }
+        } else {
+            LOG.info("Not running from jar, not checking for new version");
+        }
+    }
+
+    private void showAvailableUpdateChangelog(String version, String versionName, String versionUrl, String releaseDate, String versionBody) {
+        try {
+            String updateNow = Util.popupChooseButton("Update Available",
+                    "There is an update available for the LaunchBar!\n\nLatest version: " + version + " (" + versionName + ")\nRelease date: " + releaseDate + "\nDownload URL: " + versionUrl + "\n\n" + versionBody + "\n\nDo you want to download it now?",
+                    new String[]{"Download", "Ignore"});
+            if (updateNow != null && updateNow.equals("Download")) {
+                LOG.info("Copying elevator to outside the jar");
+                Util.copyResource("executables/elevator-jar-with-dependencies.jar", "elevator.jar");
+                LOG.info("Launching elevator.jar");
+
+                try {
+                    Desktop.getDesktop().open(new File("elevator.jar"));
+                    System.exit(0);
+                } catch (IOException e) {
+                    LOG.error("error ", e);
+                    TrayUtil.showError("Failed to open the elevator.jar file: " + e.getMessage());
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Error showing update message and updating. ", e);
+            TrayUtil.showError("Something went wrong: " + e.getMessage());
         }
     }
 
