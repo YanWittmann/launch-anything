@@ -106,7 +106,8 @@ The math expression and chart generator tile are a bit more complex:
   expression: `sin(x);cos(x) for 0,10,0.1`.
 - If no step size is specified, a fitting step size is being derived from the range size.
 
-If you have ideas for more runtime tiles, please create an issue using the link below.
+If you have ideas for more runtime tiles, please create an issue using the link below.  
+Or, if you want to create a runtime tile plugin, please follow these **[instructions](runtime-tile-plugins.md)**.
 </details>
 
 <details>

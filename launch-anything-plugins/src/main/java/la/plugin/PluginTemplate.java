@@ -1,6 +1,5 @@
 package la.plugin;
 
-import bar.tile.PluginTileLoader;
 import bar.tile.Tile;
 import bar.tile.TileAction;
 import bar.tile.custom.RuntimeTile;

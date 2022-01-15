@@ -150,6 +150,9 @@ public class TileAction {
                                 case "check-for-update":
                                     main.checkForNewVersion();
                                     break;
+                                case "reloadPlugins":
+                                    main.reloadPlugins();
+                                    break;
                                 case "exit":
                                     System.exit(0);
                             }
