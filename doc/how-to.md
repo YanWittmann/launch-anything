@@ -17,7 +17,8 @@ navigation items:
 
 ### General
 
-- Click on the navigation items to switch between the different pages.
+- Click on the navigation items to switch between the different pages. You can also press `tab` and `shift+tab` to
+  switch between the pages.
 - You can use `ctrl + z` and `ctrl + y` to undo and redo your changes.
 - The changes you make to tiles and generators are being applied instantly. Some settings require a restart of the
   application to take effect. Type in `restart` to quickly restart the application.
@@ -169,9 +170,15 @@ Most of the runtime tiles match the input very loosely. In most cases, spaces ar
 case-insensitive. So, this input `sys Local IP` is the same as `syslocalip` (or even better `syslip`). Another example:
 `g(x) = sin(x) + 2 * x for 1,10` --> `gx=sin(x)+2xfor1,10`. This can save a lot of time if done consistently.
 
+#### Cloud Tiles
+
+Using the cloud tiles feature, you can synchronize your cloud tiles between all your devices. This is especially
+useful for URL tiles, as they are device independent.  
+Find out how to set up this for you in the **[cloud-tiles.md](cloud-tiles.md)** file.
+
 #### Execute the last executed tile
 
-To execute the last executed tile, you can leave the bar empty and hit enter. That's it.
+To execute the last executed tile, you can leave the bar empty and hit enter. Useful when creating a lot of new tiles.
 
 #### Start the webserver on startup
 
@@ -197,6 +204,6 @@ over there.
 
 ## That's it!
 
-I hope you can put this tool to good use. If you have any questions, suggestions or comments, feel free to contact me or to create an
-issue on the **[GitHub repository](https://github.com/Skyball2000/launch-anything/issues)**.  
+I hope you can put this tool to good use. If you have any questions, suggestions or comments, feel free to contact me or
+to create an issue on the **[GitHub repository](https://github.com/Skyball2000/launch-anything/issues)**.  
 If you're feeling especially generous, you can also **[buy me a coffee](https://www.paypal.com/paypalme/yanwittmann)**!

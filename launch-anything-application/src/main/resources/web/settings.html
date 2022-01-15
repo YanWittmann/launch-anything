@@ -936,26 +936,45 @@
         }
     }
 
-    function tabPressed(event) {
+    let lastTabbedTime = 0;
+
+    function keyListener(event) {
+        // check if the tab key was pressed
         if (event.keyCode === 9) {
-            event.preventDefault();
-            if (currentSection === 'tiles') {
-                switchSection('generators', document.getElementById('section-generators'));
-            } else if (currentSection === 'generators') {
-                switchSection('runtime', document.getElementById('section-runtime'));
-            } else if (currentSection === 'runtime') {
-                switchSection('categories', document.getElementById('section-categories'));
-            } else if (currentSection === 'categories') {
-                switchSection('cloudtiles', document.getElementById('section-cloudtiles'));
-            } else if (currentSection === 'cloudtiles') {
-                switchSection('settings', document.getElementById('section-settings'));
-            } else if (currentSection === 'settings') {
-                switchSection('tiles', document.getElementById('section-tiles'));
+            if (lastTabbedTime + 100 > Date.now()) {
+                event.preventDefault();
+                return false;
             }
+            lastTabbedTime = Date.now();
+            event.preventDefault();
+
+            let sections = ['tiles', 'generators', 'runtime', 'categories', 'cloudtiles', 'settings'];
+            // check if the shift key is pressed additionally
+            if (event.shiftKey) {
+                // if the current section is the first one, the last one is selected
+                if (sections.indexOf(currentSection) === 0) {
+                    currentSection = sections[sections.length - 1];
+                } else {
+                    // otherwise, the previous one is selected
+                    currentSection = sections[sections.indexOf(currentSection) - 1];
+                }
+            } else {
+                // if the current section is the last one, the first one is selected
+                if (sections.indexOf(currentSection) === sections.length - 1) {
+                    currentSection = sections[0];
+                } else {
+                    // otherwise, the next one is selected
+                    currentSection = sections[sections.indexOf(currentSection) + 1];
+                }
+            }
+            // switch to the new selected section
+            switchSection(currentSection, document.getElementById('section-' + currentSection));
+            return true;
         }
+        return false;
     }
 
-    document.addEventListener('keydown', tabPressed);
+    document.addEventListener('keydown', keyListener);
 
     refreshTiles();
 </script>
