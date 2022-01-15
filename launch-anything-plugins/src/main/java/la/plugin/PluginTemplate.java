@@ -3,6 +3,7 @@ package la.plugin;
 import bar.tile.Tile;
 import bar.tile.TileAction;
 import bar.tile.custom.RuntimeTile;
+import bar.util.Util;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +19,8 @@ public class PluginTemplate implements RuntimeTile {
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
         if (search.equals("template")) {
             Tile tile = new Tile("Template Plugin Tile", "Template", "", false);
-            tile.addAction(new TileAction("copy", "hello universe!"));
+            TileAction action = new TileAction(() -> Util.popupMessage("Template Plugin Tile", "You executed the Template Plugin Tile!"));
+            tile.addAction(action);
             return Collections.singletonList(tile);
         }
         return Collections.emptyList();

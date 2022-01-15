@@ -11,8 +11,8 @@ inputs into the LaunchBar. These tiles are then displayed as result tiles and th
 input changes, all runtime tiles are deleted and new ones are generated.
 
 This is done using the `generateTiles` method, located in a class implementing the `RuntimeTile` interface. Here is an
-example of the go website plugin, which checks if the user enters `go` and some string behind that. If that is the case,
-the plugin generates a tile that links to the DuckDuckGo I'm feeling lucky search.
+example of the go website runtime tile, which checks if the user enters `go` and some string behind that. If that is the
+case, the plugin generates a tile that links to the DuckDuckGo I'm feeling lucky search.
 
 ```java
 public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
@@ -67,12 +67,13 @@ mvn clean package
 ```
 
 The first one installs the `launch-anything-application` module, which is required for the plugins to work. You will
-only have to perform this command once (per update of the launch-bar).  
-The other one builds the actual plugin. Now copy either the jar file (launch-anything-plugins-VERSION.jar) or the .class
-file containing the plugin into the `res/plugins/la/plugin/` directory of your launch bar and restart/reload it.
+only have to perform this command once (per release or plugin api change of the launch-bar).  
+The other one builds the actual plugin. Now from the `target` directory, copy either the jar file
+(`launch-anything-plugins-VERSION.jar`, rename it as you want) or the `.class`  file containing the plugin into the
+`res/plugins/la/plugin/` directory of your launch bar and restart/reload it.
 
 As an example, I will create a plugin that converts between feet and meters.  
-So, I create a new file called `FeetToMeters.java` and I add the following code:
+So, I create a new file called `FeetToMeters.java` in the plugin module, and I add the following code:
 
 ```java
 package la.plugin;
@@ -143,9 +144,25 @@ public class FeetToMeters implements RuntimeTile {
 }
 ```
 
-Then build it using the commands above, copy it into the `res/plugins/la/plugin` directory and restart the bar, this
-happens if I enter a valid string into the bar:
+Then build it using the commands above, copy it into the `res/plugins/la/plugin` directory and restart the bar.
+This happens if I enter a valid string into the bar:
 
 ![Feet to Meters in bar](img/feetToMetersPlugin.png)
 
-There you go, it's that simple!
+And that's a first plugin!
+
+## Custom tile actions
+
+Sometimes the built-in actions are not enough. For example, if you want to access some file on the file system, there is
+no built-in action for that. So, you have to implement your own action:
+
+```java
+Tile tile = new Tile("Template Plugin Tile", "Template", "", false);
+TileAction action = new TileAction(() -> {
+    Util.popupMessage("Template Plugin Tile", "You executed the Template Plugin Tile!");
+});
+tile.addAction(action);
+```
+
+This can be done by passing a `RuntimeTileInteraction` instance to the `TileAction` constructor. It has a `run` method
+that will be called when the action is executed.
