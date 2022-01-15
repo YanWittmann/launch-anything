@@ -1,23 +1,25 @@
-package bar.tile.custom;
+package la.plugin;
 
+import bar.tile.PluginTileLoader;
 import bar.tile.Tile;
 import bar.tile.TileAction;
-import bar.util.Util;
+import bar.tile.custom.RuntimeTile;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class GoWebsiteTile implements RuntimeTile {
+public class PluginTemplate implements RuntimeTile {
+
+    public PluginTemplate() {
+        info(this, "Plugin Template loaded");
+    }
 
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
-        if (search.startsWith("go") && search.length() > 2) {
-            Tile tile = new Tile("I'm Feeling Lucky!");
-            tile.setCategory("runtime");
-            String searchTerm = search.replaceAll("^go *", "");
-            TileAction action = new TileAction("url", "https://duckduckgo.com/?q=!ducky+" + Util.urlEncode(searchTerm));
-            tile.addAction(action);
+        if (search.equals("template")) {
+            Tile tile = new Tile("Template Plugin Tile", "Template", "", false);
+            tile.addAction(new TileAction("copy", "hello universe!"));
             return Collections.singletonList(tile);
         }
         return Collections.emptyList();
@@ -25,12 +27,12 @@ public class GoWebsiteTile implements RuntimeTile {
 
     @Override
     public String getName() {
-        return "Go Website";
+        return "Template Plugin";
     }
 
     @Override
     public String getDescription() {
-        return "Enter 'go' and any search term";
+        return "Replace this with your plugin description";
     }
 
     @Override
@@ -40,6 +42,6 @@ public class GoWebsiteTile implements RuntimeTile {
 
     @Override
     public String getVersion() {
-        return null;
+        return "1.0-SNAPSHOT";
     }
 }

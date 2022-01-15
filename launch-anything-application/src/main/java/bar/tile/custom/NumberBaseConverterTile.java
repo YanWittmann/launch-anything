@@ -121,11 +121,23 @@ public class NumberBaseConverterTile implements RuntimeTile {
         return convertNumber;
     }
 
+    @Override
     public String getName() {
         return "Number Base Converter";
     }
 
+    @Override
     public String getDescription() {
         return "Enter something like 'dec 13 bin' to convert 13 to binary (available: 'dec/bin/oct/hex')";
+    }
+
+    @Override
+    public String getAuthor() {
+        return "Yan Wittmann";
+    }
+
+    @Override
+    public String getVersion() {
+        return null;
     }
 }

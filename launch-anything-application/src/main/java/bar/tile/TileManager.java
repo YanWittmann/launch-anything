@@ -27,6 +27,8 @@ public class TileManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(TileManager.class);
 
+    private final PluginTileLoader plugins;
+
     private final List<Tile> tiles = new ArrayList<>();
     private final List<RuntimeTile> runtimeTiles = new ArrayList<>();
     private final List<Tile> generatedTiles = new ArrayList<>();
@@ -54,6 +56,8 @@ public class TileManager {
         }
         LOG.info("Is first launch: [{}]", isFirstLaunch);
         addRuntimeTiles();
+        plugins = new PluginTileLoader();
+        plugins.loadPlugins();
     }
 
     public boolean isFirstLaunch() {
@@ -94,6 +98,11 @@ public class TileManager {
             searchTiles(generatedTiles, matchingTiles, input);
 
             runtimeTiles.stream()
+                    .map(runtimeTile -> runtimeTile.generateTiles(input, lastInputEvaluated))
+                    .forEach(matchingTiles::addAll);
+
+            plugins.getPluginRuntimeTiles().stream()
+                    .filter(t -> !disabledRuntimeTiles.contains(t.getName()))
                     .map(runtimeTile -> runtimeTile.generateTiles(input, lastInputEvaluated))
                     .forEach(matchingTiles::addAll);
 
@@ -380,6 +389,7 @@ public class TileManager {
         tiles.add(selfDir);
 
         tiles.add(createSettingsTile("Restart LaunchAnything", "relaunch", "restartBar"));
+        tiles.add(createSettingsTile("Reload Plugins", "", "reloadPlugins"));
         tiles.add(createSettingsTile("Exit LaunchAnything", "leave quit stop", "exit"));
     }
 
@@ -427,6 +437,12 @@ public class TileManager {
         }
     }
 
+    public void reloadPlugins() {
+        LOG.info("Reloading plugins");
+        plugins.loadPlugins();
+        LOG.info("Reloaded plugins");
+    }
+
     private enum RuntimeTiles {
         GO_WEBSITE(GoWebsiteTile::new),
         NUMBER_BASE_CONVERTER(NumberBaseConverterTile::new),
@@ -439,6 +455,8 @@ public class TileManager {
 
         private final String name;
         private final String description;
+        private final String author;
+        private final String version;
         private final RuntimeTileProvider provider;
 
         RuntimeTiles(RuntimeTileProvider provider) {
@@ -446,6 +464,8 @@ public class TileManager {
             RuntimeTile tile = this.provider.getTile();
             this.name = tile.getName();
             this.description = tile.getDescription();
+            this.author = tile.getAuthor();
+            this.version = tile.getVersion();
         }
 
         public RuntimeTileProvider getProvider() {
@@ -460,15 +480,37 @@ public class TileManager {
             return description;
         }
 
+        public String getAuthor() {
+            return author;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
         interface RuntimeTileProvider {
             RuntimeTile getTile();
         }
     }
 
-    public static Map<String, String> getRuntimeTilesNames() {
-        Map<String, String> names = new HashMap<>();
+    public static Map<String, JSONObject> getRuntimeTilesNames() {
+        Map<String, JSONObject> names = new HashMap<>();
         for (RuntimeTiles value : RuntimeTiles.values()) {
-            names.put(value.getName(), value.getDescription());
+            names.put(value.getName(),
+                    new JSONObject().put("description", value.getDescription())
+                            .put("author", value.getAuthor())
+                            .put("version", value.getVersion()));
+        }
+        return names;
+    }
+
+    public Map<String, JSONObject> getPluginRuntimeTilesNames() {
+        Map<String, JSONObject> names = new HashMap<>();
+        for (RuntimeTile value : plugins.getPluginRuntimeTiles()) {
+            names.put(value.getName(),
+                    new JSONObject().put("description", value.getDescription())
+                            .put("author", value.getAuthor())
+                            .put("version", value.getVersion()));
         }
         return names;
     }

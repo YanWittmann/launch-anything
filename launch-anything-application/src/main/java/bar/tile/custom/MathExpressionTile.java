@@ -277,11 +277,23 @@ public class MathExpressionTile implements RuntimeTile {
         CONSTANTS.put("e", Math.E);
     }
 
+    @Override
     public String getName() {
         return "Math Expression";
     }
 
+    @Override
     public String getDescription() {
         return "Enter any mathematical expression";
+    }
+
+    @Override
+    public String getAuthor() {
+        return "Yan Wittmann";
+    }
+
+    @Override
+    public String getVersion() {
+        return null;
     }
 }

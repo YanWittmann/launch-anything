@@ -183,11 +183,23 @@ public class ChartGeneratorTile implements RuntimeTile {
         return rounded;
     }
 
+    @Override
     public String getName() {
         return "Chart Generator";
     }
 
+    @Override
     public String getDescription() {
         return "Enter an expression and a graph will be generated";
+    }
+
+    @Override
+    public String getAuthor() {
+        return "Yan Wittmann";
+    }
+
+    @Override
+    public String getVersion() {
+        return null;
     }
 }

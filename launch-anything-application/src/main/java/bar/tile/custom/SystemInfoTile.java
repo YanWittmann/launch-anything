@@ -78,11 +78,23 @@ public class SystemInfoTile implements RuntimeTile {
         return tile;
     }
 
+    @Override
     public String getName() {
         return "System Info";
     }
 
+    @Override
     public String getDescription() {
         return "Enter 'sys' and some value you want (see documentation)";
+    }
+
+    @Override
+    public String getAuthor() {
+        return "Yan Wittmann";
+    }
+
+    @Override
+    public String getVersion() {
+        return null;
     }
 }

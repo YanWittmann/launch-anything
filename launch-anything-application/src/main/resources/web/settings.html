@@ -76,9 +76,21 @@
 
         .glass-bar-small.runtime-tile {
             width: 300px;
-            min-height: 75px;
             padding-top: 10px;
             padding-bottom: 10px;
+            min-width: 200px;
+            min-height: 75px;
+            flex-grow: 1;
+        }
+
+        #runtime-tile-selection {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 100%;
         }
 
         .clickable {
@@ -493,29 +505,12 @@
             }
 
             let runtimeTiles = parsedResponse.tiles['runtime-tiles'];
+            let runtimeTilesPlugins = parsedResponse.tiles['runtime-tiles-plugins'];
             let disabledRuntimeTiles = parsedResponse.tiles['disabled-runtime-tiles'];
             let runtimeSelection = document.getElementById('runtime-tile-selection');
             runtimeSelection.innerHTML = '';
-            let runtimeTilesKeys = Object.keys(runtimeTiles);
-            for (let i = 0; i < runtimeTilesKeys.length; i++) {
-                let tileKey = runtimeTilesKeys[i];
-                let tileDescription = runtimeTiles[runtimeTilesKeys[i]];
-                let span = document.createElement('span');
-                span.classList.add('glass-bar-small');
-                span.classList.add('runtime-tile');
-                span.classList.add('hide-scrollbar');
-                span.classList.add('clickable');
-                console.log(disabledRuntimeTiles);
-                console.log(tileKey);
-                if (disabledRuntimeTiles.indexOf(tileKey) === -1) {
-                    span.classList.add('selected');
-                }
-                span.onclick = function () {
-                    editRuntimeTileIntent(tileKey, 'toggleActive');
-                };
-                span.innerHTML = '<b>' + tileKey + '</b><br>' + tileDescription;
-                runtimeSelection.appendChild(span);
-            }
+            appendRuntimeTileEntry(runtimeTiles, disabledRuntimeTiles, runtimeSelection);
+            appendRuntimeTileEntry(runtimeTilesPlugins, disabledRuntimeTiles, runtimeSelection);
 
             let settings = parsedResponse.tiles['settings'];
             let settingsSelection = document.getElementById('settings-selection');
@@ -567,6 +562,32 @@
                 }
             }
         });
+    }
+
+    function appendRuntimeTileEntry(entries, disabledRuntimeTiles, runtimeSelection) {
+        let runtimeTilesKeys = Object.keys(entries);
+        for (let i = 0; i < runtimeTilesKeys.length; i++) {
+            let tileKey = runtimeTilesKeys[i];
+            let tileEntry = entries[runtimeTilesKeys[i]];
+            let span = document.createElement('span');
+            span.classList.add('glass-bar-small');
+            span.classList.add('runtime-tile');
+            span.classList.add('hide-scrollbar');
+            span.classList.add('clickable');
+            console.log(disabledRuntimeTiles);
+            console.log(tileKey);
+            if (disabledRuntimeTiles.indexOf(tileKey) === -1) {
+                span.classList.add('selected');
+            }
+            span.onclick = function () {
+                editRuntimeTileIntent(tileKey, 'toggleActive');
+            };
+            let author = tileEntry.hasOwnProperty('author') ? (tileEntry['author'] !== 'Yan Wittmann' ? ' by ' + tileEntry['author'] : '') : 'Unknown';
+            let version = tileEntry.hasOwnProperty('version') && tileEntry['version'] !== undefined ? 'Version: ' + tileEntry['version'] + '<br>' : '';
+            let title = '<b>' + tileKey + '</b>' + author;
+            span.innerHTML = title + '<br>' + version + tileEntry['description'];
+            runtimeSelection.appendChild(span);
+        }
     }
 
     function createColoredCategoryBadge(cat) {

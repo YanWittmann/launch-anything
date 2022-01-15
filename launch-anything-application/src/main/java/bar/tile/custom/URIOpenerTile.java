@@ -50,11 +50,23 @@ public class URIOpenerTile implements RuntimeTile {
         return Collections.emptyList();
     }
 
+    @Override
     public String getName() {
         return "URI opener";
     }
 
+    @Override
     public String getDescription() {
         return "Enter a local path to a directory or a url";
+    }
+
+    @Override
+    public String getAuthor() {
+        return "Yan Wittmann";
+    }
+
+    @Override
+    public String getVersion() {
+        return null;
     }
 }

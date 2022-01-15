@@ -442,6 +442,7 @@ public class Main {
                                 "tiles",
                                 tileManager.toJSON()
                                         .put("runtime-tiles", TileManager.getRuntimeTilesNames())
+                                        .put("runtime-tiles-plugins", tileManager.getPluginRuntimeTilesNames())
                                         .put("settings", settings.toSettingsJSON()));
 
                     } else if (action.equals("metaInteraction")) {
@@ -854,6 +855,10 @@ public class Main {
             settings.save();
             barManager.barReloadRequest();
         }
+    }
+
+    public void reloadPlugins() {
+        tileManager.reloadPlugins();
     }
 
     public void cloudSync() {

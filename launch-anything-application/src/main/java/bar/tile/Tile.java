@@ -44,9 +44,17 @@ public class Tile {
                 }
             }
             lastActivated = json.optLong("lastActivated", 0);
-        } catch (Exception ignored) {
-            ignored.printStackTrace();
+        } catch (Exception e) {
+            LOG.error("Error loading tile from JSON", e);
         }
+    }
+
+    public Tile(String label, String category, String keywords, boolean exportable) {
+        this.id = UUID.randomUUID().toString();
+        this.label = label;
+        this.category = category;
+        this.keywords = keywords;
+        this.exportable = exportable;
     }
 
     public Tile(String label) {

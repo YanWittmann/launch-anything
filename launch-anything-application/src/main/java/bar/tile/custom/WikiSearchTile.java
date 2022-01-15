@@ -39,11 +39,23 @@ public class WikiSearchTile implements RuntimeTile {
         return Collections.emptyList();
     }
 
+    @Override
     public String getName() {
         return "Wiki Search";
     }
 
+    @Override
     public String getDescription() {
         return "Enter 'wiki' and any search term";
+    }
+
+    @Override
+    public String getAuthor() {
+        return "Yan Wittmann";
+    }
+
+    @Override
+    public String getVersion() {
+        return null;
     }
 }
