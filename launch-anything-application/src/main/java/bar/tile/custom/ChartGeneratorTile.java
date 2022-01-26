@@ -1,7 +1,7 @@
 package bar.tile.custom;
 
 import bar.tile.Tile;
-import bar.tile.TileAction;
+import bar.tile.action.TileAction;
 import bar.ui.TrayUtil;
 import bar.util.Util;
 import de.yanwittmann.j2chartjs.chart.ScatterChart;
@@ -66,7 +66,7 @@ public class ChartGeneratorTile implements RuntimeTile {
                     tile.setCategory("runtime");
                     double finalStart = start;
                     double finalEnd = end;
-                    TileAction action = new TileAction(() -> generateGraph(finalStart, finalEnd, step, expressions));
+                    TileAction action = TileAction.getInstance(() -> generateGraph(finalStart, finalEnd, step, expressions));
                     tile.addAction(action);
                     tiles.add(tile);
                     return tiles;

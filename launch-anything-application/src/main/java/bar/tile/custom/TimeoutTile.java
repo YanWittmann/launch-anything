@@ -1,7 +1,7 @@
 package bar.tile.custom;
 
 import bar.tile.Tile;
-import bar.tile.TileAction;
+import bar.tile.action.TileAction;
 
 import java.util.Collections;
 import java.util.List;
@@ -15,7 +15,7 @@ public class TimeoutTile implements RuntimeTile {
             int minutes = Integer.parseInt(search.replaceAll("(?:timeout|to) ?(\\d+)", "$1").trim());
             Tile tile = new Tile("Timeout for " + minutes + " minute" + (minutes == 1 ? "" : "s"));
             tile.setCategory("runtime");
-            TileAction action = new TileAction("settings", "timeout", minutes + "");
+            TileAction action = TileAction.getInstance("settings", "timeout", minutes + "");
             tile.addAction(action);
             return Collections.singletonList(tile);
         }

@@ -1,6 +1,6 @@
 package bar.tile;
 
-import bar.logic.Settings;
+import bar.tile.action.TileAction;
 import bar.util.Util;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -100,7 +100,7 @@ public class TileGeneratorGenerator {
                         for (File file : files) {
                             if (file != null) {
                                 Tile tile = new Tile(fileTypeNameGenerator(file));
-                                tile.addAction(new TileAction("file", file.getAbsolutePath()));
+                                tile.addAction(TileAction.getInstance("file", file.getAbsolutePath()));
                                 for (String s : file.getAbsolutePath().replaceAll("[A-Z]:", "").replaceAll("[/\\\\.]+", " ").replaceAll(" +", " ").trim().split(" ")) {
                                     tile.addKeyword(s);
                                 }

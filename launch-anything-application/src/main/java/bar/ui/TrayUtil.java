@@ -10,22 +10,36 @@ import java.net.URISyntaxException;
 
 public abstract class TrayUtil {
 
+    private static final Logger LOG = LoggerFactory.getLogger(TrayUtil.class);
+
     private static Main main;
 
     private static TrayIcon trayIcon;
 
     private static PopupMenu trayMenu;
     private static MenuItem resetTimeoutIcon;
-    private static final Logger LOG = LoggerFactory.getLogger(TrayUtil.class);
+
+    private static long lastErrorOrWarningTimestamp = 0;
 
     public static void showMessage(String message) {
-        LOG.info("Showing message tray: {}", message.replace("\n", "\n   "));
-        trayIcon.displayMessage("LaunchAnything", message, TrayIcon.MessageType.INFO);
+        if (System.currentTimeMillis() - lastErrorOrWarningTimestamp > 5000) {
+            LOG.info("Showing message tray: {}", message.replace("\n", "\n   "));
+            trayIcon.displayMessage("LaunchAnything", message, TrayIcon.MessageType.INFO);
+        } else {
+            LOG.info("Not showing message tray: {}", message.replace("\n", "\n   "));
+        }
     }
 
     public static void showWarning(String message) {
         LOG.warn("Showing warning message tray: {}", message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything Warning", message, TrayIcon.MessageType.WARNING);
+        lastErrorOrWarningTimestamp = System.currentTimeMillis();
+    }
+
+    public static void showError(String message) {
+        LOG.info("Showing error message tray: {}", message.replace("\n", "\n   "));
+        trayIcon.displayMessage("LaunchAnything Error", message, TrayIcon.MessageType.ERROR);
+        lastErrorOrWarningTimestamp = System.currentTimeMillis();
     }
 
     public interface MessageCallback {
@@ -65,11 +79,6 @@ public abstract class TrayUtil {
         } catch (Exception e) {
             LOG.error("Unable to update default tray icon visibility", e);
         }
-    }
-
-    public static void showError(String message) {
-        LOG.info("Showing error message tray: {}", message.replace("\n", "\n   "));
-        trayIcon.displayMessage("LaunchAnything Error", message, TrayIcon.MessageType.ERROR);
     }
 
     private static PopupMenu createTrayMenu() {

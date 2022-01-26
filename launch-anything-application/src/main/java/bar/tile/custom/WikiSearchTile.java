@@ -2,7 +2,7 @@ package bar.tile.custom;
 
 import bar.common.Sleep;
 import bar.tile.Tile;
-import bar.tile.TileAction;
+import bar.tile.action.TileAction;
 import bar.util.Util;
 import org.json.JSONObject;
 
@@ -28,7 +28,7 @@ public class WikiSearchTile implements RuntimeTile {
                 if (contentUrls != null) {
                     JSONObject desktop = contentUrls.optJSONObject("desktop");
                     if (desktop != null) {
-                        TileAction action = new TileAction("url", desktop.optString("page"));
+                        TileAction action = TileAction.getInstance("url", desktop.optString("page"));
                         tile.addAction(action);
                     }
                 }

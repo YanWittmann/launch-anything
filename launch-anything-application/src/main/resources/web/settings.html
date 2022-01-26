@@ -18,6 +18,7 @@
             --file-action-color: rgb(60, 150, 199);
             --url-action-color: rgb(227, 101, 73);
             --copy-action-color: rgb(252, 186, 3);
+            --unfound-action-color: rgb(36, 252, 3);
         }
 
         html, body {
@@ -199,6 +200,10 @@
 
         .bo-yellow {
             border: 1px solid var(--copy-action-color);
+        }
+
+        .bo-green {
+            border: 1px solid var(--unfound-action-color);
         }
 
         #notifications {
@@ -685,6 +690,17 @@
         return row;
     }
 
+    function findTileActionParameters(json) {
+        let keys = Object.keys(json);
+        keys.sort();
+        let parameters = [];
+        for (let i = 0; i < keys.length; i++) {
+            if (keys[i] === 'type') continue;
+            parameters.push(json[keys[i]]);
+        }
+        return parameters;
+    }
+
     function createCategoryEntryForTable(categoryJson) {
         let row = document.createElement('tr');
 
@@ -760,20 +776,23 @@
             let badge = document.createElement('div');
             if (action.type === 'url') {
                 badge.className = 'badge bo-red clickable';
-                badge.innerText = 'URL: ' + action.param1;
-            } else if (action.type === 'file') {
+            } else if (action.type === 'file' || action.type === 'directory') {
                 badge.className = 'badge bo-blue clickable';
-                badge.innerText = 'FILE: ' + action.param1;
             } else if (action.type === 'copy') {
                 badge.className = 'badge bo-yellow clickable';
-                badge.innerText = 'COPY: ' + action.param1;
+            } else {
+                badge.className = 'badge bo-green clickable';
             }
+            let type = action.type.toUpperCase();
+            let parameters = findTileActionParameters(action);
+            let parametersString = parameters.join(', ');
+            badge.innerText = type + ': ' + parametersString;
             badge.onclick = function () {
-                editTileIntent(tileJson.id, 'editAction', action.param1);
+                editTileIntent(tileJson.id, 'editAction', parameters.join(';;;'));
             };
             badge.oncontextmenu = function (e) {
                 e.preventDefault();
-                editTileIntent(tileJson.id, 'deleteAction', action.param1);
+                editTileIntent(tileJson.id, 'deleteAction', parameters.join(';;;'));
             };
             actions.append(badge);
         }

@@ -2,7 +2,7 @@ package bar.tile.custom;
 
 import bar.Main;
 import bar.tile.Tile;
-import bar.tile.TileAction;
+import bar.tile.action.TileAction;
 import bar.util.Util;
 
 import java.io.IOException;
@@ -74,7 +74,7 @@ public class SystemInfoTile implements RuntimeTile {
     private Tile createCopyTextTile(String label, String copyText) {
         Tile tile = new Tile(label);
         tile.setCategory("runtime");
-        tile.addAction(new TileAction("copy", copyText));
+        tile.addAction(TileAction.getInstance("copy", copyText));
         return tile;
     }
 

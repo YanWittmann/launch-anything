@@ -1,7 +1,7 @@
 package bar.tile.custom;
 
 import bar.tile.Tile;
-import bar.tile.TileAction;
+import bar.tile.action.TileAction;
 import bar.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ public class MathExpressionTile implements RuntimeTile {
                     double result = evaluate(value);
                     Tile tile = new Tile(assignToVariable + " = " + makeResultForTileLabel(result));
                     tile.setCategory("runtime");
-                    tile.addAction(new TileAction(() -> setVariable(assignToVariable, result)));
+                    tile.addAction(TileAction.getInstance(() -> setVariable(assignToVariable, result)));
                     return Collections.singletonList(tile);
                 }
 
@@ -92,7 +92,7 @@ public class MathExpressionTile implements RuntimeTile {
     private Tile createCopyTextTile(String label, String copyText) {
         Tile tile = new Tile(label);
         tile.setCategory("runtime");
-        tile.addAction(new TileAction("copy", copyText));
+        tile.addAction(TileAction.getInstance("copy", copyText));
         return tile;
     }
 

@@ -6,6 +6,7 @@ import bar.logic.BarManager;
 import bar.logic.Settings;
 import bar.logic.UndoHistory;
 import bar.tile.*;
+import bar.tile.action.TileAction;
 import bar.ui.TrayUtil;
 import bar.util.GlobalKeyListener;
 import bar.util.Util;
@@ -23,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -305,62 +305,9 @@ public class Main {
             lastExecutedTile = lastTiles.get(currentResultIndex);
             barManager.setInputActive(false);
             if (lastExecutedTile != null) {
-                String selectedOption = Util.popupChooseButton("LaunchAnything", "What do you want to edit?", new String[]{"Name", "Action", "Both", "Cancel"});
-                if (selectedOption != null) {
-                    switch (selectedOption) {
-                        case "Action":
-                            if (!isToBeContinuedAfterEvaluatingEditType())
-                                return;
-                            break;
-                        case "Both":
-                            if (!isToBeContinuedAfterEvaluatingEditType())
-                                return;
-                            if (lastExecutedTile.getFirstAction() != null) {
-                                setLabelToLastExecutedTile(lastExecutedTile.getFirstAction().getExampleTileLabel());
-                            } else {
-                                setLabelToLastExecutedTile(lastExecutedTile.getLabel());
-                            }
-                            break;
-                        case "Name":
-                            setLabelToLastExecutedTile(lastExecutedTile.getLabel());
-                            break;
-                        case "Cancel":
-                            return;
-                        default:
-                            break;
-                    }
-                }
+                lastExecutedTile.userModifyTile();
                 tileManager.save();
             }
-        }
-    }
-
-    private boolean isToBeContinuedAfterEvaluatingEditType() {
-        TileAction firstAction = lastExecutedTile.getFirstAction();
-        String param1 = null;
-        String param2 = null;
-        boolean removeActionAfterwards = false;
-        if (firstAction != null) {
-            String editType = Util.popupChooseButton("LaunchAnything", "Do you want to modify the action type or only the parameters?", new String[]{"Parameters", "Type and Parameters", "Cancel"});
-            if ("Parameters".equals(editType)) {
-                param1 = firstAction.getParam1();
-                param2 = firstAction.getParam2();
-            } else if ("Type and Parameters".equals(editType)) {
-                removeActionAfterwards = true;
-            } else if ("Cancel".equals(editType)) {
-                return false;
-            }
-        }
-        if (createOrEditNewTileAction(lastExecutedTile, param1, param2) != null && removeActionAfterwards) {
-            lastExecutedTile.removeAction(firstAction);
-        }
-        return true;
-    }
-
-    private void setLabelToLastExecutedTile(String templateName) {
-        String newName = Util.popupTextInput("LaunchAnything", "Enter new name:", templateName);
-        if (newName != null && !newName.isEmpty() && !newName.equals("null")) {
-            lastExecutedTile.setLabel(newName);
         }
     }
 
@@ -512,12 +459,23 @@ public class Main {
                                     switch (whatToEdit) {
                                         case "createAction":
                                         case "editAction":
-                                            createOrEditNewTileAction(tile, additionalValue, null);
+                                            if (additionalValue != null) {
+                                                TileAction editTileAction = tile.findTileAction(additionalValue.split(";;;"));
+                                                if (editTileAction != null) {
+                                                    TileAction tileAction = editTileAction.userModifyAction();
+                                                    if (tileAction != null) {
+                                                        tile.removeAction(editTileAction);
+                                                        tile.addAction(tileAction);
+                                                    }
+                                                }
+                                            } else {
+                                                tile.addAction(TileAction.getInstanceUser());
+                                            }
                                             break;
                                         case "deleteAction":
-                                            TileAction tileAction = tile.findTileAction(additionalValue, null);
-                                            if (tileAction != null) {
-                                                tile.removeAction(tileAction);
+                                            TileAction deleteTileAction = tile.findTileAction(additionalValue.split(";;;"));
+                                            if (deleteTileAction != null) {
+                                                tile.removeAction(deleteTileAction);
                                             }
                                             break;
                                         case "deleteTile":
@@ -790,7 +748,7 @@ public class Main {
                                         TrayUtil.showError("You must be logged in to delete your account.");
                                     } else {
                                         String confirmRemove = Util.popupChooseButton("Cloud Configure Server", "Are you sure you want to remove your account?\nThis is a destructive action. All your cloud tiles will be deleted.", new String[]{"Yes", "No"});
-                                        if (confirmRemove.equals("Yes")) {
+                                        if (confirmRemove != null && confirmRemove.equals("Yes")) {
                                             tileManager.getCloudAccess().removeUser();
                                             settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_USERNAME, null);
                                             settings.setSettingSilent(Settings.Setting.CLOUD_TIMER_PASSWORD, null);
@@ -897,82 +855,11 @@ public class Main {
         return null;
     }
 
-    private TileAction createOrEditNewTileAction(Tile tile, String param1, String param2) {
-        TileAction tileAction;
-        if (param1 == null && param2 == null) {
-            tileAction = null;
-        } else {
-            tileAction = tile.findTileAction(param1, param2);
-            param1 = null;
-            param2 = null;
-        }
-
-        TileAction newTileAction;
-        String actionType;
-        if (tileAction != null) {
-            actionType = tileAction.getType();
-        } else {
-            String actionFromSnippet = TileAction.getActionFromSnippet(Util.getClipboardText());
-            actionType = Util.popupDropDown("Tile Action", "What type of action do you want to create?", TileAction.ACTION_TYPES, actionFromSnippet);
-        }
-
-        if (actionType != null) {
-            String previousValue = tileAction != null && tileAction.getParam1() != null ? tileAction.getParam1() : "";
-            switch (actionType) {
-                case "file":
-                    File file;
-                    try {
-                        File clipboardFile = new File(Util.getClipboardText());
-                        file = Util.pickFile(clipboardFile, null);
-                    } catch (Exception e) {
-                        file = Util.pickFile(null);
-                    }
-                    if (file != null) {
-                        param1 = file.getAbsolutePath();
-                    }
-                    break;
-                case "directory":
-                    actionType = "file";
-                    try {
-                        File clipboardFile = new File(Util.getClipboardText());
-                        if (clipboardFile.exists() && clipboardFile.isDirectory()) Util.setPreviousFile(clipboardFile);
-                    } catch (Exception e) {
-                    }
-                    file = Util.pickDirectory();
-                    if (file != null) {
-                        param1 = file.getAbsolutePath();
-                    }
-                    break;
-                case "url":
-                    String proposedUrl = previousValue;
-                    try {
-                        proposedUrl = new URL(Util.getClipboardText()).toString();
-                    } catch (Exception e) {
-                    }
-                    param1 = Util.popupTextInput("Tile Action", "Enter the URL", proposedUrl);
-                    break;
-                case "copy":
-                    param1 = Util.popupTextInput("Tile Action", "Enter the text to copy", Util.getClipboardText());
-                    break;
-                default:
-                    break;
-            }
-
-            if (param1 != null) {
-                newTileAction = new TileAction(actionType, param1, param2);
-                tile.addAction(newTileAction);
-                tile.removeAction(tileAction);
-                return newTileAction;
-            }
-        }
-
-        return null;
-    }
-
     public void createTile(boolean isCloudTile) {
         Tile newTile = new Tile();
-        TileAction newTileAction = createOrEditNewTileAction(newTile, null, null);
+        TileAction newTileAction = TileAction.getInstanceUser();
         if (newTileAction != null) {
+            newTile.addAction(newTileAction);
             String tileName = Util.popupTextInput("Create new Tile", "Enter the name of the new Tile:", newTileAction.getExampleTileLabel());
             if (tileName != null && tileName.length() > 0 && !tileName.equals("null")) {
                 newTile.setLabel(tileName);

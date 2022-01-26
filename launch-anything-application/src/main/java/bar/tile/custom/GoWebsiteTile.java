@@ -1,7 +1,7 @@
 package bar.tile.custom;
 
 import bar.tile.Tile;
-import bar.tile.TileAction;
+import bar.tile.action.TileAction;
 import bar.util.Util;
 
 import java.util.Collections;
@@ -16,7 +16,7 @@ public class GoWebsiteTile implements RuntimeTile {
             Tile tile = new Tile("I'm Feeling Lucky!");
             tile.setCategory("runtime");
             String searchTerm = search.replaceAll("^go *", "");
-            TileAction action = new TileAction("url", "https://duckduckgo.com/?q=!ducky+" + Util.urlEncode(searchTerm));
+            TileAction action = TileAction.getInstance("url", "https://duckduckgo.com/?q=!ducky+" + Util.urlEncode(searchTerm));
             tile.addAction(action);
             return Collections.singletonList(tile);
         }

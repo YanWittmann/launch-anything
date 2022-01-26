@@ -1,6 +1,8 @@
 package bar.tile;
 
 import bar.Main;
+import bar.tile.action.TileAction;
+import bar.util.Util;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -30,7 +32,7 @@ public class Tile {
             JSONArray actions = json.optJSONArray("actions");
             if (actions != null) {
                 for (int i = 0; i < actions.length(); i++) {
-                    tileActions.add(new TileAction(actions.optJSONObject(i)));
+                    tileActions.add(TileAction.getInstance(actions.optJSONObject(i)));
                 }
             } else {
                 String strActions = json.optString("action", null);
@@ -39,7 +41,7 @@ public class Tile {
                     strActions = strActions.replace("\\", "\\\\");
                     JSONArray arrActions = new JSONArray(strActions);
                     for (int i = 0; i < arrActions.length(); i++) {
-                        tileActions.add(new TileAction(arrActions.optJSONObject(i)));
+                        tileActions.add(TileAction.getInstance(arrActions.optJSONObject(i)));
                     }
                 }
             }
@@ -152,7 +154,13 @@ public class Tile {
         LOG.info("Executing tile [{}]", label);
         lastActivated = System.currentTimeMillis();
         for (TileAction action : tileActions) {
-            LOG.info("Executing action [{} {} {}]", action.getType(), action.getParam1(), action.getParam2());
+            if (action == null) {
+                LOG.warn("Action is null in tile [{}]", label);
+                continue;
+            }
+            String[] parameters = action.getParameters();
+            if (parameters.length == 0) LOG.info("Executing action [{}]", action.getType());
+            else LOG.info("Executing action [{}] with parameters [{}]", action.getType(), parameters);
             action.execute(main);
         }
     }
@@ -219,11 +227,13 @@ public class Tile {
     }
 
     public void addAction(TileAction action) {
+        if (action == null) return;
         tileActions.add(action);
     }
 
-    public void removeAction(TileAction tileAction) {
-        tileActions.remove(tileAction);
+    public void removeAction(TileAction action) {
+        if (action == null) return;
+        tileActions.remove(action);
     }
 
     public void addKeyword(String keyword) {
@@ -247,23 +257,15 @@ public class Tile {
 
     public void cleanUpTileActions() {
         for (int i = tileActions.size() - 1; i >= 0; i--) {
-            boolean p1IsNull = tileActions.get(i).getParam1() == null || tileActions.get(i).getParam1().length() == 0;
-            boolean p2IsNull = tileActions.get(i).getParam2() == null || tileActions.get(i).getParam2().length() == 0;
-            if (p1IsNull && p2IsNull) {
+            if (tileActions.get(i) == null || tileActions.get(i).getParameters().length == 0) {
                 tileActions.remove(i);
             }
         }
     }
 
-    public TileAction findTileAction(String param1, String param2) {
+    public TileAction findTileAction(String... params) {
         for (TileAction action : tileActions) {
-            if (isNormalizedTileActionEquals(action.getParam1(), param1) && isNormalizedTileActionEquals(action.getParam2(), param2)) {
-                return action;
-            }
-        }
-        for (TileAction action : tileActions) {
-            if ((isNormalizedTileActionEquals(action.getParam1(), param1) || isNormalizedTileActionEquals(action.getParam1(), param2))
-                && (isNormalizedTileActionEquals(action.getParam2(), param1) || isNormalizedTileActionEquals(action.getParam2(), param2))) {
+            if (action.equalsByParams(params)) {
                 return action;
             }
         }
@@ -282,6 +284,48 @@ public class Tile {
                 .toLowerCase();
     }
 
+    public void userModifyTile() {
+        String selectedOption = Util.popupChooseButton("LaunchAnything", "What do you want to edit?", new String[]{"Name", "Action", "Both", "Cancel"});
+        if (selectedOption != null) {
+            switch (selectedOption) {
+                case "Action":
+                    userModifyAction(getFirstAction());
+                    break;
+                case "Name":
+                    userModifyLabel();
+                    break;
+                case "Both":
+                    if (userModifyAction(getFirstAction())) {
+                        userModifyLabel();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public boolean userModifyAction(TileAction tileAction) {
+        TileAction modifiedAction = tileAction.userModifyAction();
+        if (modifiedAction != null) {
+            removeAction(tileAction);
+            addAction(modifiedAction);
+        }
+        return modifiedAction != null;
+    }
+
+    public boolean userModifyLabel() {
+        String exampleName;
+        if (getFirstAction() != null) exampleName = getFirstAction().getExampleTileLabel();
+        else exampleName = getLabel();
+        String newName = Util.popupTextInput("LaunchAnything", "Enter new name:", exampleName);
+        if (newName != null && !newName.isEmpty() && !newName.equals("null")) {
+            setLabel(newName);
+            return true;
+        }
+        return false;
+    }
+
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
         json.put("id", id);
@@ -292,6 +336,7 @@ public class Tile {
         json.put("lastActivated", lastActivated);
         JSONArray actions = new JSONArray();
         for (TileAction action : tileActions) {
+            if (action == null) continue;
             actions.put(action.toJSON());
         }
         json.put("actions", actions);

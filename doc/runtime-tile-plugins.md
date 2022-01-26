@@ -79,7 +79,7 @@ So, I create a new file called `FeetToMeters.java` in the plugin module, and I a
 package la.plugin;
 
 import bar.tile.Tile;
-import bar.tile.TileAction;
+import bar.tile.action.TileAction;
 import bar.tile.custom.RuntimeTile;
 
 import java.util.Collections;

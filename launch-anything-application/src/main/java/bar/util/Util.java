@@ -543,4 +543,23 @@ public abstract class Util {
     public static Point getAbsoluteMousePosition() {
         return MouseInfo.getPointerInfo().getLocation();
     }
+
+    public static String getWebsiteTitle(String url) {
+        InputStream response = null;
+        try {
+            response = new URL(url).openStream();
+            Scanner scanner = new Scanner(response);
+            String responseBody = scanner.useDelimiter("\\A").next();
+            return responseBody.substring(responseBody.indexOf("<title>") + 7, responseBody.indexOf("</title>"));
+        } catch (Exception ex) {
+            LOG.error("Error getting website title", ex);
+        } finally {
+            try {
+                response.close();
+            } catch (Exception ex) {
+                LOG.error("Error closing response", ex);
+            }
+        }
+        return null;
+    }
 }

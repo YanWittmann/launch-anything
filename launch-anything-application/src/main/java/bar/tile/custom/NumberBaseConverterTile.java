@@ -1,7 +1,7 @@
 package bar.tile.custom;
 
 import bar.tile.Tile;
-import bar.tile.TileAction;
+import bar.tile.action.TileAction;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -62,7 +62,7 @@ public class NumberBaseConverterTile implements RuntimeTile {
     private Tile createCopyTextTile(String label, String copyText) {
         Tile tile = new Tile(label);
         tile.setCategory("runtime");
-        tile.addAction(new TileAction("copy", copyText));
+        tile.addAction(TileAction.getInstance("copy", copyText));
         return tile;
     }
 

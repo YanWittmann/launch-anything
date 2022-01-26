@@ -1,7 +1,7 @@
 package bar.tile.custom;
 
 import bar.tile.Tile;
-import bar.tile.TileAction;
+import bar.tile.action.TileAction;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -21,12 +21,12 @@ public class URIOpenerTile implements RuntimeTile {
                 if (file.isDirectory()) {
                     Tile tile = new Tile("Open directory " + file.getName());
                     tile.setCategory("file");
-                    tile.addAction(new TileAction("directory", file.getAbsolutePath()));
+                    tile.addAction(TileAction.getInstance("directory", file.getAbsolutePath()));
                     return Collections.singletonList(tile);
                 } else {
                     Tile tile = new Tile("Open file " + file.getName());
                     tile.setCategory("file");
-                    tile.addAction(new TileAction("file", file.getAbsolutePath()));
+                    tile.addAction(TileAction.getInstance("file", file.getAbsolutePath()));
                     return Collections.singletonList(tile);
                 }
             }
@@ -35,14 +35,14 @@ public class URIOpenerTile implements RuntimeTile {
                 if (url.getProtocol().equals("http") || url.getProtocol().equals("https")) {
                     Tile tile = new Tile("Open URL " + url);
                     tile.setCategory("url");
-                    tile.addAction(new TileAction("url", url.toString()));
+                    tile.addAction(TileAction.getInstance("url", url.toString()));
                     return Collections.singletonList(tile);
                 }
             } catch (MalformedURLException e) {
                 if (!search.contains(",") && search.matches("[a-zA-Z0-9]+\\..*") && !search.replace(".", "").matches("[0-9]+")) {
                     Tile tile = new Tile("Open URL " + search);
                     tile.setCategory("url");
-                    tile.addAction(new TileAction("url", "http://" + search));
+                    tile.addAction(TileAction.getInstance("url", "http://" + search));
                     return Collections.singletonList(tile);
                 }
             }
