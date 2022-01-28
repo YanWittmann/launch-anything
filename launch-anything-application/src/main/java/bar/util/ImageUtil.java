@@ -7,6 +7,13 @@ import java.util.Arrays;
 
 public abstract class ImageUtil {
 
+    public static BufferedImage cropImageToLeftHalf(BufferedImage image) {
+        return image.getSubimage(0, 0, image.getWidth() / 2, image.getHeight());
+    }
+
+    public static BufferedImage cropImageToRightHalf(BufferedImage image) {
+        return image.getSubimage(image.getWidth() / 2, 0, image.getWidth() / 2, image.getHeight());
+    }
 
     public static BufferedImage overlayColor(BufferedImage image, Color color, float amount) {
         BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);

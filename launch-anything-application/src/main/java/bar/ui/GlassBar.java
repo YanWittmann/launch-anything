@@ -140,8 +140,18 @@ public class GlassBar extends JFrame {
         BufferedImage screenshot = robot.createScreenCapture(barRectangle);
         screenshot = ImageUtil.saturateImage(screenshot, 1.6f);
         BACKGROUND_BLUR_FILTER.filter(screenshot, screenshot);
-        Color averageColor = ImageUtil.averageColor(screenshot);
-        isLightMode = averageColor.getRed() + averageColor.getGreen() + averageColor.getBlue() > 170;
+
+        BufferedImage leftHalf = ImageUtil.cropImageToLeftHalf(screenshot);
+        BufferedImage rightHalf = ImageUtil.cropImageToRightHalf(screenshot);
+        Color averageColorLeft = ImageUtil.averageColor(leftHalf);
+        Color averageColorRight = ImageUtil.averageColor(rightHalf);
+        isLightMode = true;
+        if (averageColorLeft.getRed() + averageColorLeft.getGreen() + averageColorLeft.getBlue() <= 180) {
+            isLightMode = false;
+        } else if (averageColorRight.getRed() + averageColorRight.getGreen() + averageColorRight.getBlue() <= 180) {
+            isLightMode = false;
+        }
+
         if (isLightMode) {
             frameBorderLabel.setBorder(ROUNDED_LINE_BORDER_FOR_BRIGHT_MODE);
             screenshot = ImageUtil.overlayColor(screenshot, BLUR_COLOR_FOR_BRIGHT_MODE, BACKGROUND_BLEND_FACTOR_FOR_BRIGHT_MODE);
