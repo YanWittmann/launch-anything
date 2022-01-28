@@ -28,6 +28,8 @@ public class TileManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(TileManager.class);
 
+    private final static int TILE_FORMAT_VERSION = 1;
+
     private final PluginTileLoader plugins;
     private final TileBackups tileBackups;
 
@@ -160,9 +162,8 @@ public class TileManager {
             TrayUtil.showError("Unable to load tiles: file is corrupted");
             LOG.error("Unable to load tiles: file is corrupted: {}", e.getMessage());
             if (tileBackups.userAskLoadBackup()) {
-                Util.popupMessage("Backup",
-                        "Loaded backup.\n" +
-                        "Attempting to load tiles from backup...");
+                Util.popupMessage("Backup", "Will now attempt to load tiles from backup.\n" +
+                                            "If the problem persists, please create an issue on GitHub.");
                 readTilesFromFile();
             }
         } catch (FileNotFoundException e) {
@@ -174,6 +175,20 @@ public class TileManager {
     }
 
     public void loadTilesFromJson(JSONObject tilesRoot) {
+        int version = tilesRoot.optInt("version", 0);
+        if (version != TILE_FORMAT_VERSION) {
+            tileBackups.createBackup();
+            LOG.warn("Tile file format [{}] is not the current version [{}]", version, TILE_FORMAT_VERSION);
+            TrayUtil.showWarning("Tile file format is not the current version.");
+            String answer = Util.popupChooseButton("Load Tiles",
+                    "Tile format does not match current version (file = " + version + ", current = " + TILE_FORMAT_VERSION + ").\n" +
+                    "Do you want to still load the tiles? A backup has already been created.\n" +
+                    "If you have problems migrating, please create an issue on GitHub.",
+                    new String[]{"Load", "Open backup directory and exit"});
+            if (answer == null || answer.equals("Open backup directory and exit")) {
+                tileBackups.openBackupDirAndExit();
+            }
+        }
         tiles.clear();
         tileGenerators.clear();
         categories.clear();
@@ -361,6 +376,7 @@ public class TileManager {
         tilesRoot.put("categories", categoriesArray);
         tilesRoot.put("disabled-runtime-tiles", disabledRuntimeTiles.stream().distinct().collect(Collectors.toList()));
         tilesRoot.put("cloudTiles", cloudTiles);
+        tilesRoot.put("version", TILE_FORMAT_VERSION);
 
         return tilesRoot;
     }
