@@ -179,7 +179,7 @@ public class TileManager {
         if (version != TILE_FORMAT_VERSION) {
             tileBackups.createBackup();
             LOG.warn("Tile file format [{}] is not the current version [{}]", version, TILE_FORMAT_VERSION);
-            TrayUtil.showWarning("Tile file format is not the current version.");
+            TrayUtil.showWarning("Tile file format is not the current version.\nCheck popup for details.");
             String answer = Util.popupChooseButton("Load Tiles",
                     "Tile format does not match current version (file = " + version + ", current = " + TILE_FORMAT_VERSION + ").\n" +
                     "Do you want to still load the tiles? A backup has already been created.\n" +
