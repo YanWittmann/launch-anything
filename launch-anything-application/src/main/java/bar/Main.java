@@ -82,6 +82,7 @@ public class Main {
         settings = new Settings();
         barManager = new BarManager(settings);
         tileManager = new TileManager();
+        tileManager.getTileBackups().removeOldBackups(settings.getInt(Settings.Setting.MAX_BACKUPS));
         barManager.addInputListener(this::userInput);
         tileManager.addOnInputEvaluatedListener(this::onInputEvaluated);
 

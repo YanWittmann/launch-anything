@@ -258,6 +258,7 @@ public class Settings {
         CLOUD_TIMER_URL("cloudTimerUrl", null, "cloud", TYPE_STRING),
         SHOW_STARTUP_MESSAGE("showStartupMessage", true, "general", TYPE_BOOLEAN),
         CHECK_FOR_UPDATES("checkForUpdates", true, "general", TYPE_BOOLEAN),
+        MAX_BACKUPS("maxBackups", 12, "general", TYPE_INT),
         NULL("null", null, "null", TYPE_INT);
 
         public final String key;

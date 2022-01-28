@@ -2,7 +2,6 @@ package bar.tile;
 
 import bar.logic.Settings;
 import bar.tile.action.TileAction;
-import bar.tile.action.TileActionDirectory;
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
 import bar.util.Util;
@@ -17,8 +16,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +29,7 @@ public class TileManager {
     private static final Logger LOG = LoggerFactory.getLogger(TileManager.class);
 
     private final PluginTileLoader plugins;
+    private final TileBackups tileBackups;
 
     private final List<Tile> tiles = new ArrayList<>();
     private final List<RuntimeTile> runtimeTiles = new ArrayList<>();
@@ -49,13 +47,15 @@ public class TileManager {
     private CloudAccess cloudAccess;
 
     public TileManager() {
-        findSettingsFile();
+        findTilesFile();
         if (tileFile == null) {
             tileFile = new File("res/tiles.json");
             generateDefaultTiles();
             createSettingsTiles();
             isFirstLaunch = true;
+            tileBackups = new TileBackups(tileFile);
         } else {
+            tileBackups = new TileBackups(tileFile);
             readTilesFromFile();
         }
         LOG.info("Is first launch: [{}]", isFirstLaunch);
@@ -129,7 +129,7 @@ public class TileManager {
             "../res/tiles.json"
     };
 
-    private void findSettingsFile() {
+    private void findTilesFile() {
         for (String possibleSettingsFile : possibleTilesFiles) {
             File candidate = new File(possibleSettingsFile).getAbsoluteFile();
             if (candidate.exists()) {
@@ -143,7 +143,6 @@ public class TileManager {
 
     private void readTilesFromFile() {
         try {
-            backupCurrentTileFile(false);
             StringBuilder fileContent = new StringBuilder();
             Scanner reader = new Scanner(tileFile);
             while (reader.hasNextLine()) {
@@ -153,16 +152,18 @@ public class TileManager {
 
             JSONObject tilesRoot = new JSONObject(fileContent.toString());
             loadTilesFromJson(tilesRoot);
-            backupCurrentTileFile(true);
+
+            // only create a backup if the file was loaded successfully,
+            // we don't want to create a backup if the file is corrupted
+            tileBackups.createBackup();
         } catch (JSONException e) {
             TrayUtil.showError("Unable to load tiles: file is corrupted");
             LOG.error("Unable to load tiles: file is corrupted: {}", e.getMessage());
-            if (userAskLoadBackup()) {
-                readTilesFromFile();
+            if (tileBackups.userAskLoadBackup()) {
                 Util.popupMessage("Backup",
-                        "The decision you just took does not does not guarantee that the file will now be loaded correctly.\n" +
-                        "You can check the res/backup.json files to find a file that contains valid data.\n" +
-                        "If you still have problems restoring your tiles, please create an issue on GitHub");
+                        "Loaded backup.\n" +
+                        "Attempting to load tiles from backup...");
+                readTilesFromFile();
             }
         } catch (FileNotFoundException e) {
             TrayUtil.showError("Unable to load tiles: file does not exist");
@@ -170,75 +171,6 @@ public class TileManager {
         }
         regenerateGeneratedTiles();
         createSettingsTiles();
-    }
-
-    private void backupCurrentTileFile(boolean overwrite) {
-        if (tileFile.exists()) {
-            File backupFile = new File(tileFile.getParentFile(), "backup.json");
-            if (backupFile.exists()) {
-                if (overwrite) backupFile.delete();
-                else return;
-            }
-            try {
-                Files.copy(tileFile.toPath(), backupFile.toPath());
-                LOG.info("Created backup of tiles in [{}]", backupFile.getAbsolutePath());
-            } catch (IOException e) {
-                LOG.error("Could not backup tiles file", e);
-            }
-        }
-    }
-
-    private void backupBackupFile() {
-        try {
-            File backupFile = new File(tileFile.getParentFile(), "backup.json");
-            File backupBackupFile = new File(tileFile.getParentFile(), "backup_" + System.currentTimeMillis() + ".json");
-            Files.copy(backupFile.toPath(), backupBackupFile.toPath());
-        } catch (IOException e) {
-            LOG.error("Could not create backup backup", e);
-        }
-    }
-
-    private boolean userAskLoadBackup() {
-        File backupFile = new File(tileFile.getParentFile(), "backup.json");
-        if (backupFile.exists()) {
-            backupBackupFile();
-            String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(backupFile.lastModified()));
-            String answer = Util.popupChooseButton("Load backup",
-                    "Your tiles file seems to be corrupted.\n" +
-                    "There is a backup available: " + time + ". Do you want to load the backup file?\n" +
-                    "If this does not work however, the current data will be overwritten.\n" +
-                    "A backup has already been created, so that you can exit the bar safely and check the file manually.\n" +
-                    "If you need help, create an issue on GitHub.",
-                    new String[]{"Yes", "No", "Exit LaunchAnything"});
-            if (answer != null) {
-                if (answer.equals("Exit LaunchAnything")) {
-                    openBackupDir(backupFile.getParentFile());
-                    System.exit(0);
-                } else if (answer.equals("No")) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-            try {
-                tileFile.delete();
-                Files.copy(backupFile.toPath(), tileFile.toPath());
-                LOG.info("Loaded backup of tiles in [{}]", backupFile.getAbsolutePath());
-                return true;
-            } catch (IOException e) {
-                LOG.error("Could not load backup of tiles file", e);
-                TrayUtil.showError("Unable to load backup (try copying yourself): " + e.getMessage());
-            }
-        }
-        return false;
-    }
-
-    private void openBackupDir(File dir) {
-        try {
-            TileActionDirectory.openDir(dir);
-        } catch (IOException e) {
-            Util.popupMessage("Backup", "You can find the backup file in the root directory of the application:\n" + dir.getAbsolutePath());
-        }
     }
 
     public void loadTilesFromJson(JSONObject tilesRoot) {
@@ -749,6 +681,14 @@ public class TileManager {
 
     public CloudAccess getCloudAccess() {
         return cloudAccess;
+    }
+
+    public File getTileFile() {
+        return tileFile;
+    }
+
+    public TileBackups getTileBackups() {
+        return tileBackups;
     }
 
     public void addOnInputEvaluatedListener(InputEvaluatedListener listener) {
