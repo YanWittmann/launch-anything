@@ -19,7 +19,10 @@ public class PluginTemplate implements RuntimeTile {
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
         if (search.equals("template")) {
             Tile tile = new Tile("Template Plugin Tile", "Template", "", false);
-            TileAction action = TileAction.getInstance(() -> Util.popupMessage("Template Plugin Tile", "You executed the Template Plugin Tile!"));
+            TileAction action = TileAction.getInstance(() -> {
+                Util.popupMessage("Template Plugin Tile", "You executed the Template Plugin Tile!");
+                info(this, "Template Plugin Tile executed");
+            });
             tile.addAction(action);
             return Collections.singletonList(tile);
         }

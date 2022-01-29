@@ -479,6 +479,7 @@ public class TileManager {
     private enum RuntimeTiles {
         GO_WEBSITE(GoWebsiteTile::new),
         NUMBER_BASE_CONVERTER(NumberBaseConverterTile::new),
+        ASPECT_RATIO(AspectRationTile::new),
         MATH_EXPRESSION(MathExpressionTile::new),
         CHART_GENERATOR(ChartGeneratorTile::new),
         WIKI_SEARCH(WikiSearchTile::new),

@@ -48,7 +48,7 @@ public interface RuntimeTile {
      * @param args     The arguments to use for formatting the message.
      */
     default void info(RuntimeTile instance, String message, Object... args) {
-        LoggerFactory.getLogger(ChartGeneratorTile.class).info("[" + getImplementationIdentifier(instance) + "] " + message, args);
+        LoggerFactory.getLogger(RuntimeTile.class).info("[" + getImplementationIdentifier(instance) + "] " + message, args);
     }
 
     /**
@@ -59,7 +59,7 @@ public interface RuntimeTile {
      * @param args     The arguments to use for formatting the message.
      */
     default void warn(RuntimeTile instance, String message, Object... args) {
-        LoggerFactory.getLogger(ChartGeneratorTile.class).warn("[" + getImplementationIdentifier(instance) + "] " + message, args);
+        LoggerFactory.getLogger(RuntimeTile.class).warn("[" + getImplementationIdentifier(instance) + "] " + message, args);
     }
 
     /**
@@ -70,7 +70,7 @@ public interface RuntimeTile {
      * @param args     The arguments to use for formatting the message.
      */
     default void error(RuntimeTile instance, String message, Object... args) {
-        LoggerFactory.getLogger(ChartGeneratorTile.class).error("[" + getImplementationIdentifier(instance) + "] " + message, args);
+        LoggerFactory.getLogger(RuntimeTile.class).error("[" + getImplementationIdentifier(instance) + "] " + message, args);
     }
 
     default String getImplementationIdentifier(RuntimeTile instance) {
