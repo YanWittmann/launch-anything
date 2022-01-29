@@ -92,6 +92,9 @@ currently only available:
   `10 dec to hex`, but since the keyword search is very fuzzy, something like this also works: `oct23bin`. The available
   systems are: `dec` `hex` `oct` `bin`. You can also leave away the target system to convert to all other systems.
 - URI opener: Enter a path to a file, directory or URL, and it will be opened in your default application.
+- Aspect ratio: A tile that can calculate a width/height based on a ratio and a single value.  
+  Example: `16:9 1920:` will show `1080` as the height.  
+  `3:2 :1068` will show `1602` as the width.
 
 The math expression and chart generator tile are a bit more complex:
 
@@ -173,9 +176,11 @@ case-insensitive. So, this input `sys Local IP` is the same as `syslocalip` (or 
 
 #### Cloud Tiles
 
-Using the cloud tiles feature, you can synchronize your cloud tiles between all your devices. This is especially
-useful for URL tiles, as they are device independent.  
+Using the cloud tiles feature, you can synchronize your cloud tiles between all your devices. This is especially useful
+for URL tiles, as those are the device independent ones.  
 Find out how to set up this for you in the **[cloud-tiles.md](cloud-tiles.md)** file.
+
+No, really. They have changed they way I use the launch bar. I think they were one of the best additions so far.
 
 #### Execute the last executed tile
 
@@ -197,6 +202,13 @@ of the application and directly use them there.
 
 If you press `alt+enter` (or whatever keys you have configured in the settings) while the bar is active, you can quickly
 modify the name, action or both of the topmost tile.
+
+#### Backups
+
+Whenever the tiles are successfully loaded from the `res` directory, a backup with the current timestamp is created in
+the `backups` directory. If something goes wrong while loading the tiles, the user is asked if they want to restore the
+latest backup. There is a maximum of 12 backups that are kept, older ones are deleted. This can be configured in the
+settings.
 
 #### Create Tiles
 
