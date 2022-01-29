@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public abstract class TrayUtil {
 
@@ -14,17 +16,20 @@ public abstract class TrayUtil {
 
     private static Main main;
 
+    private static SystemTray sysTray;
     private static TrayIcon trayIcon;
 
     private static PopupMenu trayMenu;
     private static MenuItem resetTimeoutIcon;
 
     private static long lastErrorOrWarningTimestamp = 0;
+    private static Timer removeAllNotificationsTimer;
 
     public static void showMessage(String message) {
         if (System.currentTimeMillis() - lastErrorOrWarningTimestamp > 5000) {
             LOG.info("Showing message tray: {}", message.replace("\n", "\n   "));
             trayIcon.displayMessage("LaunchAnything", message, TrayIcon.MessageType.INFO);
+            startRemoveAllTrayNotificationsTimer();
         } else {
             LOG.info("Not showing message tray: {}", message.replace("\n", "\n   "));
         }
@@ -34,12 +39,14 @@ public abstract class TrayUtil {
         LOG.warn("Showing warning message tray: {}", message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything Warning", message, TrayIcon.MessageType.WARNING);
         lastErrorOrWarningTimestamp = System.currentTimeMillis();
+        startRemoveAllTrayNotificationsTimer();
     }
 
     public static void showError(String message) {
         LOG.info("Showing error message tray: {}", message.replace("\n", "\n   "));
         trayIcon.displayMessage("LaunchAnything Error", message, TrayIcon.MessageType.ERROR);
         lastErrorOrWarningTimestamp = System.currentTimeMillis();
+        startRemoveAllTrayNotificationsTimer();
     }
 
     public interface MessageCallback {
@@ -49,7 +56,6 @@ public abstract class TrayUtil {
     public static void showMessage(String message, int maxDuration, MessageCallback callback) {
         LOG.info("Showing message tray: {}", message.replace("\n", "\n   "));
         try {
-            SystemTray sysTray = SystemTray.getSystemTray();
             TrayIcon icon = createTrayIconFromResource();
             setDefaultIconVisible(false);
             sysTray.add(icon);
@@ -70,7 +76,6 @@ public abstract class TrayUtil {
 
     private static void setDefaultIconVisible(boolean visible) {
         try {
-            SystemTray sysTray = SystemTray.getSystemTray();
             if (visible) {
                 sysTray.add(trayIcon);
             } else {
@@ -119,6 +124,28 @@ public abstract class TrayUtil {
         }
     }
 
+    private static void startRemoveAllTrayNotificationsTimer() {
+        if (removeAllNotificationsTimer != null) {
+            removeAllNotificationsTimer.cancel();
+        }
+        removeAllNotificationsTimer = new Timer();
+        removeAllNotificationsTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                removeAllTrayNotifications();
+            }
+        }, 20 * 1000);
+    }
+
+    private static void removeAllTrayNotifications() {
+        try {
+            sysTray.remove(trayIcon);
+            sysTray.add(trayIcon);
+        } catch (Exception e) {
+            LOG.error("Unable to remove all tray notifications", e);
+        }
+    }
+
     private static TrayIcon createTrayIconFromResource() {
         ClassLoader cldr = TrayUtil.class.getClassLoader();
         java.net.URL imageURL = cldr.getResource("img/tray.png");
@@ -137,7 +164,7 @@ public abstract class TrayUtil {
         }
 
         try {
-            SystemTray sysTray = SystemTray.getSystemTray();
+            sysTray = SystemTray.getSystemTray();
             trayIcon = createTrayIconFromResource();
             sysTray.add(trayIcon);
         } catch (AWTException e) {
