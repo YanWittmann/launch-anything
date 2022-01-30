@@ -52,6 +52,8 @@ The individual values mean the following:
 
 To delete a tile, right-click the name of the tile. To remove a keyword or an action, right-click it. To edit any value,
 left click it.
+
+Want to create your own tile actions? Find out how to **[write a plugin](tile-action-plugins.md)**!
 </details>
 
 <details>
