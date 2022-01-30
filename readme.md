@@ -22,7 +22,9 @@ detector is based on the Windows API.
     - Convert between number systems
     - Use the `I'm feeling lucky` functionality to open any webpage
     - Directly go to a wikipedia article
-- Plugins: add new functionality to the search bar! **[More information](doc/runtime-tile-plugins.md)**.
+- Plugins: add new functionality to the search bar!
+  - **[Runtime Tile Plugins](doc/runtime-tile-plugins.md)**
+  - **[Tile Action Plugins](doc/tile-action-plugins.md)**
 - Disable (timeout) the bar for a given amount of time
 - Cloud Tiles: Store your tiles in the cloud to access them from any device. **[More information](doc/cloud-tiles.md)**.
 

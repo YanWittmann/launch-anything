@@ -49,6 +49,8 @@ public class TileManager {
     private CloudAccess cloudAccess;
 
     public TileManager() {
+        plugins = new PluginTileLoader();
+        plugins.loadPlugins();
         findTilesFile();
         if (tileFile == null) {
             tileFile = new File("res/tiles.json");
@@ -62,8 +64,6 @@ public class TileManager {
         }
         LOG.info("Is first launch: [{}]", isFirstLaunch);
         addRuntimeTiles();
-        plugins = new PluginTileLoader();
-        plugins.loadPlugins();
     }
 
     public boolean isFirstLaunch() {

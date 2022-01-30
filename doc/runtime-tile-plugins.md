@@ -4,7 +4,7 @@ You can create your very own runtime tiles by writing a plugin for the LaunchBar
 
 ![Template Plugin in settings](img/teplatePluginSettings.png)
 
-## What is a runtime tile?
+## What is a Runtime Tile?
 
 A runtime tile, as the name suggests, is a tile generator that generates tiles based on the current input the user
 inputs into the LaunchBar. These tiles are then displayed as result tiles and the user can select one of them. If the
@@ -39,8 +39,8 @@ git clone https://github.com/Skyball2000/launch-anything.git
 Then navigate to the
 **[launch-anything-plugins\src\main\java\la\plugin](../launch-anything-plugins/src/main/java/la/plugin)** directory.
 Here you will find a
-**[template for a plugin](../launch-anything-plugins/src/main/java/la/plugin/PluginTemplate.java)**, that you can use as
-a starting point. Rename the file and class to whatever plugin you want to create.
+**[template for a plugin](../launch-anything-plugins/src/main/java/la/plugin/RuntimeTilePlugin.java)**, that you can use
+as a starting point. Rename the file and class to whatever plugin you want to create.
 
 Make sure the plugin implements the `RuntimeTile` interface. This forces you to implement the following methods:
 
@@ -79,7 +79,7 @@ So, I create a new file called `FeetToMeters.java` in the plugin module, and I a
 package la.plugin;
 
 import bar.tile.Tile;
-import bar.tile.action.TileAction;
+import bar.tile.action.TileActionCopy;
 import bar.tile.custom.RuntimeTile;
 
 import java.util.Collections;
@@ -102,6 +102,7 @@ public class FeetToMeters implements RuntimeTile {
                 double feet = Double.parseDouble(searchTerm);
                 double meters = feet * 0.3048;
                 tile.setLabel(String.format("%.2f meters", meters));
+                tile.addAction(new TileActionCopy(String.valueOf(meters)));
             } catch (NumberFormatException e) {
                 return Collections.emptyList();
             }
@@ -114,6 +115,7 @@ public class FeetToMeters implements RuntimeTile {
                 double meters = Double.parseDouble(searchTerm);
                 double feet = meters * 3.28084;
                 tile.setLabel(String.format("%.2f feet", feet));
+                tile.addAction(new TileActionCopy(String.valueOf(feet)));
             } catch (NumberFormatException e) {
                 return Collections.emptyList();
             }
@@ -166,3 +168,5 @@ tile.addAction(action);
 
 This can be done by passing a `RuntimeTileInteraction` instance to the `TileAction` constructor. It has a `run` method
 that will be called when the action is executed.
+
+Or, of course you can implement your own `TileAction`. See **[this document](tile-action-plugins.md)** for more details.

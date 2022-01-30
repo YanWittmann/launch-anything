@@ -1,5 +1,6 @@
 package bar.tile;
 
+import bar.tile.action.TileAction;
 import bar.tile.custom.RuntimeTile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -24,6 +22,7 @@ public class PluginTileLoader {
 
     private File pluginDirectory;
     private final List<RuntimeTile> pluginRuntimeTiles = new ArrayList<>();
+    private final Map<String, Class<? extends TileAction>> pluginTileActions = new HashMap<>();
 
     public PluginTileLoader() {
         findPluginDirectory();
@@ -120,28 +119,34 @@ public class PluginTileLoader {
         } catch (MalformedURLException e) {
             LOG.error("Error loading plugins", e);
         }
+
+        TileAction.setPlugins(pluginTileActions);
     }
 
     private void addPluginFromClass(Class<?> cls, File file) throws InvocationTargetException, InstantiationException, IllegalAccessException {
-        if (Arrays.stream(cls.getInterfaces()).noneMatch(i -> i.getName().equals(RuntimeTile.class.getName()))) {
-            LOG.warn("Plugin [{}] does not implement [{}]", cls.getName(), RuntimeTile.class.getName());
+        boolean isRuntimeTile = Arrays.stream(cls.getInterfaces()).anyMatch(i -> i.getName().equals(RuntimeTile.class.getName()));
+        boolean isTileAction = cls.getSuperclass().getName().equals(TileAction.class.getName());
+        if (!isRuntimeTile && !isTileAction) {
+            LOG.warn("Plugin [{}] does not implement [{}] or extend [{}]", cls.getName(), RuntimeTile.class.getName(), TileAction.class.getName());
             return;
         }
         for (Constructor<?> constructor : cls.getConstructors()) {
-            RuntimeTile o = (RuntimeTile) constructor.newInstance();
-            pluginRuntimeTiles.add(o);
-            LOG.info("Loaded plugin from [{}]: [{}] [{}] [{}]", file.getName(), o.getName(), o.getAuthor(), o.getVersion());
-            return;
+            if (isRuntimeTile) {
+                RuntimeTile o = (RuntimeTile) constructor.newInstance();
+                pluginRuntimeTiles.add(o);
+                LOG.info("Loaded runtime tile plugin from [{}]: [{}] [{}] [{}]", file.getName(), o.getName(), o.getAuthor(), o.getVersion());
+                return;
+            } else {
+                TileAction o = (TileAction) constructor.newInstance();
+                pluginTileActions.put(o.getType(), (Class<? extends TileAction>) cls);
+                LOG.info("Loaded tile action plugin from [{}]: [{}]", file.getName(), o.getType());
+                return;
+            }
         }
         LOG.warn("Plugin [{}] does not have a constructor", cls.getName());
     }
 
     public List<RuntimeTile> getPluginRuntimeTiles() {
         return pluginRuntimeTiles;
-    }
-
-    public static void main(String[] args) {
-        PluginTileLoader pluginTileLoader = new PluginTileLoader();
-        pluginTileLoader.loadPlugins();
     }
 }

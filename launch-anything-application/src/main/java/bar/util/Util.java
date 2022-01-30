@@ -8,6 +8,7 @@ import mslinks.ShellLink;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.function.Function;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +18,7 @@ import java.awt.*;
 import java.awt.datatransfer.*;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -547,9 +549,13 @@ public abstract class Util {
     public static String getWebsiteTitle(String url) {
         InputStream response = null;
         try {
-            response = new URL(url).openStream();
-            Scanner scanner = new Scanner(response);
-            String responseBody = scanner.useDelimiter("\\A").next();
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            connection.setRequestMethod("GET");
+            connection.connect();
+            response = connection.getInputStream();
+            String responseBody = IOUtils.toString(response, StandardCharsets.UTF_8);
             return responseBody.substring(responseBody.indexOf("<title>") + 7, responseBody.indexOf("</title>"));
         } catch (Exception ex) {
             LOG.error("Error getting website title", ex);

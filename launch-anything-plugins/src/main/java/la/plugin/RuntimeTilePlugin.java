@@ -9,9 +9,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class PluginTemplate implements RuntimeTile {
+public class RuntimeTilePlugin implements RuntimeTile {
 
-    public PluginTemplate() {
+    public RuntimeTilePlugin() {
         info(this, "Plugin Template loaded");
     }
 

@@ -66,6 +66,7 @@ public class TileActionFile extends TileAction {
         else file = Util.pickFile(null);
 
         if (file != null) {
+            if (!file.exists()) TrayUtil.showWarning("File does not exist: " + file.getAbsolutePath());
             path = file.getAbsolutePath();
             return true;
         }

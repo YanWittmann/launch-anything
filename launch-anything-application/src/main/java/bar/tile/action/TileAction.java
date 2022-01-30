@@ -7,10 +7,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 
 public abstract class TileAction {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TileAction.class);
+
+    private static Map<String, Class<? extends TileAction>> plugins;
 
     public TileAction() {
     }
@@ -75,6 +81,10 @@ public abstract class TileAction {
 
     protected abstract String getClipboardSuggestedParameters();
 
+    public static void setPlugins(Map<String, Class<? extends TileAction>> plugins) {
+        TileAction.plugins = plugins;
+    }
+
     public static TileAction getInstance(JSONObject json) {
         if (json == null) return null;
         String type = json.optString("type", null);
@@ -90,6 +100,16 @@ public abstract class TileAction {
                 return new TileActionCopy(json);
             case "settings":
                 return new TileActionSettings(json);
+        }
+        if (TileAction.plugins != null) {
+            Class<? extends TileAction> clazz = TileAction.plugins.getOrDefault(type, null);
+            try {
+                return clazz.getConstructor(JSONObject.class).newInstance(json);
+            } catch (NoSuchMethodException e) {
+                LOG.error("Plugin does not implement JSONObject constructor", e);
+            } catch (InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                LOG.error("Something went wrong while creating plugin instance", e);
+            }
         }
         return null;
     }
@@ -128,12 +148,24 @@ public abstract class TileAction {
                 }
                 break;
         }
+        if (action == null) {
+            if (TileAction.plugins != null) {
+                Class<? extends TileAction> clazz = TileAction.plugins.getOrDefault(type, null);
+                if (clazz != null) {
+                    try {
+                        action = clazz.getConstructor().newInstance();
+                    } catch (InvocationTargetException | IllegalAccessException | InstantiationException | NoSuchMethodException e) {
+                        LOG.error("Something went wrong while creating plugin instance", e);
+                    }
+                }
+            }
+        }
         return action;
     }
 
     public static TileAction getInstanceUser() {
         String actionTypeFromSnippet = TileAction.getActionFromSnippet(Util.getClipboardText());
-        String actionType = Util.popupDropDown("Tile Action", "What type of action do you want to create?", TileAction.ACTION_TYPES, actionTypeFromSnippet);
+        String actionType = Util.popupDropDown("Tile Action", "What type of action do you want to create?", getActionTypes(), actionTypeFromSnippet);
         if (actionType == null) return null;
         return getInstanceUser(actionType);
     }
@@ -153,6 +185,21 @@ public abstract class TileAction {
 
     public static TileAction getInstance(RuntimeTileInteraction interaction) {
         return new TileActionRuntimeInteraction(interaction);
+    }
+
+    public static String[] getActionTypes() {
+        int count = ACTION_TYPES.length;
+        if (plugins != null) count += plugins.size();
+        String[] types = new String[count];
+        System.arraycopy(ACTION_TYPES, 0, types, 0, ACTION_TYPES.length);
+        if (plugins != null) {
+            int i = ACTION_TYPES.length;
+            for (String type : plugins.keySet()) {
+                types[i] = type;
+                i++;
+            }
+        }
+        return types;
     }
 
     public final static String[] ACTION_TYPES = {

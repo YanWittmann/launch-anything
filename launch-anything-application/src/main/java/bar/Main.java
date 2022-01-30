@@ -474,6 +474,7 @@ public class Main {
                                             }
                                             break;
                                         case "deleteAction":
+                                            if (additionalValue == null) additionalValue = "";
                                             TileAction deleteTileAction = tile.findTileAction(additionalValue.split(";;;"));
                                             if (deleteTileAction != null) {
                                                 tile.removeAction(deleteTileAction);

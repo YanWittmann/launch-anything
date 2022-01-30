@@ -73,6 +73,11 @@ public class TileActionURL extends TileAction {
         String newUrl = Util.popupTextInput("Tile Action", "Enter the URL", suggested);
 
         if (newUrl != null && !newUrl.isEmpty()) {
+            try {
+                new URL(newUrl);
+            } catch (Exception e) {
+                TrayUtil.showWarning("The URL might be invalid: " + newUrl);
+            }
             url = newUrl;
             return true;
         }
