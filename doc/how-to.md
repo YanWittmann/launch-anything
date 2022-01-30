@@ -76,14 +76,8 @@ Runtime tiles are tiles that are generated based on the current search terms. Th
 only thing you can change is the choice to deactivate them by left-clicking the according badge. These runtime tiles are
 currently only available:
 
-- Go Website: Enter `go` and any search term to use the `I`m Feeling Lucky` functionality and instantly open the
+- Go Website: Enter `go` and any search term to use the `I'm Feeling Lucky` functionality and instantly open the
   corresponding website.
-- Math Expression: Enter any mathematical expression and let the application calculate the result. You can include
-  mathematical expressions like `pow(2,4)` or `sqrt(4)`.  
-  You can also define variables first by typing in `x = 2` and then use `x` in your expression.
-- Chart Generator: Enter a function and optionally a range and step size to generate a chart. Example: `sin(x)` or
-  `sin(x) + cos(x) for 0,10,0.1`. If you have already generated a chart before, a new option appears to show the
-  currently inputted function and the previous one in one chart.
 - Wiki Search: Enter `wiki` and any search term to display the short description of the Wikipedia article. Press enter
   to open the article in your browser.
 - Timeout: `timeout` or `to` and a duration in minutes the bar should remain inactive. Timeout mode can be deactivated
