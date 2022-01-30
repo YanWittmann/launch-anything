@@ -1,4 +1,4 @@
-![Example search results](doc/img/barExample.png)
+![Example search results](doc/img/barExample.gif)
 
 ### _A search bar for anything you need_
 
