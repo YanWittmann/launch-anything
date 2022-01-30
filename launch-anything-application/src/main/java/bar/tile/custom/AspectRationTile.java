@@ -31,7 +31,7 @@ public class AspectRationTile implements RuntimeTile {
                                 if (other.startsWith(":")) {
                                     int otherHeight = Integer.parseInt(other.substring(1));
                                     int otherWidth = (int) Math.round(otherHeight * width / (double) height);
-                                    String exactOtherWidth = String.valueOf(Util.roundToDecimals(otherHeight * width / (double) height, 2)).replace(".0", "").replace(".00", "");
+                                    String exactOtherWidth = String.valueOf(Util.roundToDecimals(otherHeight * width / (double) height, 2)).replaceAll("\\.0$", "");
                                     roundedResult.setLabel(otherWidth + "  =  " + otherHeight + " * " + width + " / " + height + " (rounded)");
                                     roundedResult.addAction(new TileActionCopy(otherWidth + ""));
                                     exactResult.setLabel(exactOtherWidth + "  =  " + otherHeight + " * " + width + " / " + height + " (exact)");
@@ -39,7 +39,7 @@ public class AspectRationTile implements RuntimeTile {
                                 } else {
                                     int otherWidth = Integer.parseInt(other.substring(0, other.indexOf(":")));
                                     int otherHeight = (int) Math.round(otherWidth * height / (double) width);
-                                    String exactOtherHeight = String.valueOf(Util.roundToDecimals(otherWidth * height / (double) width, 2)).replace(".0", "").replace(".00", "");
+                                    String exactOtherHeight = String.valueOf(Util.roundToDecimals(otherWidth * height / (double) width, 2)).replaceAll("\\.0$", "");
                                     roundedResult.setLabel(otherHeight + "  =  " + otherWidth + " * " + height + " / " + width + " (rounded)");
                                     roundedResult.addAction(new TileActionCopy(otherHeight + ""));
                                     exactResult.setLabel(exactOtherHeight + "  =  " + otherWidth + " * " + height + " / " + width + " (exact)");

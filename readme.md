@@ -17,6 +17,8 @@ detector is based on the Windows API.
     - Calculate mathematical expression values (with variables!)
     - Display charts for mathematical functions/expressions
     - Copy system information like the local IP address
+    - Convert between a variety of units
+    - Calculate aspect ratios
     - Convert between number systems
     - Use the `I'm feeling lucky` functionality to open any webpage
     - Directly go to a wikipedia article

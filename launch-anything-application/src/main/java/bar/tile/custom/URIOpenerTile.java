@@ -38,13 +38,7 @@ public class URIOpenerTile implements RuntimeTile {
                     tile.addAction(TileAction.getInstance("url", url.toString()));
                     return Collections.singletonList(tile);
                 }
-            } catch (MalformedURLException e) {
-                if (!search.contains(",") && search.matches("[a-zA-Z0-9]+\\..*") && !search.replace(".", "").matches("[0-9]+")) {
-                    Tile tile = new Tile("Open URL " + search);
-                    tile.setCategory("url");
-                    tile.addAction(TileAction.getInstance("url", "http://" + search));
-                    return Collections.singletonList(tile);
-                }
+            } catch (MalformedURLException ignored) {
             }
         }
         return Collections.emptyList();

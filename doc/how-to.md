@@ -95,6 +95,17 @@ currently only available:
 - Aspect ratio: A tile that can calculate a width/height based on a ratio and a single value.  
   Example: `16:9 1920:` will show `1080` as the height.  
   `3:2 :1068` will show `1602` as the width.
+- Unit Converter: Enter a value and a unit to convert it to another unit. Example: `1 m to km`, or you can also leave
+  away the second unit to convert to all other units: `1 joule`
+  You can convert these types of units:
+  - length
+  - area
+  - volume
+  - mass
+  - time
+  - temperature
+  - energy
+  - speed
 
 The math expression and chart generator tile are a bit more complex:
 
