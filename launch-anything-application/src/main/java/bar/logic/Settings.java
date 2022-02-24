@@ -141,6 +141,8 @@ public class Settings {
                 setSettingSilent(Setting.RESULT_BAR_FONT_SIZE, 24);
                 TrayUtil.showMessage("Settings loaded: Size small");
                 break;
+            default:
+                TrayUtil.showWarning("Unknown template: " + template);
         }
         save();
     }

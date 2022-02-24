@@ -317,13 +317,13 @@ public abstract class Util {
         ExpressionBuilder expressionBuilder = new ExpressionBuilder(expression);
         directFunctions.forEach(expressionBuilder::function);
         if (functions != null) {
-            for (String function : functions.keySet()) {
-                expressionBuilder.function(new Function(function, 1) {
+            for (Map.Entry<String, String> function : functions.entrySet()) {
+                expressionBuilder.function(new Function(function.getKey(), 1) {
                     @Override
                     public double apply(double... args) {
                         final Map<String, Double> localVariables = new HashMap<>(variables);
                         if (args.length > 0) localVariables.put("x", args[0]);
-                        return Util.evaluateMathematicalExpression(functions.get(function), localVariables, null);
+                        return Util.evaluateMathematicalExpression(function.getValue(), localVariables, null);
                     }
                 });
             }

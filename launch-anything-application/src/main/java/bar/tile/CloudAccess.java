@@ -101,6 +101,7 @@ public class CloudAccess {
             response = new BufferedReader(new InputStreamReader(http.getErrorStream())).lines().collect(Collectors.joining());
         }
         http.disconnect();
+        stream.close();
 
         return response;
     }
