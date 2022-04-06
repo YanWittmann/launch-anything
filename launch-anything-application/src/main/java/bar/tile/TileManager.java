@@ -71,6 +71,9 @@ public class TileManager {
     }
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    {
+        Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdownNow));
+    }
     private Future<?> currentFuture = null;
     private final AtomicReference<Long> lastInputEvaluated = new AtomicReference<>(System.currentTimeMillis());
 

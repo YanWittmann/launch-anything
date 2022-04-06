@@ -772,6 +772,8 @@ public class Main {
                                 case "cloud-check-local-duplicates":
                                     tileManager.checkLocalDuplicates();
                                     break;
+                                default:
+                                    LOG.warn("Unknown option: " + whatToEdit);
                             }
                         }
 

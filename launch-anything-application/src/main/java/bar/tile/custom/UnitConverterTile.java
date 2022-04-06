@@ -14,39 +14,42 @@ public class UnitConverterTile implements RuntimeTile {
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
         if (search.length() >= 2) {
             search = search.trim().toLowerCase();
-            if (search.length() >= 6 && search.contains(" to ") || search.contains(" in ")) {
-                String[] parts = search.split(" (to|in) ");
-                if (parts.length == 2) {
-                    String input = parts[0];
-                    String outputUnit = parts[1];
-                    if (input.length() > 0 && outputUnit.length() > 0) {
-                        String inputUnit = input.replaceAll("^[\\d.]+", "");
-                        double inputValue = Double.parseDouble(input.replaceAll("([^\\d.]+).*$", ""));
+            try {
+                if (search.length() >= 6 && search.contains(" to ") || search.contains(" in ")) {
+                    String[] parts = search.split(" (to|in) ");
+                    if (parts.length == 2) {
+                        String input = parts[0];
+                        String outputUnit = parts[1];
+                        if (input.length() > 0 && outputUnit.length() > 0) {
+                            String inputUnit = input.replaceAll("^[\\d.]+", "");
+                            double inputValue = Double.parseDouble(input.replaceAll("([^\\d.]+).*$", ""));
+                            List<Tile> tiles = new ArrayList<>();
+                            for (Converter inputConverter : getConverters(inputUnit)) {
+                                for (Converter outputConverter : getConverters(outputUnit)) {
+                                    if (inputConverter.getClass() == outputConverter.getClass()) {
+                                        Tile tile = createTile(inputConverter, outputConverter, inputValue);
+                                        if (tile != null) tiles.add(tile);
+                                    }
+                                }
+                            }
+                            return tiles;
+                        }
+                    }
+                } else {
+                    if (search.matches("^[\\d.]+([^\\d.]+).*$")) {
+                        String inputUnit = search.replaceAll("^[\\d.]+", "");
+                        double inputValue = Double.parseDouble(search.replaceAll("([^\\d.]+).*$", ""));
                         List<Tile> tiles = new ArrayList<>();
                         for (Converter inputConverter : getConverters(inputUnit)) {
-                            for (Converter outputConverter : getConverters(outputUnit)) {
-                                if (inputConverter.getClass() == outputConverter.getClass()) {
-                                    Tile tile = createTile(inputConverter, outputConverter, inputValue);
-                                    if (tile != null) tiles.add(tile);
-                                }
+                            for (Converter outputConverter : getConverters(inputConverter)) {
+                                Tile tile = createTile(inputConverter, outputConverter, inputValue);
+                                if (tile != null) tiles.add(tile);
                             }
                         }
                         return tiles;
                     }
                 }
-            } else {
-                if (search.matches("^[\\d.]+([^\\d.]+).*$")) {
-                    String inputUnit = search.replaceAll("^[\\d.]+", "");
-                    double inputValue = Double.parseDouble(search.replaceAll("([^\\d.]+).*$", ""));
-                    List<Tile> tiles = new ArrayList<>();
-                    for (Converter inputConverter : getConverters(inputUnit)) {
-                        for (Converter outputConverter : getConverters(inputConverter)) {
-                            Tile tile = createTile(inputConverter, outputConverter, inputValue);
-                            if (tile != null) tiles.add(tile);
-                        }
-                    }
-                    return tiles;
-                }
+            } catch (Exception ignored) {
             }
         }
         return Collections.emptyList();
