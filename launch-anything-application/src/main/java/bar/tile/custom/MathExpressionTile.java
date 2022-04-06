@@ -134,6 +134,16 @@ public class MathExpressionTile implements RuntimeTile {
     }
 
     public static double evaluate(String expression) {
+        int openBraces = Util.countSubstring(expression, "(");
+        int closedBraces = Util.countSubstring(expression, ")");
+        int diff = openBraces - closedBraces;
+        if (diff > 0) {
+            // it might be worth an attempt to fix the closing brackets
+            try {
+                return Util.evaluateMathematicalExpression(expression.trim() + Util.repeat(")", diff), variables, functions);
+            } catch (Exception ignored) {
+            }
+        }
         return Util.evaluateMathematicalExpression(expression.trim(), variables, functions);
     }
 

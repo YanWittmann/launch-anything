@@ -619,4 +619,24 @@ public abstract class Util {
         }
         return null;
     }
+
+    public static int countSubstring(String str, String sub) {
+        int count = 0;
+        int idx = 0;
+
+        while ((idx = str.indexOf(sub, idx)) != -1) {
+            idx++;
+            count++;
+        }
+
+        return count;
+    }
+
+    public static String repeat(String str, int count) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            sb.append(str);
+        }
+        return sb.toString();
+    }
 }
