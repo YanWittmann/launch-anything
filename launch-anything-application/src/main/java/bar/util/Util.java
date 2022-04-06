@@ -306,6 +306,57 @@ public abstract class Util {
                 return result;
             }
         });
+        directFunctions.add(new Function("checksum", 1) {
+            @Override
+            public double apply(double... args) {
+                return createQuersummeFunction(args);
+            }
+        });
+        directFunctions.add(new Function("sod", 1) {
+            @Override
+            public double apply(double... args) {
+                return createQuersummeFunction(args);
+            }
+        });
+        directFunctions.add(new Function("quersumme", 1) {
+            @Override
+            public double apply(double... args) {
+                return createQuersummeFunction(args);
+            }
+        });
+        directFunctions.add(new Function("ggt", 2) {
+            @Override
+            public double apply(double... args) {
+                return createGgtFunction(args);
+            }
+        });
+        directFunctions.add(new Function("gcd", 2) {
+            @Override
+            public double apply(double... args) {
+                return createGgtFunction(args);
+            }
+        });
+    }
+
+    private static int createQuersummeFunction(double[] args) {
+        int total = 0;
+        double arg = args[0];
+        while (arg > 0) {
+            total += (int) (arg % 10);
+            arg /= 10;
+        }
+        return total;
+    }
+
+    private static double createGgtFunction(double[] args) {
+        int a = (int) args[0];
+        int b = (int) args[1];
+        while (b != 0) {
+            int c = a % b;
+            a = b;
+            b = c;
+        }
+        return a;
     }
 
     public static double evaluateMathematicalExpression(String expression) {
