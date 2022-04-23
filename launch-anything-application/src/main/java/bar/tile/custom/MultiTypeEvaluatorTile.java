@@ -62,6 +62,9 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
             case "EvaluationResultFailure":
                 if (isLikelyExpression(search)) {
                     Exception failure = ((MultiTypeEvaluatorManager.EvaluationResultFailure) result).getReason();
+                    if (failure.getMessage() == null || failure.getMessage().isEmpty()) {
+                        return Collections.emptyList();
+                    }
                     return Collections.singletonList(new Tile(failure.getMessage(), "runtime", "", false));
                 }
                 break;
