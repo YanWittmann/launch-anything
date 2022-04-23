@@ -71,9 +71,11 @@ public class TileManager {
     }
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
     {
         Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdownNow));
     }
+
     private Future<?> currentFuture = null;
     private final AtomicReference<Long> lastInputEvaluated = new AtomicReference<>(System.currentTimeMillis());
 
@@ -484,7 +486,7 @@ public class TileManager {
         NUMBER_BASE_CONVERTER(NumberBaseConverterTile::new),
         ASPECT_RATIO(AspectRationTile::new),
         UNIT_CONVERTER(UnitConverterTile::new),
-        MATH_EXPRESSION(MathExpressionTile::new),
+        MULTI_TYPE_EVALUATOR(MultiTypeEvaluatorTile::new),
         CHART_GENERATOR(ChartGeneratorTile::new),
         WIKI_SEARCH(WikiSearchTile::new),
         TIMEOUT(TimeoutTile::new),

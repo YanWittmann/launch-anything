@@ -4,6 +4,7 @@ import bar.tile.Tile;
 import bar.tile.action.TileAction;
 import bar.ui.TrayUtil;
 import bar.util.Util;
+import bar.util.evaluator.MultiTypeEvaluatorManager;
 import de.yanwittmann.j2chartjs.chart.ScatterChart;
 import de.yanwittmann.j2chartjs.data.ScatterChartData;
 import de.yanwittmann.j2chartjs.datapoint.ScatterChartDatapoint;
@@ -16,10 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -31,29 +33,21 @@ public class ChartGeneratorTile implements RuntimeTile {
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
         try {
             List<Tile> tiles = new ArrayList<>();
-            search = search.replace(" ", "");
             if (search.isEmpty()) {
                 return tiles;
             } else {
-                if (search.contains("=")) {
-                    search = search.split("=", 2)[1];
-                    if (search.isEmpty()) {
-                        return tiles;
-                    }
-                }
-
                 String expression = search;
-                double start = -10;
-                double end = 10;
-                double step;
+                BigDecimal start = new BigDecimal("-10");
+                BigDecimal end = new BigDecimal("10");
+                BigDecimal step;
 
                 if (search.contains("for")) {
                     String[] forSplit = search.split("for", 2);
                     expression = forSplit[0];
                     String[] rangeSplit = forSplit[1].split(",");
-                    if (rangeSplit[0].length() > 0) start = Double.parseDouble(rangeSplit[0]);
-                    if (rangeSplit.length > 1 && rangeSplit[1].length() > 0) end = Double.parseDouble(rangeSplit[1]);
-                    step = rangeSplit.length > 2 && rangeSplit[2].length() > 0 ? Double.parseDouble(rangeSplit[2]) : getStepSize(start, end);
+                    if (rangeSplit[0].length() > 0) start = new BigDecimal(rangeSplit[0]);
+                    if (rangeSplit.length > 1 && rangeSplit[1].length() > 0) end = new BigDecimal(rangeSplit[1]);
+                    step = rangeSplit.length > 2 && rangeSplit[2].length() > 0 ? new BigDecimal(rangeSplit[2]) : getStepSize(start, end);
                 } else {
                     step = getStepSize(start, end);
                 }
@@ -61,11 +55,11 @@ public class ChartGeneratorTile implements RuntimeTile {
                 List<String> expressions = new ArrayList<>();
                 Arrays.stream(expression.split(";")).forEach(e -> expressions.add(e.trim()));
 
-                if (expressions.size() > 0 && expressions.stream().allMatch(MathExpressionTile::checkForValidFunction)) {
+                if (expressions.size() > 0 && expressions.stream().allMatch(MultiTypeEvaluatorTile::checkForValidFunction)) {
                     Tile tile = new Tile("Graph for " + String.join(", ", expressions));
                     tile.setCategory("runtime");
-                    double finalStart = start;
-                    double finalEnd = end;
+                    BigDecimal finalStart = start;
+                    BigDecimal finalEnd = end;
                     TileAction action = TileAction.getInstance(() -> generateGraph(finalStart, finalEnd, step, expressions));
                     tile.addAction(action);
                     tiles.add(tile);
@@ -77,20 +71,23 @@ public class ChartGeneratorTile implements RuntimeTile {
         return Collections.emptyList();
     }
 
-    private final static double[] VALID_STEP_SIZES = {0.1, 0.2, 0.25, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 50.0, 100.0, 200.0, 500.0, 1000.0};
+    private final static BigDecimal[] VALID_STEP_SIZES = {BigDecimal.valueOf(0.1), BigDecimal.valueOf(0.2),
+            BigDecimal.valueOf(0.25), BigDecimal.valueOf(0.5), BigDecimal.valueOf(1.0), BigDecimal.valueOf(2.0),
+            BigDecimal.valueOf(5.0), BigDecimal.valueOf(10.0), BigDecimal.valueOf(20.0), BigDecimal.valueOf(50.0),
+            BigDecimal.valueOf(100.0), BigDecimal.valueOf(200.0), BigDecimal.valueOf(500.0), BigDecimal.valueOf(1000.0)};
 
-    private double getStepSize(double start, double end) {
-        double step = (end - start) / 200;
-        if (step < 0.1) step = 0.1;
-        for (double validStepSize : VALID_STEP_SIZES) {
-            if (step <= validStepSize) {
+    private BigDecimal getStepSize(BigDecimal start, BigDecimal end) {
+        BigDecimal step = (end.subtract(start)).divide(new BigDecimal(200), RoundingMode.HALF_UP);
+        if (step.compareTo(new BigDecimal("0.1")) < 0) step = new BigDecimal("0.1");
+        for (BigDecimal validStepSize : VALID_STEP_SIZES) {
+            if (step.compareTo(validStepSize) <= 0) {
                 return validStepSize;
             }
         }
         return step;
     }
 
-    private void generateGraph(double start, double end, double step, List<String> expressions) {
+    private void generateGraph(BigDecimal start, BigDecimal end, BigDecimal step, List<String> expressions) {
         LOG.info("Generating graph for [{}] in range [{} {} {}]", String.join(", ", expressions), start, end, step);
 
         ScatterChartData data = new ScatterChartData();
@@ -98,21 +95,26 @@ public class ChartGeneratorTile implements RuntimeTile {
             if (expression == null) continue;
 
             ScatterChartDataset dataset = new ScatterChartDataset();
-            double lastY = MathExpressionTile.ERROR_VALUE;
             boolean hadEnd = false;
-            if (roundToDisplay(start, start, step) != start) calculateDatapoint(expression, dataset, MathExpressionTile.ERROR_VALUE, start);
-            for (double x = start; x < end + step; x += step) {
-                double displayX = roundToDisplay(x, start, step);
-                if (!hadEnd && isEnd(displayX, end)) hadEnd = true;
-                lastY = calculateDatapoint(expression, dataset, lastY, displayX);
+            if (!roundToDisplay(start, start, step).equals(start))
+                calculateDatapoint(expression, dataset, start);
+            for (BigDecimal x = new BigDecimal(start.toString()); x.compareTo(end.add(step)) <= 0; x = x.add(step)) {
+                BigDecimal displayX = roundToDisplay(x, start, step);
+                if (isBeyondEnd(displayX, end)) {
+                    break;
+                }
+                if (!hadEnd && isEnd(displayX, end)) {
+                    hadEnd = true;
+                }
+                calculateDatapoint(expression, dataset, displayX);
             }
-            if (!hadEnd) calculateDatapoint(expression, dataset, MathExpressionTile.ERROR_VALUE, end);
+            if (!hadEnd) calculateDatapoint(expression, dataset, end);
             dataset.setShowLine(true);
-            String functionExpression = MathExpressionTile.getFunctionExpression(expression);
-            if (functionExpression == null) {
+            String functionSignature = MultiTypeEvaluatorTile.getInstance().getFunctionSignatureForFunctionName(expression.replaceAll("\\(.*\\)", ""));
+            if (functionSignature == null) {
                 dataset.setLabel(expression);
             } else {
-                dataset.setLabel(expression + " = " + functionExpression);
+                dataset.setLabel(expression + " in " + functionSignature);
             }
             data.addDataset(dataset);
         }
@@ -151,36 +153,38 @@ public class ChartGeneratorTile implements RuntimeTile {
         }
     }
 
-    private double calculateDatapoint(String expression, ScatterChartDataset dataset, double lastY, double displayX) {
-        double y = MathExpressionTile.solveForValue(expression, displayX);
-        if (y != MathExpressionTile.ERROR_VALUE) {
-            if (lastY == y) {
-                dataset.addBorderWidth(1);
-            } else {
-                dataset.addBorderWidth(2);
-                lastY = y;
-            }
-            dataset.addData(new ScatterChartDatapoint(displayX, y));
+    private void calculateDatapoint(String expression, ScatterChartDataset dataset, BigDecimal x) {
+        MultiTypeEvaluatorManager.EvaluationResult y = MultiTypeEvaluatorTile.getInstance().solveForX(expression, x);
+        if (y.getClass() == MultiTypeEvaluatorManager.EvaluationResultResult.class) {
+            dataset.addData(new ScatterChartDatapoint(x, toValue(((MultiTypeEvaluatorManager.EvaluationResultResult) y).getResult())));
         }
-        return lastY;
     }
 
-    private boolean isStart(double value, double start) {
-        return Math.abs(value - start) < 0.01;
-    }
-
-    private boolean isEnd(double value, double end) {
-        return Math.abs(value - end) < 0.01;
-    }
-
-    private double roundToDisplay(double value, double startValue, double stepSize) {
-        // round to the nearest stepSize
-        double rounded = Math.round(value / stepSize) * stepSize + (startValue % stepSize);
-        // if the distance to the next whole number is smaller than 0.01, round to the next whole number
-        if (Math.abs(rounded - Math.round(value)) < 0.01) {
-            rounded = Math.round(value);
+    private BigDecimal toValue(Object value) {
+        if (value instanceof BigDecimal) {
+            return (BigDecimal) value;
+        } else if (value instanceof BigInteger) {
+            return new BigDecimal((BigInteger) value);
+        } else if (value instanceof Boolean) {
+            return ((Boolean) value) ? BigDecimal.ONE : BigDecimal.ZERO;
         }
-        return rounded;
+        return BigDecimal.ZERO;
+    }
+
+    private boolean isStart(BigDecimal value, BigDecimal start) {
+        return value.subtract(start).abs().compareTo(new BigDecimal("0.01")) < 0;
+    }
+
+    private boolean isEnd(BigDecimal value, BigDecimal end) {
+        return value.subtract(end).abs().compareTo(new BigDecimal("0.01")) < 0;
+    }
+
+    private boolean isBeyondEnd(BigDecimal value, BigDecimal end) {
+        return value.compareTo(end) > 0;
+    }
+
+    private BigDecimal roundToDisplay(BigDecimal value, BigDecimal startValue, BigDecimal stepSize) {
+        return value.divide(stepSize, 0, RoundingMode.HALF_UP).multiply(stepSize).add(startValue.remainder(stepSize));
     }
 
     @Override
