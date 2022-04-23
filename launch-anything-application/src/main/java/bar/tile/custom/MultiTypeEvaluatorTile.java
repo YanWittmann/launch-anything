@@ -34,7 +34,7 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
         if (search.equals("function")) {
             List<Tile> tiles = new ArrayList<>();
             for (MultiTypeEvaluatorManager.ExpressionFunction function : evaluator.getCustomFunctions()) {
-                tiles.add(createCopyTextTile(function.toString() , function.getName()));
+                tiles.add(createCopyTextTile(function.toString(), function.getName()));
             }
             for (Function function : evaluator.getEvaluator().getFunctions()) {
                 tiles.add(createCopyTextTile(function.getName(), function.getName()));
@@ -92,7 +92,8 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
         List<Tile> tiles = new ArrayList<>();
 
         if (result instanceof BigDecimal || result instanceof BigInteger) {
-            String resultString = result.toString().replaceAll("\\.?0+$", "");
+            String resultString = result.toString();
+            resultString = !resultString.contains(".") ? resultString : resultString.replaceAll("0*$", "").replaceAll("\\.$", "");
             tiles.add(createCopyTextTile(resultString, resultString));
 
             if (((Number) result).doubleValue() < Double.MAX_VALUE) {

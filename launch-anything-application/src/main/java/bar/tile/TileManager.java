@@ -70,25 +70,22 @@ public class TileManager {
         return isFirstLaunch;
     }
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-
-    {
-        Runtime.getRuntime().addShutdownHook(new Thread(executor::shutdownNow));
-    }
-
-    private Future<?> currentFuture = null;
+    private Thread currentEvaluationThread = null;
     private final AtomicReference<Long> lastInputEvaluated = new AtomicReference<>(System.currentTimeMillis());
 
     public void evaluateUserInput(String input) {
         try {
-            if (currentFuture != null) {
-                currentFuture.cancel(true);
-            }
-            if (input.length() <= 1) {
-                setEvaluationResults(new ArrayList<>());
-            } else {
-                currentFuture = evaluate(input);
-            }
+            new Thread(() -> {
+                if (currentEvaluationThread != null) {
+                    currentEvaluationThread.interrupt();
+                }
+                if (input.length() <= 1) {
+                    setEvaluationResults(new ArrayList<>());
+                } else {
+                    currentEvaluationThread = evaluate(input);
+                    currentEvaluationThread.start();
+                }
+            }).start();
         } catch (Exception e) {
             LOG.error("error ", e);
         }
@@ -98,9 +95,9 @@ public class TileManager {
         onInputEvaluatedListeners.forEach(listener -> listener.onInputEvaluated(tiles));
     }
 
-    private Future<?> evaluate(String input) {
+    private Thread evaluate(String input) {
         lastInputEvaluated.set(System.currentTimeMillis());
-        return executor.submit(() -> {
+        return new Thread(() -> {
             List<Tile> matchingTiles = new ArrayList<>();
 
             searchTiles(tiles, matchingTiles, input);
@@ -118,7 +115,6 @@ public class TileManager {
                     .forEach(matchingTiles::addAll);
 
             setEvaluationResults(matchingTiles);
-            return null;
         });
     }
 
