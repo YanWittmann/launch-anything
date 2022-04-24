@@ -30,7 +30,7 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
 
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
-        if (search.contains(";") || search.contains("for")) return Collections.emptyList();
+        if (search.contains("for")) return Collections.emptyList();
         if (search.equals("function")) {
             List<Tile> tiles = new ArrayList<>();
             for (MultiTypeEvaluatorManager.ExpressionFunction function : evaluator.getCustomFunctions()) {
@@ -39,7 +39,7 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
             for (Function function : evaluator.getEvaluator().getFunctions()) {
                 tiles.add(createCopyTextTile(function.getName(), function.getName()));
             }
-            for (Operator operator : evaluator.getEvaluator().getOperators().stream().sorted(Comparator.comparingInt(Operator::getPrecedence)).toArray(Operator[]::new)) {
+            for (Operator operator : evaluator.getEvaluator().getOperators().stream().sorted(Comparator.comparingInt(Operator::getPrecedence).reversed()).toArray(Operator[]::new)) {
                 tiles.add(createCopyTextTile(operator.getSymbol(), operator.getSymbol()));
             }
             return tiles;
@@ -62,7 +62,7 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
             case "EvaluationResultFailure":
                 if (isLikelyExpression(search)) {
                     Exception failure = ((MultiTypeEvaluatorManager.EvaluationResultFailure) result).getReason();
-                    if (failure.getMessage() == null || failure.getMessage().isEmpty()) {
+                    if (failure.getMessage() == null || failure.getMessage().isEmpty() || failure.getMessage().contains(";")) {
                         return Collections.emptyList();
                     }
                     return Collections.singletonList(new Tile(failure.getMessage(), "runtime", "", false));

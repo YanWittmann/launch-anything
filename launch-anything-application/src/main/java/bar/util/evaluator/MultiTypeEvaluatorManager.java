@@ -61,6 +61,13 @@ public class MultiTypeEvaluatorManager {
 
         expression = expression.trim();
 
+        if (expression.isEmpty()) {
+            return new EvaluationResultFailure(new IllegalArgumentException("Expression is empty"));
+        }
+
+        // the set contents are being escaped so that they can be evaluated as a whole and not the individual parts first
+        expression = evaluator.escapeSets(expression);
+
         Matcher assignmentExpression = ASSIGNMENT_PATTERN.matcher(expression);
         if (assignmentExpression.matches()) {
             String variableName = assignmentExpression.group(1);

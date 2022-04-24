@@ -1,19 +1,24 @@
 package bar.util.evaluator;
 
+import bar.util.RandomString;
 import com.fathzer.soft.javaluator.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
-    private int doubleScale = 20;
-    private Map<String, MultiTypeEvaluatorManager.Expression> customExpressionFunctions = new HashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultiTypeEvaluator.class);
+
+    private final static int DOUBLE_SCALE = 20;
+    private final Map<String, MultiTypeEvaluatorManager.Expression> customExpressionFunctions = new HashMap<>();
 
     public MultiTypeEvaluator() {
         this(getDefaultParameters());
@@ -41,6 +46,8 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         return DEFAULT_PARAMETERS;
     }
 
+    public final static Pattern SET_PATTERN = Pattern.compile("\\{(.*)}");
+
     @Override
     protected Object toValue(String literal, Object evaluationContext) {
         literal = literal.trim().toLowerCase();
@@ -52,6 +59,22 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return new BigInteger(literal.substring(2), 16);
         } else if (literal.startsWith("0b")) {
             return new BigInteger(literal.substring(2), 2);
+        } else if (literal.startsWith("0o")) {
+            return new BigInteger(literal.substring(2), 8);
+        } else if (literal.startsWith("{")) {
+            Matcher setMatcher = SET_PATTERN.matcher(literal);
+            if (setMatcher.matches()) {
+                String set = unescapeExpression(setMatcher.group(1).trim());
+                set = escapeSets(set);
+                String[] elements = set.split("; *");
+                if (elements.length == 0) {
+                    return Collections.emptyList();
+                } else {
+                    return Arrays.stream(elements).map(element -> evaluate(element, evaluationContext)).collect(Collectors.toList());
+                }
+            } else {
+                return Collections.emptyList();
+            }
         }
         try {
             return new BigDecimal(literal);
@@ -106,6 +129,9 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function MAX = new Function("max", 1, Integer.MAX_VALUE);
     public static final Function SUM = new Function("sum", 1, Integer.MAX_VALUE);
     public static final Function AVERAGE = new Function("avg", 1, Integer.MAX_VALUE);
+    public static final Function PRODUCT = new Function("product", 1, Integer.MAX_VALUE);
+    public static final Function COUNT_DEEP = new Function("countDeep", 1, Integer.MAX_VALUE);
+    public static final Function COUNT_SHALLOW = new Function("count", 1, Integer.MAX_VALUE);
     public static final Function LN = new Function("ln", 1);
     public static final Function LOG = new Function("log", 1);
     public static final Function RANDOM = new Function("random", 2);
@@ -122,11 +148,18 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function ROOT = new Function("root", 2);
     public static final Function SUM_OF_DIGITS = new Function("sod", 1);
     public static final Function FACULTY = new Function("fac", 1);
+    public static final Function FACTORIZE = new Function("factorize", 1);
+    public static final Function DIVISORS = new Function("divisors", 1);
+    public static final Function GROUP_DUPLICATES = new Function("groupDuplicates", 1, Integer.MAX_VALUE);
+    public static final Function SORT = new Function("sort", 1, Integer.MAX_VALUE);
+    public static final Function MERGE = new Function("merge", 1, Integer.MAX_VALUE);
+    public static final Function DISTINCT = new Function("distinct", 1, Integer.MAX_VALUE);
+    public static final Function GET_ELEMENT = new Function("elementAt", 1, Integer.MAX_VALUE);
 
     private static final Function[] FUNCTIONS = new Function[]{SINE, COSINE, TANGENT, ASINE, ACOSINE, ATAN, SINEH,
-            COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, LN, LOG, ROUND, CEIL, FLOOR, ABS, RANDOM, GGT, GCD, PHI,
-            IS_PRIME, NEXT_PRIME, IF_ELSE, TO_BINARY_STRING, TO_HEX_STRING, POW, SQRT, ROOT, SUM_OF_DIGITS,
-            FACULTY};
+            COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, PRODUCT, COUNT_DEEP, COUNT_SHALLOW, LN, LOG, ROUND, CEIL, FLOOR,
+            ABS, RANDOM, GGT, GCD, PHI, IS_PRIME, NEXT_PRIME, IF_ELSE, TO_BINARY_STRING, TO_HEX_STRING, POW, SQRT, ROOT,
+            SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, DISTINCT, GET_ELEMENT};
 
     @Override
     protected Object evaluate(Function function, Iterator<Object> arguments, Object evaluationContext) {
@@ -158,36 +191,117 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return BigDecimal.valueOf(Math.tanh(getBigDecimal(arguments).doubleValue()));
         } else if (MIN.equals(function)) {
             BigDecimal min = null;
-            while (arguments.hasNext()) {
-                BigDecimal value = getBigDecimal(arguments);
-                if (min == null || value.compareTo(min) < 0) {
-                    min = value;
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
+            for (Object next : allArgumentsAsList) {
+                BigDecimal value = getBigDecimal(next);
+                if (value != null) {
+                    if (min == null || min.compareTo(value) > 0) {
+                        min = value;
+                    }
                 }
             }
             return min;
         } else if (MAX.equals(function)) {
             BigDecimal max = null;
-            while (arguments.hasNext()) {
-                BigDecimal value = getBigDecimal(arguments);
-                if (max == null || value.compareTo(max) > 0) {
-                    max = value;
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
+            for (Object next : allArgumentsAsList) {
+                BigDecimal value = getBigDecimal(next);
+                if (value != null) {
+                    if (max == null || value.compareTo(max) > 0) {
+                        max = value;
+                    }
                 }
             }
             return max;
         } else if (SUM.equals(function)) {
             BigDecimal sum = BigDecimal.ZERO;
-            while (arguments.hasNext()) {
-                sum = sum.add(getBigDecimal(arguments));
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
+            for (Object next : allArgumentsAsList) {
+                BigDecimal value = getBigDecimal(next);
+                if (value != null) {
+                    sum = sum.add(value);
+                }
             }
             return sum;
         } else if (AVERAGE.equals(function)) {
             BigDecimal sum = BigDecimal.ZERO;
             int count = 0;
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
+            for (Object next : allArgumentsAsList) {
+                BigDecimal value = getBigDecimal(next);
+                if (value != null) {
+                    sum = sum.add(value);
+                    count++;
+                }
+            }
+            return sum.divide(BigDecimal.valueOf(count), DOUBLE_SCALE, RoundingMode.HALF_EVEN);
+        } else if (PRODUCT.equals(function)) {
+            BigDecimal product = BigDecimal.ONE;
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
+            for (Object next : allArgumentsAsList) {
+                BigDecimal value = getBigDecimal(next);
+                if (value != null) {
+                    product = product.multiply(value);
+                }
+            }
+            return product;
+        } else if (COUNT_DEEP.equals(function)) {
+            return getAllArgumentsAsList(arguments).size();
+        } else if (COUNT_SHALLOW.equals(function)) {
+            int count = 0;
             while (arguments.hasNext()) {
-                sum = sum.add(getBigDecimal(arguments));
+                arguments.next();
                 count++;
             }
-            return sum.divide(BigDecimal.valueOf(count), 0, RoundingMode.HALF_EVEN);
+            return count;
+        } else if (GROUP_DUPLICATES.equals(function)) {
+            Map<Object, BigDecimal> counts = new LinkedHashMap<>();
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
+            for (Object next : allArgumentsAsList) {
+                counts.putIfAbsent(next, BigDecimal.ZERO);
+                counts.put(next, counts.get(next).add(BigDecimal.ONE));
+            }
+            List<Object> results = new ArrayList<>();
+            for (Map.Entry<Object, BigDecimal> entry : counts.entrySet()) {
+                if (entry.getValue().compareTo(BigDecimal.ONE) > 0) {
+                    results.add(Arrays.asList(entry.getKey(), entry.getValue()));
+                } else {
+                    results.add(entry.getKey());
+                }
+            }
+            return results;
+        } else if (SORT.equals(function)) {
+            List<Object> argumentsList = new ArrayList<>();
+            while (arguments.hasNext()) {
+                argumentsList.add(arguments.next());
+            }
+            if (argumentsList.size() == 1 && argumentsList.get(0) instanceof List) {
+                argumentsList = (List<Object>) argumentsList.get(0);
+            }
+            return argumentsList.stream().sorted(OBJECT_COMPARATOR).collect(Collectors.toList());
+        } else if (MERGE.equals(function)) {
+            List<Object> argumentsList = new ArrayList<>();
+            while (arguments.hasNext()) {
+                argumentsList.add(arguments.next());
+            }
+            List<Object> merged = new ArrayList<>();
+            for (Object next : argumentsList) {
+                if (next instanceof List) {
+                    merged.addAll((List<Object>) next);
+                } else {
+                    merged.add(next);
+                }
+            }
+            return merged;
+        } else if (DISTINCT.equals(function)) {
+            List<Object> argumentsList = new ArrayList<>();
+            while (arguments.hasNext()) {
+                argumentsList.add(arguments.next());
+            }
+            if (argumentsList.size() == 1 && argumentsList.get(0) instanceof List) {
+                argumentsList = (List<Object>) argumentsList.get(0);
+            }
+            return argumentsList.stream().distinct().collect(Collectors.toList());
         } else if (LN.equals(function)) {
             return BigDecimal.valueOf(Math.log(getBigDecimal(arguments).doubleValue()));
         } else if (LOG.equals(function)) {
@@ -279,6 +393,34 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                 result = result.multiply(BigDecimal.valueOf(i));
             }
             return result;
+        } else if (FACTORIZE.equals(function)) {
+            List<BigDecimal> factors = new ArrayList<>();
+            BigDecimal n = getBigDecimal(arguments);
+            BigDecimal i = BigDecimal.valueOf(2);
+            while (i.compareTo(n) <= 0) {
+                if (n.remainder(i).equals(BigDecimal.ZERO)) {
+                    factors.add(i);
+                    n = n.divide(i, 0, RoundingMode.DOWN);
+                    i = BigDecimal.ONE;
+                }
+                i = i.add(BigDecimal.ONE);
+            }
+            return factors;
+        } else if (DIVISORS.equals(function)) {
+            List<BigDecimal> divisors = new ArrayList<>();
+            BigDecimal n = getBigDecimal(arguments);
+            BigDecimal i = BigDecimal.ONE;
+            while (i.compareTo(n) <= 0) {
+                if (n.remainder(i).equals(BigDecimal.ZERO)) {
+                    divisors.add(i);
+                }
+                i = i.add(BigDecimal.ONE);
+            }
+            return divisors;
+        } else if (GET_ELEMENT.equals(function)) {
+            BigDecimal index = getBigDecimal(arguments);
+            List<Object> allElements = getAllArgumentsAsList(arguments);
+            return allElements.get(index.intValue());
         } else {
             for (Map.Entry<String, MultiTypeEvaluatorManager.Expression> entry : customExpressionFunctions.entrySet()) {
                 if (function.getName().equals(entry.getKey())) {
@@ -297,6 +439,55 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return super.evaluate(function, arguments, evaluationContext);
         }
     }
+
+    private List<Object> getAllSetElements(List<Object> list) {
+        List<Object> result = new ArrayList<>();
+        for (Object element : list) {
+            if (element instanceof List) {
+                result.addAll((List<?>) element);
+            } else {
+                result.add(element);
+            }
+        }
+        return result;
+    }
+
+    private List<Object> getAllArgumentsAsList(Iterator<Object> arguments) {
+        List<Object> result = new ArrayList<>();
+        while (arguments.hasNext()) {
+            Object next = arguments.next();
+            if (next instanceof List) {
+                result.addAll(getAllSetElements((List<Object>) next));
+            } else {
+                result.add(next);
+            }
+        }
+        return result;
+    }
+
+    private final static Comparator<Object> OBJECT_COMPARATOR = new Comparator<Object>() {
+        @Override
+        public int compare(Object o1, Object o2) {
+            if (o1 instanceof Comparable && o2 instanceof Comparable) {
+                return ((Comparable) o1).compareTo(o2);
+            } else {
+                if (o1 instanceof List && o2 instanceof Comparable) {
+                    List<Object> list = (List<Object>) o1;
+                    if (list.size() > 0) {
+                        Object first = list.get(0);
+                        return OBJECT_COMPARATOR.compare(first, o2);
+                    }
+                } else if (o2 instanceof List && o1 instanceof Comparable) {
+                    List<Object> list = (List<Object>) o2;
+                    if (list.size() > 0) {
+                        Object first = list.get(0);
+                        return OBJECT_COMPARATOR.compare(o1, first);
+                    }
+                }
+            }
+            return 0;
+        }
+    };
 
     private boolean isPrime(BigInteger n) {
         return n.isProbablePrime(20);
@@ -365,7 +556,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (DIVIDE.equals(operator)) {
             BigDecimal left = getBigDecimal(operands);
             BigDecimal right = getBigDecimal(operands);
-            return left.divide(right, doubleScale, RoundingMode.HALF_EVEN);
+            return left.divide(right, DOUBLE_SCALE, RoundingMode.HALF_EVEN);
         } else if (EXPONENT.equals(operator) || EXPONENT_DOUBLE.equals(operator)) {
             BigDecimal left = getBigDecimal(operands);
             BigDecimal right = getBigDecimal(operands);
@@ -445,7 +636,15 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     }
 
     private BigDecimal getBigDecimal(Iterator<Object> arguments) {
-        Object argument = arguments.next();
+        BigDecimal value = getBigDecimal(arguments.next());
+        if (value == null) {
+            return BigDecimal.valueOf(-1);
+        } else {
+            return value;
+        }
+    }
+
+    private BigDecimal getBigDecimal(Object argument) {
         if (argument instanceof BigDecimal) {
             return (BigDecimal) argument;
         } else if (argument instanceof BigInteger) {
@@ -462,7 +661,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                 return new BigDecimal(new BigInteger(str.substring(2), 16));
             }
         }
-        return new BigDecimal(-1);
+        return null;
     }
 
     private Boolean getBoolean(Iterator<Object> arguments) {
@@ -471,6 +670,48 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return (Boolean) argument;
         }
         return false;
+    }
+
+    private final static Map<String, String> ESCAPE_CHARACTERS = new LinkedHashMap<>();
+
+    static {
+        RandomString randomString = new RandomString(8, 596865);
+        // sort by length, so that longer strings come first
+        for (Function function : Arrays.stream(FUNCTIONS).sorted((o1, o2) -> Integer.compare(o2.getName().length(), o1.getName().length())).collect(Collectors.toList())) {
+            ESCAPE_CHARACTERS.put(function.getName(), randomString.nextString());
+        }
+        for (Operator operator : Arrays.stream(OPERATORS).sorted((o1, o2) -> Integer.compare(o2.getSymbol().length(), o1.getSymbol().length())).collect(Collectors.toList())) {
+            ESCAPE_CHARACTERS.put(operator.getSymbol(), randomString.nextString());
+        }
+        ESCAPE_CHARACTERS.put("(", randomString.nextString());
+        ESCAPE_CHARACTERS.put(")", randomString.nextString());
+        ESCAPE_CHARACTERS.put(",", randomString.nextString());
+    }
+
+    public String escapeExpression(String unescaped) {
+        for (Map.Entry<String, String> escape : ESCAPE_CHARACTERS.entrySet()) {
+            unescaped = unescaped.replace(escape.getKey(), escape.getValue());
+        }
+        return unescaped;
+    }
+
+    public String escapeSets(String unescaped) {
+        if (unescaped.contains("{")) {
+            Matcher sets = MultiTypeEvaluator.SET_PATTERN.matcher(unescaped);
+            while (sets.find()) {
+                unescaped = unescaped.replace(
+                        "{" + sets.group(1) + "}",
+                        "{" + escapeExpression(sets.group(1)) + "}");
+            }
+        }
+        return unescaped;
+    }
+
+    public String unescapeExpression(String escaped) {
+        for (Map.Entry<String, String> escape : ESCAPE_CHARACTERS.entrySet()) {
+            escaped = escaped.replace(escape.getValue(), escape.getKey());
+        }
+        return escaped;
     }
 
     private static Parameters DEFAULT_PARAMETERS = null;
