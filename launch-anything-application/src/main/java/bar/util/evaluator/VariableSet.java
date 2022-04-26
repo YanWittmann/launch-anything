@@ -33,4 +33,9 @@ public class VariableSet<T> implements AbstractVariableSet<T> {
     public Map<String, T> getVariables() {
         return variables;
     }
+
+    @Override
+    public String toString() {
+        return variables.toString();
+    }
 }

@@ -1,6 +1,7 @@
 package bar.tile.custom;
 
 import bar.tile.Tile;
+import bar.tile.TileManager;
 import bar.tile.action.TileAction;
 import bar.ui.TrayUtil;
 import bar.util.Util;
@@ -110,7 +111,7 @@ public class ChartGeneratorTile implements RuntimeTile {
             }
             if (!hadEnd) calculateDatapoint(expression, dataset, end);
             dataset.setShowLine(true);
-            String functionSignature = MultiTypeEvaluatorTile.getInstance().getFunctionSignatureForFunctionName(expression.replaceAll("\\(.*\\)", ""));
+            String functionSignature = TileManager.getMultiTypeEvaluator().getFunctionSignatureForFunctionName(expression.replaceAll("\\(.*\\)", ""));
             if (functionSignature == null) {
                 dataset.setLabel(expression);
             } else {
@@ -154,7 +155,7 @@ public class ChartGeneratorTile implements RuntimeTile {
     }
 
     private void calculateDatapoint(String expression, ScatterChartDataset dataset, BigDecimal x) {
-        MultiTypeEvaluatorManager.EvaluationResult y = MultiTypeEvaluatorTile.getInstance().solveForX(expression, x);
+        MultiTypeEvaluatorManager.EvaluationResult y = TileManager.getMultiTypeEvaluator().solveForX(expression, x);
         if (y.getClass() == MultiTypeEvaluatorManager.EvaluationResultResult.class) {
             dataset.addData(new ScatterChartDatapoint(x, toValue(((MultiTypeEvaluatorManager.EvaluationResultResult) y).getResult())));
         }

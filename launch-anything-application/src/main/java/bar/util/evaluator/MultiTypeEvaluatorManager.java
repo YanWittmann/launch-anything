@@ -1,5 +1,6 @@
 package bar.util.evaluator;
 
+import bar.tile.TileManager;
 import com.fathzer.soft.javaluator.Function;
 import com.fathzer.soft.javaluator.Parameters;
 
@@ -67,6 +68,8 @@ public class MultiTypeEvaluatorManager {
 
         // the set contents are being escaped so that they can be evaluated as a whole and not the individual parts first
         expression = evaluator.escapeSets(expression);
+        // certain functions contain functions as parameters, escape those
+        expression = evaluator.escapeFunctionFunctions(expression);
 
         Matcher assignmentExpression = ASSIGNMENT_PATTERN.matcher(expression);
         if (assignmentExpression.matches()) {
@@ -220,5 +223,19 @@ public class MultiTypeEvaluatorManager {
         public String toString() {
             return "Failure: " + reason;
         }
+    }
+
+    public MultiTypeEvaluatorManager.EvaluationResult solveForX(String expression, BigDecimal x) {
+        TileManager.getMultiTypeEvaluator().setVariable("x", x);
+        return TileManager.getMultiTypeEvaluator().evaluate(expression);
+    }
+
+    public String getFunctionSignatureForFunctionName(String name) {
+        for (MultiTypeEvaluatorManager.ExpressionFunction function : getCustomFunctions()) {
+            if (name.equals(function.getName())) {
+                return function.toString();
+            }
+        }
+        return null;
     }
 }

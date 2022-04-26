@@ -1,6 +1,7 @@
 package bar.tile.custom;
 
 import bar.tile.Tile;
+import bar.tile.TileManager;
 import bar.tile.action.TileAction;
 import bar.util.Util;
 import bar.util.evaluator.MultiTypeEvaluatorManager;
@@ -22,10 +23,10 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
 
     private static final Logger LOG = LoggerFactory.getLogger(MultiTypeEvaluatorTile.class);
 
-    private final MultiTypeEvaluatorManager evaluator = new MultiTypeEvaluatorManager();
+    private final MultiTypeEvaluatorManager evaluator;
 
-    public MultiTypeEvaluatorTile() {
-        STANDARD_INSTANCE = this;
+    public MultiTypeEvaluatorTile(MultiTypeEvaluatorManager evaluator) {
+        this.evaluator = evaluator;
     }
 
     @Override
@@ -264,37 +265,14 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
         }
     }
 
-    public MultiTypeEvaluatorManager.EvaluationResult solveForX(String expression, BigDecimal x) {
-        evaluator.setVariable("x", x);
-        return evaluator.evaluate(expression);
-    }
-
     public static boolean checkForValidFunction(String expression) {
-        if (STANDARD_INSTANCE.solveForX(expression, BigDecimal.ONE).getClass() != MultiTypeEvaluatorManager.EvaluationResultResult.class) {
+        if (TileManager.getMultiTypeEvaluator().solveForX(expression, BigDecimal.ONE).getClass() != MultiTypeEvaluatorManager.EvaluationResultResult.class) {
             return false;
-        } else if (STANDARD_INSTANCE.solveForX(expression, new BigDecimal(2)).getClass() != MultiTypeEvaluatorManager.EvaluationResultResult.class) {
+        } else if (TileManager.getMultiTypeEvaluator().solveForX(expression, new BigDecimal(2)).getClass() != MultiTypeEvaluatorManager.EvaluationResultResult.class) {
             return false;
-        } else if (STANDARD_INSTANCE.solveForX(expression, BigDecimal.TEN).getClass() != MultiTypeEvaluatorManager.EvaluationResultResult.class) {
+        } else if (TileManager.getMultiTypeEvaluator().solveForX(expression, BigDecimal.TEN).getClass() != MultiTypeEvaluatorManager.EvaluationResultResult.class) {
             return false;
         }
         return true;
-    }
-
-    public String getFunctionSignatureForFunctionName(String name) {
-        for (MultiTypeEvaluatorManager.ExpressionFunction function : evaluator.getCustomFunctions()) {
-            if (name.equals(function.getName())) {
-                return function.toString();
-            }
-        }
-        return null;
-    }
-
-    private static MultiTypeEvaluatorTile STANDARD_INSTANCE;
-
-    public static MultiTypeEvaluatorTile getInstance() {
-        if (STANDARD_INSTANCE == null) {
-            STANDARD_INSTANCE = new MultiTypeEvaluatorTile();
-        }
-        return STANDARD_INSTANCE;
     }
 }
