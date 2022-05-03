@@ -12,7 +12,6 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
@@ -31,7 +30,6 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
     public void addCustomExpressionFunction(String name, MultiTypeEvaluatorManager.Expression expression) {
         customExpressionFunctions.put(name, expression);
-        addEscapeCharacters(name);
     }
 
     public static Parameters getDefaultParameters() {
@@ -52,21 +50,19 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
     @Override
     protected Object toValue(String literal, Object evaluationContext) {
-        String normalizedLiteral = literal.trim().toLowerCase();
-        if (evaluationContext instanceof VariableSet && ((VariableSet<?>) evaluationContext).getVariables().containsKey(normalizedLiteral)) {
-            return toValue(((VariableSet<?>) evaluationContext).getVariables().get(normalizedLiteral));
-        } else if (normalizedLiteral.equals("true") || normalizedLiteral.equals("t")) {
+        literal = literal.trim().toLowerCase();
+        if (literal.equals("true") || literal.equals("t")) {
             return true;
-        } else if (normalizedLiteral.equals("false") || normalizedLiteral.equals("f")) {
+        } else if (literal.equals("false") || literal.equals("f")) {
             return false;
-        } else if (normalizedLiteral.startsWith("0x")) {
-            return new BigInteger(normalizedLiteral.substring(2), 16);
-        } else if (normalizedLiteral.startsWith("0b")) {
-            return new BigInteger(normalizedLiteral.substring(2), 2);
-        } else if (normalizedLiteral.startsWith("0o")) {
-            return new BigInteger(normalizedLiteral.substring(2), 8);
-        } else if (normalizedLiteral.startsWith("{")) {
-            Matcher setMatcher = SET_PATTERN.matcher(normalizedLiteral);
+        } else if (literal.startsWith("0x")) {
+            return new BigInteger(literal.substring(2), 16);
+        } else if (literal.startsWith("0b")) {
+            return new BigInteger(literal.substring(2), 2);
+        } else if (literal.startsWith("0o")) {
+            return new BigInteger(literal.substring(2), 8);
+        } else if (literal.startsWith("{")) {
+            Matcher setMatcher = SET_PATTERN.matcher(literal);
             if (setMatcher.matches()) {
                 String set = unescapeExpression(setMatcher.group(1).trim());
                 set = escapeSets(set);
@@ -79,23 +75,11 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             } else {
                 return Collections.emptyList();
             }
-        } else {
-            String unescaped = unescapeExpression(normalizedLiteral);
-            for (Function function : FUNCTIONS) {
-                if (unescaped.equals(function.getName())) {
-                    return function;
-                }
-            }
-            for (Map.Entry<String, MultiTypeEvaluatorManager.Expression> customFunction : customExpressionFunctions.entrySet()) {
-                if (unescaped.equals(customFunction.getKey())) {
-                    return customFunction.getValue();
-                }
-            }
         }
         try {
-            return new BigDecimal(normalizedLiteral);
+            return new BigDecimal(literal);
         } catch (NumberFormatException e) {
-            throw new NumberFormatException("Cannot parse literal '" + normalizedLiteral + "'");
+            throw new NumberFormatException("Cannot parse '" + literal + "' as number");
         }
     }
 
@@ -171,22 +155,11 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function MERGE = new Function("merge", 1, Integer.MAX_VALUE);
     public static final Function DISTINCT = new Function("distinct", 1, Integer.MAX_VALUE);
     public static final Function GET_ELEMENT = new Function("elementAt", 1, Integer.MAX_VALUE);
-    public static final Function FILTER = new Function("filter", 2, Integer.MAX_VALUE);
-    public static final Function FLAT_FILTER = new Function("flatFilter", 2, Integer.MAX_VALUE);
-    public static final Function MAP = new Function("map", 2, Integer.MAX_VALUE);
-    public static final Function FLAT_MAP = new Function("flatMap", 2, Integer.MAX_VALUE);
-    public static final Function LIMIT = new Function("limit", 1, Integer.MAX_VALUE);
-    public static final Function FLAT_LIMIT = new Function("limit", 1, Integer.MAX_VALUE);
-    public static final Function FLATTEN = new Function("flat", 1, Integer.MAX_VALUE);
-    public static final Function RANGE = new Function("range", 2);
 
     private static final Function[] FUNCTIONS = new Function[]{SINE, COSINE, TANGENT, ASINE, ACOSINE, ATAN, SINEH,
             COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, PRODUCT, COUNT_DEEP, COUNT_SHALLOW, LN, LOG, ROUND, CEIL, FLOOR,
             ABS, RANDOM, GGT, GCD, PHI, IS_PRIME, NEXT_PRIME, IF_ELSE, TO_BINARY_STRING, TO_HEX_STRING, POW, SQRT, ROOT,
-            SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, DISTINCT, GET_ELEMENT, FILTER,
-            FLAT_FILTER, MAP, FLAT_MAP, LIMIT, FLAT_LIMIT, FLATTEN, RANGE};
-
-    private static final Function[] FUNCTION_FUNCTIONS = new Function[]{FILTER, FLAT_FILTER, MAP, FLAT_MAP};
+            SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, DISTINCT, GET_ELEMENT};
 
     @Override
     protected Object evaluate(Function function, Iterator<Object> arguments, Object evaluationContext) {
@@ -218,7 +191,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return BigDecimal.valueOf(Math.tanh(getBigDecimal(arguments).doubleValue()));
         } else if (MIN.equals(function)) {
             BigDecimal min = null;
-            List<Object> allArgumentsAsList = getAllArgumentsAsListFlat(arguments);
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
             for (Object next : allArgumentsAsList) {
                 BigDecimal value = getBigDecimal(next);
                 if (value != null) {
@@ -230,7 +203,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return min;
         } else if (MAX.equals(function)) {
             BigDecimal max = null;
-            List<Object> allArgumentsAsList = getAllArgumentsAsListFlat(arguments);
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
             for (Object next : allArgumentsAsList) {
                 BigDecimal value = getBigDecimal(next);
                 if (value != null) {
@@ -242,7 +215,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return max;
         } else if (SUM.equals(function)) {
             BigDecimal sum = BigDecimal.ZERO;
-            List<Object> allArgumentsAsList = getAllArgumentsAsListFlat(arguments);
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
             for (Object next : allArgumentsAsList) {
                 BigDecimal value = getBigDecimal(next);
                 if (value != null) {
@@ -253,7 +226,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (AVERAGE.equals(function)) {
             BigDecimal sum = BigDecimal.ZERO;
             int count = 0;
-            List<Object> allArgumentsAsList = getAllArgumentsAsListFlat(arguments);
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
             for (Object next : allArgumentsAsList) {
                 BigDecimal value = getBigDecimal(next);
                 if (value != null) {
@@ -264,7 +237,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return sum.divide(BigDecimal.valueOf(count), DOUBLE_SCALE, RoundingMode.HALF_EVEN);
         } else if (PRODUCT.equals(function)) {
             BigDecimal product = BigDecimal.ONE;
-            List<Object> allArgumentsAsList = getAllArgumentsAsListFlat(arguments);
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
             for (Object next : allArgumentsAsList) {
                 BigDecimal value = getBigDecimal(next);
                 if (value != null) {
@@ -273,7 +246,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             }
             return product;
         } else if (COUNT_DEEP.equals(function)) {
-            return getAllArgumentsAsListFlat(arguments).size();
+            return getAllArgumentsAsList(arguments).size();
         } else if (COUNT_SHALLOW.equals(function)) {
             int count = 0;
             while (arguments.hasNext()) {
@@ -283,7 +256,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return count;
         } else if (GROUP_DUPLICATES.equals(function)) {
             Map<Object, BigDecimal> counts = new LinkedHashMap<>();
-            List<Object> allArgumentsAsList = getAllArgumentsAsListFlat(arguments);
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
             for (Object next : allArgumentsAsList) {
                 counts.putIfAbsent(next, BigDecimal.ZERO);
                 counts.put(next, counts.get(next).add(BigDecimal.ONE));
@@ -298,13 +271,19 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             }
             return results;
         } else if (SORT.equals(function)) {
-            List<Object> argumentsList = getAllArgumentsAsList(arguments);
+            List<Object> argumentsList = new ArrayList<>();
+            while (arguments.hasNext()) {
+                argumentsList.add(arguments.next());
+            }
             if (argumentsList.size() == 1 && argumentsList.get(0) instanceof List) {
                 argumentsList = (List<Object>) argumentsList.get(0);
             }
             return argumentsList.stream().sorted(OBJECT_COMPARATOR).collect(Collectors.toList());
         } else if (MERGE.equals(function)) {
-            List<Object> argumentsList = getAllArgumentsAsList(arguments);
+            List<Object> argumentsList = new ArrayList<>();
+            while (arguments.hasNext()) {
+                argumentsList.add(arguments.next());
+            }
             List<Object> merged = new ArrayList<>();
             for (Object next : argumentsList) {
                 if (next instanceof List) {
@@ -315,7 +294,10 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             }
             return merged;
         } else if (DISTINCT.equals(function)) {
-            List<Object> argumentsList = getAllArgumentsAsList(arguments);
+            List<Object> argumentsList = new ArrayList<>();
+            while (arguments.hasNext()) {
+                argumentsList.add(arguments.next());
+            }
             if (argumentsList.size() == 1 && argumentsList.get(0) instanceof List) {
                 argumentsList = (List<Object>) argumentsList.get(0);
             }
@@ -415,9 +397,6 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             List<BigDecimal> factors = new ArrayList<>();
             BigDecimal n = getBigDecimal(arguments);
             BigDecimal i = BigDecimal.valueOf(2);
-            if (n.compareTo(BigDecimal.ONE) == 0) {
-                factors.add(BigDecimal.ONE);
-            }
             while (i.compareTo(n) <= 0) {
                 if (n.remainder(i).equals(BigDecimal.ZERO)) {
                     factors.add(i);
@@ -440,54 +419,8 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return divisors;
         } else if (GET_ELEMENT.equals(function)) {
             BigDecimal index = getBigDecimal(arguments);
-            List<Object> allElements = getAllArgumentsAsListFlat(arguments);
-            return allElements.get(index.intValue());
-        } else if (FILTER.equals(function)) {
-            Object f = arguments.next();
-            if (f instanceof Function) {
-                Function filterFunction = (Function) f;
-                List<Object> allElements = getAllArgumentsAsList(arguments);
-                return filterObjectsUsingFunction(filterFunction, allElements);
-            }
-            throw new IllegalArgumentException("Filter function must be a function");
-        } else if (FLAT_FILTER.equals(function)) {
-            Object f = arguments.next();
-            if (f instanceof Function) {
-                Function filterFunction = (Function) f;
-                List<Object> allElements = getAllArgumentsFirstLayer(arguments);
-                return filterObjectsUsingFunction(filterFunction, allElements);
-            }
-            throw new IllegalArgumentException("Filter function must be a function");
-        } else if (MAP.equals(function)) {
-            Object f = arguments.next();
-            if (f instanceof Function) {
-                Function mapFunction = (Function) f;
-                List<Object> allElements = getAllArgumentsAsList(arguments);
-                return mapObjectsUsingFunction(mapFunction, allElements);
-            }
-            throw new IllegalArgumentException("Map function must be a function");
-        } else if (FLAT_MAP.equals(function)) {
-            Object f = arguments.next();
-            if (f instanceof Function) {
-                Function mapFunction = (Function) f;
-                List<Object> allElements = getAllArgumentsFirstLayer(arguments);
-                return mapObjectsUsingFunction(mapFunction, allElements);
-            }
-            throw new IllegalArgumentException("Map function must be a function");
-        } else if (LIMIT.equals(function)) {
-            BigDecimal limit = getBigDecimal(arguments);
             List<Object> allElements = getAllArgumentsAsList(arguments);
-            return allElements.subList(0, limit.intValue());
-        } else if (FLAT_LIMIT.equals(function)) {
-            BigDecimal limit = getBigDecimal(arguments);
-            List<Object> allElements = getAllArgumentsAsListFlat(arguments);
-            return allElements.subList(0, limit.intValue());
-        } else if (FLATTEN.equals(function)) {
-            return getAllArgumentsAsListFlat(arguments);
-        } else if (RANGE.equals(function)) {
-            BigDecimal from = getBigDecimal(arguments);
-            BigDecimal to = getBigDecimal(arguments);
-            return IntStream.rangeClosed(from.intValue(), to.intValue()).boxed().collect(Collectors.toList());
+            return allElements.get(index.intValue());
         } else {
             for (Map.Entry<String, MultiTypeEvaluatorManager.Expression> entry : customExpressionFunctions.entrySet()) {
                 if (function.getName().equals(entry.getKey())) {
@@ -507,14 +440,6 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         }
     }
 
-    private List<Object> getAllArgumentsAsList(Iterator<Object> arguments) {
-        List<Object> allElements = new ArrayList<>();
-        while (arguments.hasNext()) {
-            allElements.add(arguments.next());
-        }
-        return allElements;
-    }
-
     private List<Object> getAllSetElements(List<Object> list) {
         List<Object> result = new ArrayList<>();
         for (Object element : list) {
@@ -527,90 +452,12 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         return result;
     }
 
-    private Object mapObjectsUsingFunction(Function mapFunction, List<Object> allElements) {
-        List<Object> mappedElements = new ArrayList<>();
-        List<Object> parameters = getParametersForFunction(mapFunction, allElements);
-        for (Object element : allElements) {
-            List<Object> newParameters = new ArrayList<>(parameters);
-            newParameters.add(element);
-            Object result = evaluateExpressionWithParameter(mapFunction, newParameters);
-            mappedElements.add(result);
-        }
-        return mappedElements;
-    }
-
-    private Object filterObjectsUsingFunction(Function filterFunction, List<Object> allElements) {
-        List<Object> filteredElements = new ArrayList<>();
-        List<Object> parameters = getParametersForFunction(filterFunction, allElements);
-        for (Object element : allElements) {
-            List<Object> newParameters = new ArrayList<>(parameters);
-            newParameters.add(element);
-            Object result = evaluateExpressionWithParameter(filterFunction, newParameters);
-            if (result instanceof Boolean) {
-                if ((Boolean) result) {
-                    filteredElements.add(element);
-                }
-            } else {
-                throw new IllegalArgumentException("Filter function must return boolean");
-            }
-        }
-        return filteredElements;
-    }
-
-    private List<Object> getParametersForFunction(Function mapFunction, List<Object> allElements) {
-        List<Object> parameters = new ArrayList<>();
-        if (mapFunction.getMinimumArgumentCount() > 1) {
-            for (int i = 0; i < mapFunction.getMinimumArgumentCount() - 1; i++) {
-                parameters.add(allElements.get(i));
-                allElements.remove(i);
-            }
-        }
-        return parameters;
-    }
-
-    private Object evaluateExpressionWithParameter(Function filterFunction, List<Object> parameters) {
-        VariableSet<Object> variables = new VariableSet<>();
-
-        String expression;
-
-        if (filterFunction instanceof MultiTypeEvaluatorManager.Expression) {
-            // if the function is a custom function, the corresponding parameter names have to be set
-            MultiTypeEvaluatorManager.Expression customFunction = (MultiTypeEvaluatorManager.Expression) filterFunction;
-            for (int i = 0; i < customFunction.getParameters().length; i++) {
-                variables.set(customFunction.getParameters()[i], parameters.get(i));
-            }
-            expression = customFunction.getExpression();
-        } else {
-            // otherwise, the parameters are set in the order they are defined in the function
-            for (int i = 0; i < parameters.size(); i++) {
-                Object element = parameters.get(i);
-                variables.set("elem" + i, element);
-            }
-            expression = filterFunction.getName() + "(" + String.join(", ", variables.getVariables().keySet()) + ")";
-        }
-
-        return evaluate(expression, variables);
-    }
-
-    private List<Object> getAllArgumentsAsListFlat(Iterator<Object> arguments) {
+    private List<Object> getAllArgumentsAsList(Iterator<Object> arguments) {
         List<Object> result = new ArrayList<>();
         while (arguments.hasNext()) {
             Object next = arguments.next();
             if (next instanceof List) {
                 result.addAll(getAllSetElements((List<Object>) next));
-            } else {
-                result.add(next);
-            }
-        }
-        return result;
-    }
-
-    private List<Object> getAllArgumentsFirstLayer(Iterator<Object> arguments) {
-        List<Object> result = new ArrayList<>();
-        while (arguments.hasNext()) {
-            Object next = arguments.next();
-            if (next instanceof List) {
-                result.addAll((List<Object>) next);
             } else {
                 result.add(next);
             }
@@ -825,41 +672,25 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         return false;
     }
 
-    private final Map<String, String> ESCAPE_CHARACTERS = new TreeMap<>(
-            Comparator.comparingInt(String::length).reversed().thenComparing(String::compareTo));
-    private final RandomString RANDOM_STRING_GENERATOR_ESCAPE_CHARACTERS = new RandomString(8, 596865);
+    private final static Map<String, String> ESCAPE_CHARACTERS = new LinkedHashMap<>();
 
-    {
-        for (Function function : FUNCTIONS) {
-            addEscapeCharacters(function.getName());
+    static {
+        RandomString randomString = new RandomString(8, 596865);
+        // sort by length, so that longer strings come first
+        for (Function function : Arrays.stream(FUNCTIONS).sorted((o1, o2) -> Integer.compare(o2.getName().length(), o1.getName().length())).collect(Collectors.toList())) {
+            ESCAPE_CHARACTERS.put(function.getName(), randomString.nextString());
         }
-        for (Operator operator : OPERATORS) {
-            addEscapeCharacters(operator.getSymbol());
+        for (Operator operator : Arrays.stream(OPERATORS).sorted((o1, o2) -> Integer.compare(o2.getSymbol().length(), o1.getSymbol().length())).collect(Collectors.toList())) {
+            ESCAPE_CHARACTERS.put(operator.getSymbol(), randomString.nextString());
         }
-        addEscapeCharacters("(");
-        addEscapeCharacters(")");
-        addEscapeCharacters(",");
-    }
-
-    private void addEscapeCharacters(String s) {
-        ESCAPE_CHARACTERS.put(s, RANDOM_STRING_GENERATOR_ESCAPE_CHARACTERS.nextString());
+        ESCAPE_CHARACTERS.put("(", randomString.nextString());
+        ESCAPE_CHARACTERS.put(")", randomString.nextString());
+        ESCAPE_CHARACTERS.put(",", randomString.nextString());
     }
 
     public String escapeExpression(String unescaped) {
         for (Map.Entry<String, String> escape : ESCAPE_CHARACTERS.entrySet()) {
             unescaped = unescaped.replace(escape.getKey(), escape.getValue());
-        }
-        return unescaped;
-    }
-
-    public String escapeFunctionFunctions(String unescaped) {
-        for (Function functionFunction : FUNCTION_FUNCTIONS) {
-            Matcher m = Pattern.compile(functionFunction.getName() + "\\(([^,]+) *,").matcher(unescaped);
-            while (m.find()) {
-                String functionName = m.group(1);
-                String escapedFunctionName = escapeExpression(functionName);
-                unescaped = unescaped.replace(functionFunction.getName() + "(" + functionName, functionFunction.getName() + "(" + escapedFunctionName);
-            }
         }
         return unescaped;
     }

@@ -5,7 +5,6 @@ import bar.tile.action.TileAction;
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
 import bar.util.Util;
-import bar.util.evaluator.MultiTypeEvaluatorManager;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,6 +18,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -46,8 +48,6 @@ public class TileManager {
 
     private CloudAccess cloudAccess;
 
-    private static final MultiTypeEvaluatorManager evaluator = new MultiTypeEvaluatorManager();
-
     public TileManager() {
         plugins = new PluginTileLoader();
         plugins.loadPlugins();
@@ -71,7 +71,6 @@ public class TileManager {
     }
 
     private Thread currentEvaluationThread = null;
-    private int currentEvaluationThreadHash = -1;
     private final AtomicReference<Long> lastInputEvaluated = new AtomicReference<>(System.currentTimeMillis());
 
     public void evaluateUserInput(String input) {
@@ -83,9 +82,8 @@ public class TileManager {
                 if (input.length() <= 1) {
                     setEvaluationResults(new ArrayList<>());
                 } else {
-                    currentEvaluationThread = createEvaluationThread(input);
+                    currentEvaluationThread = evaluate(input);
                     currentEvaluationThread.start();
-                    currentEvaluationThreadHash = currentEvaluationThread.hashCode();
                 }
             }).start();
         } catch (Exception e) {
@@ -93,10 +91,13 @@ public class TileManager {
         }
     }
 
-    private Thread createEvaluationThread(String input) {
+    private void setEvaluationResults(List<Tile> tiles) {
+        onInputEvaluatedListeners.forEach(listener -> listener.onInputEvaluated(tiles));
+    }
+
+    private Thread evaluate(String input) {
         lastInputEvaluated.set(System.currentTimeMillis());
         return new Thread(() -> {
-            int ownHash = currentEvaluationThread.hashCode();
             List<Tile> matchingTiles = new ArrayList<>();
 
             searchTiles(tiles, matchingTiles, input);
@@ -113,14 +114,8 @@ public class TileManager {
                     .map(runtimeTile -> runtimeTile.generateTiles(input, lastInputEvaluated))
                     .forEach(matchingTiles::addAll);
 
-            if (currentEvaluationThreadHash == ownHash) {
-                setEvaluationResults(matchingTiles);
-            }
+            setEvaluationResults(matchingTiles);
         });
-    }
-
-    private void setEvaluationResults(List<Tile> tiles) {
-        onInputEvaluatedListeners.forEach(listener -> listener.onInputEvaluated(tiles));
     }
 
     private void searchTiles(List<Tile> tiles, List<Tile> matchingTiles, String input) {
@@ -487,7 +482,7 @@ public class TileManager {
         NUMBER_BASE_CONVERTER(NumberBaseConverterTile::new),
         ASPECT_RATIO(AspectRationTile::new),
         UNIT_CONVERTER(UnitConverterTile::new),
-        MULTI_TYPE_EVALUATOR(() -> new MultiTypeEvaluatorTile(evaluator)),
+        MULTI_TYPE_EVALUATOR(MultiTypeEvaluatorTile::new),
         CHART_GENERATOR(ChartGeneratorTile::new),
         WIKI_SEARCH(WikiSearchTile::new),
         TIMEOUT(TimeoutTile::new),
@@ -713,10 +708,6 @@ public class TileManager {
 
     public TileBackups getTileBackups() {
         return tileBackups;
-    }
-
-    public static MultiTypeEvaluatorManager getMultiTypeEvaluator() {
-        return evaluator;
     }
 
     public void addOnInputEvaluatedListener(InputEvaluatedListener listener) {
