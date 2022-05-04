@@ -9,9 +9,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
@@ -46,8 +46,6 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         return DEFAULT_PARAMETERS;
     }
 
-    public final static Pattern SET_PATTERN = Pattern.compile("\\{(.*)}");
-
     @Override
     protected Object toValue(String literal, Object evaluationContext) {
         literal = literal.trim().toLowerCase();
@@ -61,20 +59,8 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return new BigInteger(literal.substring(2), 2);
         } else if (literal.startsWith("0o")) {
             return new BigInteger(literal.substring(2), 8);
-        } else if (literal.startsWith("{")) {
-            Matcher setMatcher = SET_PATTERN.matcher(literal);
-            if (setMatcher.matches()) {
-                String set = unescapeExpression(setMatcher.group(1).trim());
-                set = escapeSets(set);
-                String[] elements = set.split("; *");
-                if (elements.length == 0) {
-                    return Collections.emptyList();
-                } else {
-                    return Arrays.stream(elements).map(element -> evaluate(element, evaluationContext)).collect(Collectors.toList());
-                }
-            } else {
-                return Collections.emptyList();
-            }
+        } else if (literal.startsWith("0d")) {
+            return new BigDecimal(literal.substring(2));
         }
         try {
             return new BigDecimal(literal);
@@ -153,13 +139,17 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function GROUP_DUPLICATES = new Function("groupDuplicates", 1, Integer.MAX_VALUE);
     public static final Function SORT = new Function("sort", 1, Integer.MAX_VALUE);
     public static final Function MERGE = new Function("merge", 1, Integer.MAX_VALUE);
+    public static final Function LIST = new Function("list", 1, Integer.MAX_VALUE);
+    public static final Function SET = new Function("set", 1, Integer.MAX_VALUE);
     public static final Function DISTINCT = new Function("distinct", 1, Integer.MAX_VALUE);
     public static final Function GET_ELEMENT = new Function("elementAt", 1, Integer.MAX_VALUE);
+    public static final Function RANGE = new Function("range", 1, Integer.MAX_VALUE);
 
     private static final Function[] FUNCTIONS = new Function[]{SINE, COSINE, TANGENT, ASINE, ACOSINE, ATAN, SINEH,
             COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, PRODUCT, COUNT_DEEP, COUNT_SHALLOW, LN, LOG, ROUND, CEIL, FLOOR,
             ABS, RANDOM, GGT, GCD, PHI, IS_PRIME, NEXT_PRIME, IF_ELSE, TO_BINARY_STRING, TO_HEX_STRING, POW, SQRT, ROOT,
-            SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, DISTINCT, GET_ELEMENT};
+            SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, LIST, SET, DISTINCT, GET_ELEMENT,
+            RANGE};
 
     @Override
     protected Object evaluate(Function function, Iterator<Object> arguments, Object evaluationContext) {
@@ -293,6 +283,18 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                 }
             }
             return merged;
+        } else if (SET.equals(function)) {
+            Set<Object> argumentsSet = new LinkedHashSet<>();
+            while (arguments.hasNext()) {
+                argumentsSet.add(arguments.next());
+            }
+            return new ArrayList<>(argumentsSet);
+        } else if (LIST.equals(function)) {
+            List<Object> argumentsList = new ArrayList<>();
+            while (arguments.hasNext()) {
+                argumentsList.add(arguments.next());
+            }
+            return argumentsList;
         } else if (DISTINCT.equals(function)) {
             List<Object> argumentsList = new ArrayList<>();
             while (arguments.hasNext()) {
@@ -421,6 +423,8 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             BigDecimal index = getBigDecimal(arguments);
             List<Object> allElements = getAllArgumentsAsList(arguments);
             return allElements.get(index.intValue());
+        } else if (RANGE.equals(function)) {
+            return IntStream.rangeClosed(getBigDecimal(arguments).intValue(), getBigDecimal(arguments).intValue()).boxed().collect(Collectors.toList());
         } else {
             for (Map.Entry<String, MultiTypeEvaluatorManager.Expression> entry : customExpressionFunctions.entrySet()) {
                 if (function.getName().equals(entry.getKey())) {
@@ -540,48 +544,66 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     @Override
     protected Object evaluate(Operator operator, Iterator<Object> operands, Object evaluationContext) {
         if (NEGATE.equals(operator)) {
-            return getBigDecimal(operands).negate();
+            Object operand = operands.next();
+            if (operand instanceof Number) {
+                return getBigDecimal(operand).negate();
+            } else if (operand instanceof Boolean) {
+                return !(Boolean) operand;
+            } else if (operand instanceof Collection) {
+                Collection<Object> collection = (Collection<Object>) operand;
+                List<Object> result = new ArrayList<>(collection.size());
+                for (Object element : collection) {
+                    if (element instanceof Number) {
+                        element = getBigDecimal(element).negate();
+                    } else if (element instanceof Boolean) {
+                        element = !(Boolean) element;
+                    }
+                    result.add(element);
+                }
+                return result;
+            }
+            throw new IllegalArgumentException("Cannot negate " + operand);
         } else if (MINUS.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.subtract(right);
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).subtract(getBigDecimal(rightValue)));
         } else if (PLUS.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.add(right);
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).add(getBigDecimal(rightValue)));
         } else if (MULTIPLY.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.multiply(right);
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).multiply(getBigDecimal(rightValue)));
         } else if (DIVIDE.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.divide(right, DOUBLE_SCALE, RoundingMode.HALF_EVEN);
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).divide(getBigDecimal(rightValue), DOUBLE_SCALE, RoundingMode.HALF_EVEN));
         } else if (EXPONENT.equals(operator) || EXPONENT_DOUBLE.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.pow(right.intValue());
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).pow(getBigDecimal(rightValue).intValue()));
         } else if (MODULO.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.remainder(right);
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).remainder(getBigDecimal(rightValue)));
         } else if (DECREMENT.equals(operator)) {
-            BigDecimal operand = getBigDecimal(operands);
-            return operand.subtract(BigDecimal.ONE);
+            Object operand = operands.next();
+            return performUnaryOperationOnValue(operand, operandValue -> getBigDecimal(operandValue).subtract(BigDecimal.ONE));
         } else if (INCREMENT.equals(operator)) {
-            BigDecimal operand = getBigDecimal(operands);
-            return operand.add(BigDecimal.ONE);
+            Object operand = operands.next();
+            return performUnaryOperationOnValue(operand, operandValue -> getBigDecimal(operandValue).add(BigDecimal.ONE));
         } else if (LOGICAL_AND_1.equals(operator) || LOGICAL_AND_2.equals(operator)) {
-            Boolean left = getBoolean(operands);
-            Boolean right = getBoolean(operands);
-            return left && right;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBoolean(leftValue) && getBoolean(rightValue));
         } else if (LOGICAL_OR_1.equals(operator) || LOGICAL_OR_2.equals(operator)) {
-            Boolean left = getBoolean(operands);
-            Boolean right = getBoolean(operands);
-            return left || right;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBoolean(leftValue) || getBoolean(rightValue));
         } else if (LOGICAL_NOT_1.equals(operator) || LOGICAL_NOT_2.equals(operator)) {
-            Boolean operand = getBoolean(operands);
-            return !operand;
+            Object operand = operands.next();
+            return performUnaryOperationOnValue(operand, operandValue -> !getBoolean(operandValue));
         } else if (RIGHT_SHIFT.equals(operator)) {
             BigInteger left = getBigDecimal(operands).toBigInteger();
             BigInteger right = getBigDecimal(operands).toBigInteger();
@@ -591,48 +613,109 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             BigInteger right = getBigDecimal(operands).toBigInteger();
             return left.shiftLeft(right.intValue());
         } else if (RELATIONAL_SMALLER.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.compareTo(right) < 0;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) < 0);
         } else if (RELATIONAL_SMALLER_OR_EQUAL.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.compareTo(right) <= 0;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) <= 0);
         } else if (RELATIONAL_GREATER.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.compareTo(right) > 0;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) > 0);
         } else if (RELATIONAL_GREATER_OR_EQUAL.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.compareTo(right) >= 0;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) >= 0);
         } else if (EQUALITY.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.compareTo(right) == 0;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) == 0);
         } else if (INEQUALITY.equals(operator)) {
-            BigDecimal left = getBigDecimal(operands);
-            BigDecimal right = getBigDecimal(operands);
-            return left.compareTo(right) != 0;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) != 0);
         } else if (BITWISE_AND.equals(operator)) {
-            BigInteger left = getBigDecimal(operands).toBigInteger();
-            BigInteger right = getBigDecimal(operands).toBigInteger();
-            return left.and(right);
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).toBigInteger().and(getBigDecimal(rightValue).toBigInteger()));
         } else if (BITWISE_OR.equals(operator)) {
-            BigInteger left = getBigDecimal(operands).toBigInteger();
-            BigInteger right = getBigDecimal(operands).toBigInteger();
-            return left.or(right);
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).toBigInteger().or(getBigDecimal(rightValue).toBigInteger()));
         } else if (LOGICAL_IMPLICATION.equals(operator)) {
-            Boolean left = getBoolean(operands);
-            Boolean right = getBoolean(operands);
-            return !left || right;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> !getBoolean(leftValue) || getBoolean(rightValue));
         } else if (LOGICAL_EQUIVALENCE.equals(operator)) {
-            Boolean left = getBoolean(operands);
-            Boolean right = getBoolean(operands);
-            return left == right;
+            Object left = operands.next();
+            Object right = operands.next();
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBoolean(leftValue) == getBoolean(rightValue));
         } else {
             return super.evaluate(operator, operands, evaluationContext);
         }
+    }
+
+    private Object performBinaryOperationOnValueAndList(Object left, Object right, BinaryCalculation binaryCalculation) {
+        boolean leftIsValue = isDecimalOrBoolean(left);
+        boolean rightIsValue = isDecimalOrBoolean(right);
+        if (leftIsValue && rightIsValue) {
+            return binaryCalculation.calculate(left, right);
+        } else if (left instanceof Collection && rightIsValue) {
+            Collection<Object> collection = (Collection<Object>) left;
+            List<Object> result = new ArrayList<>(collection.size());
+            for (Object element : collection) {
+                result.add(binaryCalculation.calculate(element, right));
+            }
+            return result;
+        } else if (leftIsValue && right instanceof Collection) {
+            Collection<Object> collection = (Collection<Object>) right;
+            List<Object> result = new ArrayList<>(collection.size());
+            for (Object element : collection) {
+                result.add(binaryCalculation.calculate(left, element));
+            }
+            return result;
+        } else if (left instanceof Collection && right instanceof Collection) {
+            Collection<Object> leftCollection = (Collection<Object>) left;
+            Collection<Object> rightCollection = (Collection<Object>) right;
+            List<Object> result = new ArrayList<>(leftCollection.size());
+            Iterator<Object> leftIterator = leftCollection.iterator();
+            Iterator<Object> rightIterator = rightCollection.iterator();
+            while (leftIterator.hasNext() && rightIterator.hasNext()) {
+                Object leftElement = leftIterator.next();
+                Object rightElement = rightIterator.next();
+                result.add(binaryCalculation.calculate(leftElement, rightElement));
+            }
+            return result;
+        }
+        throw new IllegalArgumentException("Cannot perform binary operation on " + left + " and " + right);
+    }
+
+    private Object performUnaryOperationOnValue(Object operand, UnaryCalculation unaryCalculation) {
+        if (isDecimalOrBoolean(operand)) {
+            return unaryCalculation.calculate(operand);
+        } else if (operand instanceof Collection) {
+            Collection<Object> collection = (Collection<Object>) operand;
+            List<Object> result = new ArrayList<>(collection.size());
+            for (Object element : collection) {
+                result.add(unaryCalculation.calculate(element));
+            }
+            return result;
+        }
+        throw new IllegalArgumentException("Cannot perform unary operation on " + operand);
+    }
+
+    private boolean isDecimalOrBoolean(Object operand) {
+        return operand instanceof Number || operand instanceof Boolean;
+    }
+
+    private interface BinaryCalculation {
+        Object calculate(Object left, Object right);
+    }
+
+    private interface UnaryCalculation {
+        Object calculate(Object operand);
     }
 
     private BigDecimal getBigDecimal(Iterator<Object> arguments) {
@@ -666,6 +749,10 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
     private Boolean getBoolean(Iterator<Object> arguments) {
         Object argument = arguments.next();
+        return getBoolean(argument);
+    }
+
+    private Boolean getBoolean(Object argument) {
         if (argument instanceof Boolean) {
             return (Boolean) argument;
         }
@@ -691,18 +778,6 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public String escapeExpression(String unescaped) {
         for (Map.Entry<String, String> escape : ESCAPE_CHARACTERS.entrySet()) {
             unescaped = unescaped.replace(escape.getKey(), escape.getValue());
-        }
-        return unescaped;
-    }
-
-    public String escapeSets(String unescaped) {
-        if (unescaped.contains("{")) {
-            Matcher sets = MultiTypeEvaluator.SET_PATTERN.matcher(unescaped);
-            while (sets.find()) {
-                unescaped = unescaped.replace(
-                        "{" + sets.group(1) + "}",
-                        "{" + escapeExpression(sets.group(1)) + "}");
-            }
         }
         return unescaped;
     }

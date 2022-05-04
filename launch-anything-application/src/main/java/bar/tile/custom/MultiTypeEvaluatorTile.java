@@ -12,11 +12,9 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 public class MultiTypeEvaluatorTile implements RuntimeTile {
 
@@ -44,6 +42,33 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
             }
             return tiles;
         }
+
+        if (search.contains(";")) {
+            String[] split = search.split(";");
+            if (Arrays.stream(split).allMatch(e -> e.contains("="))) {
+                List<MultiTypeEvaluatorManager.EvaluationResult> results = new ArrayList<>();
+                for (String expression : split) {
+                    MultiTypeEvaluatorManager.EvaluationResult result = attemptEvaluate(expression);
+                    if (result instanceof MultiTypeEvaluatorManager.EvaluationResultAssignment || result instanceof MultiTypeEvaluatorManager.EvaluationResultFunction) {
+                        results.add(result);
+                    } else {
+                        return Collections.emptyList();
+                    }
+                }
+                Tile assignmentTile = new Tile(results.size() + " assignment" + (results.size() == 1 ? "" : "s") + " " + results.stream().map(Objects::toString).collect(Collectors.joining(", ")), "runtime", "", false);
+                assignmentTile.addAction(TileAction.getInstance(() -> {
+                    for (MultiTypeEvaluatorManager.EvaluationResult result : results) {
+                        if (result instanceof MultiTypeEvaluatorManager.EvaluationResultAssignment) {
+                            ((MultiTypeEvaluatorManager.EvaluationResultAssignment) result).applyVariable();
+                        } else if (result instanceof MultiTypeEvaluatorManager.EvaluationResultFunction) {
+                            ((MultiTypeEvaluatorManager.EvaluationResultFunction) result).applyFunction();
+                        }
+                    }
+                }));
+                return Collections.singletonList(assignmentTile);
+            }
+        }
+
         MultiTypeEvaluatorManager.EvaluationResult result = attemptEvaluate(search);
         switch (result.getClass().getSimpleName()) {
             case "EvaluationResultResult":
