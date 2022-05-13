@@ -65,6 +65,8 @@ public class MultiTypeEvaluatorManager {
             return new EvaluationResultFailure(new IllegalArgumentException("Expression is empty"));
         }
 
+        expression = evaluator.escapeFunctionFunctions(expression);
+
         Matcher assignmentExpression = ASSIGNMENT_PATTERN.matcher(expression);
         if (assignmentExpression.matches()) {
             String variableName = assignmentExpression.group(1);

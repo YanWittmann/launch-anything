@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -47,20 +49,26 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
     @Override
     protected Object toValue(String literal, Object evaluationContext) {
-        literal = literal.trim().toLowerCase();
-        if (literal.equals("true") || literal.equals("t")) {
+        final String normalizedLiteral = literal.trim().toLowerCase();
+        if (normalizedLiteral.equals("true") || normalizedLiteral.equals("t")) {
             return true;
-        } else if (literal.equals("false") || literal.equals("f")) {
+        } else if (normalizedLiteral.equals("false") || normalizedLiteral.equals("f")) {
             return false;
-        } else if (literal.startsWith("0x")) {
-            return new BigInteger(literal.substring(2), 16);
-        } else if (literal.startsWith("0b")) {
-            return new BigInteger(literal.substring(2), 2);
-        } else if (literal.startsWith("0o")) {
-            return new BigInteger(literal.substring(2), 8);
-        } else if (literal.startsWith("0d")) {
-            return new BigDecimal(literal.substring(2));
+        } else if (normalizedLiteral.startsWith("0x")) {
+            return new BigInteger(normalizedLiteral.substring(2), 16);
+        } else if (normalizedLiteral.startsWith("0b")) {
+            return new BigInteger(normalizedLiteral.substring(2), 2);
+        } else if (normalizedLiteral.startsWith("0o")) {
+            return new BigInteger(normalizedLiteral.substring(2), 8);
+        } else if (normalizedLiteral.startsWith("0d")) {
+            return new BigDecimal(normalizedLiteral.substring(2));
         }
+
+        try {
+            return unencodeFunctionName(normalizedLiteral);
+        } catch (Exception ignored) {
+        }
+
         try {
             return new BigDecimal(literal);
         } catch (NumberFormatException e) {
@@ -81,6 +89,11 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         return null;
     }
 
+    private Function unencodeFunctionName(String name) {
+        String functionName = unescapeExpression(name);
+        return Arrays.stream(FUNCTIONS).filter(f -> f.getName().equals(functionName)).findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown function: " + functionName));
+    }
+
     public static final Constant PI = new Constant("pi");
     public static final Constant E = new Constant("e");
 
@@ -99,7 +112,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
     public static final Function CEIL = new Function("ceil", 1);
     public static final Function FLOOR = new Function("floor", 1);
-    public static final Function ROUND = new Function("round", 1);
+    public static final Function ROUND = new Function("round", 1, 2);
     public static final Function ABS = new Function("abs", 1);
     public static final Function SINE = new Function("sin", 1);
     public static final Function COSINE = new Function("cos", 1);
@@ -144,12 +157,22 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function GET_ELEMENT = new Function("elementAt", 1, Integer.MAX_VALUE);
     public static final Function RANGE = new Function("range", 1, 2);
     public static final Function NORMALIZE = new Function("normalize", 1);
+    public static final Function MAP_FUNCTION = new Function("map", 1, Integer.MAX_VALUE);
+    public static final Function FILTER = new Function("filter", 1, Integer.MAX_VALUE);
+    public static final Function ANY_MATCH = new Function("anyMatch", 1, Integer.MAX_VALUE);
+    public static final Function ALL_MATCH = new Function("allMatch", 1, Integer.MAX_VALUE);
+    public static final Function NONE_MATCH = new Function("noneMatch", 1, Integer.MAX_VALUE);
+    public static final Function FIND_FIRST = new Function("findFirst", 1, Integer.MAX_VALUE);
+    public static final Function FIND_LAST = new Function("findLast", 1, Integer.MAX_VALUE);
 
     private static final Function[] FUNCTIONS = new Function[]{SINE, COSINE, TANGENT, ASINE, ACOSINE, ATAN, SINEH,
             COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, PRODUCT, COUNT_DEEP, COUNT_SHALLOW, LN, LOG, ROUND, CEIL, FLOOR,
             ABS, RANDOM, GGT, GCD, PHI, IS_PRIME, NEXT_PRIME, IF_ELSE, TO_BINARY_STRING, TO_HEX_STRING, POW, SQRT, ROOT,
             SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, LIST, SET, DISTINCT, GET_ELEMENT,
-            RANGE, NORMALIZE};
+            RANGE, NORMALIZE, MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST};
+
+    private static final Function[] FUNCTION_FUNCTIONS = new Function[]{MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH,
+            NONE_MATCH, FIND_FIRST, FIND_LAST};
 
     @Override
     protected Object evaluate(Function function, Iterator<Object> arguments, Object evaluationContext) {
@@ -158,7 +181,9 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (FLOOR.equals(function)) {
             return getBigDecimal(arguments).setScale(0, RoundingMode.FLOOR);
         } else if (ROUND.equals(function)) {
-            return getBigDecimal(arguments).setScale(0, RoundingMode.HALF_EVEN);
+            BigDecimal roundingValue = getBigDecimal(arguments);
+            BigDecimal decimals = getBigDecimal(arguments);
+            return roundingValue.setScale(decimals.intValue(), RoundingMode.HALF_EVEN);
         } else if (ABS.equals(function)) {
             return getBigDecimal(arguments).abs();
         } else if (SINE.equals(function)) {
@@ -436,6 +461,70 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                 normalizedElements.add(getBigDecimal(element).divide(sum, DOUBLE_SCALE, RoundingMode.DOWN));
             }
             return normalizedElements;
+        } else if (MAP_FUNCTION.equals(function)) {
+            Function mappingFunction = getArgumentAsFunction(arguments);
+            List<Object> listToMap = getArgumentAsList(arguments);
+
+            return mapArgumentListToEvaluationResultUsingMappingFunction(arguments, evaluationContext, mappingFunction, listToMap);
+        } else if (FILTER.equals(function)) {
+            Function filterFunction = getArgumentAsFunction(arguments);
+            List<Object> listToFilter = getArgumentAsList(arguments);
+
+            List<Object> mappedList = mapArgumentListToEvaluationResultUsingMappingFunction(arguments, evaluationContext, filterFunction, listToFilter);
+
+            for (int i = listToFilter.size() - 1; i >= 0; i--) {
+                if (!getBoolean(mappedList.get(i))) {
+                    listToFilter.remove(i);
+                }
+            }
+            return listToFilter;
+        } else if (ANY_MATCH.equals(function)) {
+            Function matchingFunction = getArgumentAsFunction(arguments);
+            List<Object> listToMatch = getArgumentAsList(arguments);
+
+            List<Object> mappedList = mapArgumentListToEvaluationResultUsingMappingFunction(arguments, evaluationContext, matchingFunction, listToMatch);
+
+            return mappedList.stream().anyMatch(this::getBoolean);
+        } else if (ALL_MATCH.equals(function)) {
+            Function matchingFunction = getArgumentAsFunction(arguments);
+            List<Object> listToMatch = getArgumentAsList(arguments);
+
+            List<Object> mappedList = mapArgumentListToEvaluationResultUsingMappingFunction(arguments, evaluationContext, matchingFunction, listToMatch);
+
+            return mappedList.stream().allMatch(this::getBoolean);
+        } else if (NONE_MATCH.equals(function)) {
+            Function matchingFunction = getArgumentAsFunction(arguments);
+            List<Object> listToMatch = getArgumentAsList(arguments);
+
+            List<Object> mappedList = mapArgumentListToEvaluationResultUsingMappingFunction(arguments, evaluationContext, matchingFunction, listToMatch);
+
+            return mappedList.stream().noneMatch(this::getBoolean);
+        } else if (FIND_FIRST.equals(function)) {
+            Function mappingFunction = getArgumentAsFunction(arguments);
+            List<Object> listToSearch = getArgumentAsList(arguments);
+
+            List<Object> mappedList = mapArgumentListToEvaluationResultUsingMappingFunction(arguments, evaluationContext, mappingFunction, listToSearch);
+
+            for (int i = 0; i < listToSearch.size(); i++) {
+                if (getBoolean(mappedList.get(i))) {
+                    return listToSearch.get(i);
+                }
+            }
+
+            return null;
+        } else if (FIND_LAST.equals(function)) {
+            Function mappingFunction = getArgumentAsFunction(arguments);
+            List<Object> listToSearch = getArgumentAsList(arguments);
+
+            List<Object> mappedList = mapArgumentListToEvaluationResultUsingMappingFunction(arguments, evaluationContext, mappingFunction, listToSearch);
+
+            for (int i = listToSearch.size() - 1; i >= 0; i--) {
+                if (getBoolean(mappedList.get(i))) {
+                    return listToSearch.get(i);
+                }
+            }
+
+            return null;
         } else {
             for (Map.Entry<String, MultiTypeEvaluatorManager.Expression> entry : customExpressionFunctions.entrySet()) {
                 if (function.getName().equals(entry.getKey())) {
@@ -452,6 +541,51 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                 }
             }
             return super.evaluate(function, arguments, evaluationContext);
+        }
+    }
+
+    private List<Object> mapArgumentListToEvaluationResultUsingMappingFunction(Iterator<Object> arguments, Object evaluationContext, Function mappingFunction, List<Object> listToMap) {
+        List<Object> mappedList = new ArrayList<>();
+
+        StringJoiner otherParameters = new StringJoiner(",");
+        VariableSet<Object> otherParametersSet = new VariableSet<>();
+        if (evaluationContext instanceof VariableSet) {
+            otherParametersSet.getVariables().putAll(((VariableSet<?>) evaluationContext).getVariables());
+        }
+
+        int i = 1;
+        while (arguments.hasNext()) {
+            Object argument = arguments.next();
+            String parameterName = "param" + i;
+            otherParameters.add(parameterName);
+            otherParametersSet.set(parameterName, argument);
+            i++;
+        }
+
+        for (Object element : listToMap) {
+            otherParametersSet.set("param0", element);
+            Object mappedElement = evaluate(mappingFunction.getName() + "(param0" + (otherParameters.length() > 0 ? "," + otherParameters : "") + ")", otherParametersSet);
+            mappedList.add(mappedElement);
+        }
+
+        return mappedList;
+    }
+
+    private Function getArgumentAsFunction(Iterator<Object> arguments) {
+        Object argument = arguments.next();
+        if (argument instanceof Function) {
+            return (Function) argument;
+        } else {
+            throw new IllegalArgumentException("Argument is not a function");
+        }
+    }
+
+    private List<Object> getArgumentAsList(Iterator<Object> arguments) {
+        Object argument = arguments.next();
+        if (argument instanceof List) {
+            return (List<Object>) argument;
+        } else {
+            return Collections.singletonList(argument);
         }
     }
 
@@ -780,10 +914,24 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         }
         for (Operator operator : Arrays.stream(OPERATORS).sorted((o1, o2) -> Integer.compare(o2.getSymbol().length(), o1.getSymbol().length())).collect(Collectors.toList())) {
             ESCAPE_CHARACTERS.put(operator.getSymbol(), randomString.nextString());
+
         }
         ESCAPE_CHARACTERS.put("(", randomString.nextString());
         ESCAPE_CHARACTERS.put(")", randomString.nextString());
         ESCAPE_CHARACTERS.put(",", randomString.nextString());
+    }
+
+    public String escapeFunctionFunctions(String expression) {
+        // replace the first parameter of the function with the according escape characters
+        for (Function f : FUNCTION_FUNCTIONS) {
+            Pattern p = Pattern.compile(f.getName() + "\\s*\\(([^,]+),");
+            Matcher m = p.matcher(expression);
+            while (m.find()) {
+                String replacement = f.getName() + "(" + ESCAPE_CHARACTERS.get(m.group(1)) + ",";
+                expression = expression.replace(m.group(0), replacement);
+            }
+        }
+        return expression;
     }
 
     public String escapeExpression(String unescaped) {
