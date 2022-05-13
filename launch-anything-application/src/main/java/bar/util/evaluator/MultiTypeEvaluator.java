@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -143,13 +142,14 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function SET = new Function("set", 1, Integer.MAX_VALUE);
     public static final Function DISTINCT = new Function("distinct", 1, Integer.MAX_VALUE);
     public static final Function GET_ELEMENT = new Function("elementAt", 1, Integer.MAX_VALUE);
-    public static final Function RANGE = new Function("range", 1, Integer.MAX_VALUE);
+    public static final Function RANGE = new Function("range", 1, 2);
+    public static final Function NORMALIZE = new Function("normalize", 1);
 
     private static final Function[] FUNCTIONS = new Function[]{SINE, COSINE, TANGENT, ASINE, ACOSINE, ATAN, SINEH,
             COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, PRODUCT, COUNT_DEEP, COUNT_SHALLOW, LN, LOG, ROUND, CEIL, FLOOR,
             ABS, RANDOM, GGT, GCD, PHI, IS_PRIME, NEXT_PRIME, IF_ELSE, TO_BINARY_STRING, TO_HEX_STRING, POW, SQRT, ROOT,
             SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, LIST, SET, DISTINCT, GET_ELEMENT,
-            RANGE};
+            RANGE, NORMALIZE};
 
     @Override
     protected Object evaluate(Function function, Iterator<Object> arguments, Object evaluationContext) {
@@ -425,6 +425,17 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return allElements.get(index.intValue());
         } else if (RANGE.equals(function)) {
             return IntStream.rangeClosed(getBigDecimal(arguments).intValue(), getBigDecimal(arguments).intValue()).boxed().collect(Collectors.toList());
+        } else if (NORMALIZE.equals(function)) {
+            List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
+            BigDecimal sum = BigDecimal.ZERO;
+            for (Object element : allArgumentsAsList) {
+                sum = sum.add(getBigDecimal(element));
+            }
+            List<Object> normalizedElements = new ArrayList<>();
+            for (Object element : allArgumentsAsList) {
+                normalizedElements.add(getBigDecimal(element).divide(sum, DOUBLE_SCALE, RoundingMode.DOWN));
+            }
+            return normalizedElements;
         } else {
             for (Map.Entry<String, MultiTypeEvaluatorManager.Expression> entry : customExpressionFunctions.entrySet()) {
                 if (function.getName().equals(entry.getKey())) {
