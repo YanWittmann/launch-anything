@@ -85,6 +85,8 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return literal;
         } else if (literal instanceof String) {
             return toValue((String) literal, null);
+        } else if (literal instanceof List || literal instanceof Set) {
+            return literal;
         }
         return null;
     }
