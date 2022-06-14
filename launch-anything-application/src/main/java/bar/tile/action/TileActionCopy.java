@@ -95,4 +95,9 @@ public class TileActionCopy extends TileAction {
     public String[] getParameters() {
         return new String[]{text};
     }
+
+    @Override
+    public String toString() {
+        return "Action: Copy '" + text + "'";
+    }
 }
