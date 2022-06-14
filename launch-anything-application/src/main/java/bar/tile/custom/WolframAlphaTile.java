@@ -91,7 +91,7 @@ public class WolframAlphaTile implements RuntimeTile {
 
     @Override
     public String getDescription() {
-        return "Enter 'wolfram QUERY' to search Wolfram Alpha. Requires an API key to be configured.";
+        return "Enter 'wolfram QUERY alpha' to search Wolfram Alpha. Requires an API key to be configured.";
     }
 
     @Override
