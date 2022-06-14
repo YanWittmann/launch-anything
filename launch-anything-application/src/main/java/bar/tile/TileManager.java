@@ -482,6 +482,7 @@ public class TileManager {
         NUMBER_BASE_CONVERTER(NumberBaseConverterTile::new),
         ASPECT_RATIO(AspectRationTile::new),
         TIMEZONE_CONVERTER(TimeZoneConversionTile::new),
+        WOLFRAM_ALPHA(WolframAlphaTile::new),
         UNIT_CONVERTER(UnitConverterTile::new),
         MULTI_TYPE_EVALUATOR(MultiTypeEvaluatorTile::new),
         CHART_GENERATOR(ChartGeneratorTile::new),

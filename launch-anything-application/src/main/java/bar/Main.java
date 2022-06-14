@@ -51,7 +51,7 @@ public class Main {
     private int lastPressedKey = -1;
     private boolean isModifyKeyPressed = false;
 
-    private final Settings settings;
+    private static Settings settings;
     private final BarManager barManager;
     private final TileManager tileManager;
     private final UndoHistory undoHistory = new UndoHistory();
@@ -911,6 +911,18 @@ public class Main {
         out.write("Server: Java/1.0\r\n");
         out.write("Content-Type: application/json\r\n");
         out.write("\r\n{\"error\":\"" + message + "\"}");
+    }
+
+    public static String getSettingString(String setting) {
+        return settings.getString(setting);
+    }
+
+    public static int getSettingInt(String setting) {
+        return settings.getInt(setting);
+    }
+
+    public static void registerSetting(String setting, String defaultValue) {
+        settings.registerSetting(setting, defaultValue);
     }
 
     public void checkForNewVersion() {

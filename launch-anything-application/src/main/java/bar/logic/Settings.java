@@ -72,10 +72,20 @@ public class Settings {
 
     public JSONObject toSettingsJSON() {
         Map<String, Map<String, String>> categorySettings = new LinkedHashMap<>();
+
         for (Setting setting : Setting.values()) {
             categorySettings.computeIfAbsent(setting.category, k -> new LinkedHashMap<>()).put(setting.key, getString(setting));
         }
+
+        for (Map.Entry<String, Object> setting : settings.entrySet()) {
+            if (categorySettings.entrySet().stream().anyMatch(e -> e.getValue().keySet().contains(setting.getKey()))) {
+                continue;
+            }
+            categorySettings.computeIfAbsent("custom", k -> new LinkedHashMap<>()).put(setting.getKey(), String.valueOf(setting.getValue()));
+        }
+
         categorySettings.remove("null");
+
         return new JSONObject(categorySettings);
     }
 
@@ -172,7 +182,10 @@ public class Settings {
     }
 
     public int getInt(Setting setting) {
-        String key = setting.key;
+        return getInt(setting.key);
+    }
+
+    public int getInt(String key) {
         if (settings.containsKey(key)) {
             if (settings.get(key) instanceof Integer) return (int) settings.get(key);
             if (settings.get(key) instanceof Long) return (int) settings.get(key);
@@ -229,6 +242,11 @@ public class Settings {
             }
         }
         return new Font("Arial", Font.PLAIN, 12);
+    }
+
+    public void registerSetting(String setting, String defaultValue) {
+        settings.putIfAbsent(setting, defaultValue);
+        save();
     }
 
     public enum Setting {
