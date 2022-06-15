@@ -76,45 +76,87 @@ Runtime tiles are tiles that are generated based on the current search terms. Th
 only thing you can change is the choice to deactivate them by left-clicking the according badge. These runtime tiles are
 currently only available:
 
-- Go Website: Enter `go` and any search term to use the `I'm Feeling Lucky` functionality and instantly open the
+- **Go Website**: Enter `go` and any search term to use the `I'm Feeling Lucky` functionality and instantly open the
   corresponding website.
-- Wiki Search: Enter `wiki` and any search term to display the short description of the Wikipedia article. Press enter
+- **Wiki Search**: Enter `wiki` and any search term to display the short description of the Wikipedia article. Press
+  enter
   to open the article in your browser.
-- Timeout: `timeout` or `to` and a duration in minutes the bar should remain inactive. Timeout mode can be deactivated
+- **Timeout**: `timeout` or `to` and a duration in minutes the bar should remain inactive. Timeout mode can be
+  deactivated
   by right-clicking the system tray icon and selecting `Reset Timeout`.
-- System Info: `sys` with one of these behind it to get the according values: `externalip or eip` `localip or lip`
+- **System Info**: `sys` with one of these behind it to get the according values: `externalip or eip` `localip or lip`
   `version or ver` `os or op` `isjar or jar` `isautostart or autostart` `fonts`
-- Number Base Converter: Enter any number and the base it is in and another base to convert it to, like so
+- **Number Base Converter**: Enter any number and the base it is in and another base to convert it to, like so
   `10 dec to hex`, but since the keyword search is very fuzzy, something like this also works: `oct23bin`. The available
   systems are: `dec` `hex` `oct` `bin`. You can also leave away the target system to convert to all other systems.
-- URI opener: Enter a path to a file, directory or URL, and it will be opened in your default application.
-- Aspect ratio: A tile that can calculate a width/height based on a ratio and a single value.  
+- **URI opener**: Enter a path to a file, directory or URL, and it will be opened in your default application.
+- **Aspect ratio**: A tile that can calculate a width/height based on a ratio and a single value.  
   Example: `16:9 1920:` will show `1080` as the height.  
   `3:2 :1068` will show `1602` as the width.
-- Unit Converter: Enter a value and a unit to convert it to another unit. Example: `1 m to km`, or you can also leave
+- **Unit Converter**: Enter a value and a unit to convert it to another unit. Example: `1 m to km`, or you can also
+  leave
   away the second unit to convert to all other units: `1 joule`
   You can convert these types of units:
-  - length
-  - area
-  - volume
-  - mass
-  - time
-  - temperature
-  - energy
-  - speed
+    - length
+    - area
+    - volume
+    - mass
+    - time
+    - temperature
+    - energy
+    - speed
+- **Timezone converter**: This function accepts up to 3 parameters: The time to convert, the zone to convert from and
+  the zone to convert to. Example: `12:00 from +0300 to local time` will convert the time from UTC+3 to UTC+2 in my
+  case (`2022-05-15 11:00:00 (Mitteleuropäische Normalzeit, Europe/Berlin)`).  
+  If `from` and `to` are not provided, the current timezone will be used.  
+  More complicated time inputs can be provided:
+    - `2020-12-05 14:34:25`
+    - `tomorrow 5 hours, 10 minutes and 55 seconds after midnight`
+    - `in 3 hours`
+- **Wolfram Alpha API**: First, go to the settings and configure your
+  **[Wolfram APPID](https://developer.wolframalpha.com/portal/myapps/)**. Then enter `wolfram PROMPT alpha` to send a
+  request to the api. Since only 2000 requests per month are allowed, the `alpha` is required as a confirmation, to
+  prevent accidental requests.
 
-The math expression and chart generator tile are a bit more complex:
+The **math expression** tile is very powerful:
 
-- You can simply enter a mathematical expression and let the application calculate the result. You can include
-  mathematical functions like `pow(2,4)` or `sqrt(4)`.
-- You can also define variables first by typing in `x = 2` and then use `x` in your expression, like `sin(x)`.
-- Custom functions can be defined by typing in `name(x) = 2*x` and then using something like `name(2)` in your
-  expression.
+- The math evaluator can perform operations on decimals, booleans and lists/sets
+- Use operators like `+`, `-`, `*`, `/`, `%` and `^` for numbers (precision is 20 digits)
+- Use operators like `&&`, `||`, `!`, `=` for booleans (`true` and `false`)
+- Lists can be created using the `range()`, `list()` and `set()` functions
+- Functions can take a certain amount of parameters and each return a certain type of value. For all functions and
+  operations, enter `function` in the launch bar
+- Lists can be filtered or mapped using the `filter()` and `map()` functions by providing the filter or map function
+  as first parameter, the list as second parameter and the parameters for the filter or map function as following
+  parameters.
+- Create functions by using `functionname(parameter1, parameter2) = functionbody` to declare custom functions.
+  Currently not supported in mapping and filtering.
+- Variables can be assigned to using `varname = value`, or multiple variables can be assigned at once by using
+  `varname1 = value1; varname2 = value2; ...`
+- Hex, binary and octal numbers can be entered using `0x`, `0b` and `0o` as prefix. Convert to different systems by
+  using `toHex` and `toBin`
+
+Examples:
+
+- `12 + 4` = `16`
+- `12 + (55 % 23 + 2)` = `23`
+- `filter(isPrime, range(2, 10))` = `[2, 3, 5, 7]`
+- `isNotPrime(x) = !isPrime(x)` --> `isNotPrime(23)` = `false`
+- `map(factorize, set(34, 34, 22, 84))` = `[[2, 17], [2, 11], [2, 2, 3, 7]]`
+- `map(product, map(factorize, set(34, 34, 22, 84)))` = `[34, 22, 84]`
+- `true || false && true` = `true`
+- `a = 23; b = 54; c = 82` = `3 assignments a = 23, b = 54, c = 82`
+- `toHex(23 + 0b1001 + 0o23 + 0x2DF)` = `0x312`
+- ... and a lot more!
+
+**Chart generator**:
+
 - The graph generator can create charts for one or multiple expressions. You can enter multiple expressions by
   separating them with a semicolon: `sin(x);cos(x)`.
 - The range and resolution used by the graph generator can be changed by entering `for start,end,step` after the
   expression: `sin(x);cos(x) for 0,10,0.1`.
 - If no step size is specified, a fitting step size is being derived from the range size.
+- The custom functions from the math expression tile can be used in the graph generator.
 
 If you have ideas for more runtime tiles, please create an issue using the link below.  
 Or, if you want to create a runtime tile plugin, please follow these **[instructions](runtime-tile-plugins.md)**.

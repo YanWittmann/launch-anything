@@ -13,12 +13,14 @@ detector is based on the Windows API.
 - Open URLs in the browser
 - Copy text to the clipboard
 - Tile Generators: generate tiles for files in a given directory
-- Runtime Tiles:
-    - Calculate mathematical expression values (with variables!)
+- Runtime Tiles (see **[this document](doc/how-to.md)** for more information)
+    - Evaluate mathematical expressions with variables, custom functions, numbers, booleans, lists, binary, hex, ...
     - Display charts for mathematical functions/expressions
     - Copy system information like the local IP address
     - Convert between a variety of units
     - Calculate aspect ratios
+    - Convert timestamps between different time zones
+    - Use the WolframAlpha API to evaluate expressions
     - Convert between number systems
     - Use the `I'm feeling lucky` functionality to open any webpage
     - Directly go to a wikipedia article
