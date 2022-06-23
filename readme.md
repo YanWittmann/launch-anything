@@ -53,6 +53,8 @@ If the activation key (double `ctrl` or `command`) is not working, try changing 
 by right-clicking the tray icon in your dock and selecting `Settings`. There, in the `Settings & Help` tab, you can
 change the activation key by clicking on the `activationKey` button.
 
+Important: These documents represent the state of the latest snapshot of the LaunchAnything bar.
+
 ## Build it yourself
 
 You will need to download maven and git to build this application. Then, run these commands:

@@ -31,6 +31,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
     public void addCustomExpressionFunction(String name, MultiTypeEvaluatorManager.Expression expression) {
         customExpressionFunctions.put(name, expression);
+        putEscapedCharacters(name);
     }
 
     public static Parameters getDefaultParameters() {
@@ -79,6 +80,10 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     protected Object toValue(Object literal) {
         if (literal instanceof BigDecimal) {
             return literal;
+        } else if (literal instanceof Integer) {
+            return new BigDecimal((Integer) literal);
+        } else if (literal instanceof Long) {
+            return new BigDecimal((Long) literal);
         } else if (literal instanceof BigInteger) {
             return literal;
         } else if (literal instanceof Boolean) {
@@ -88,12 +93,27 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (literal instanceof List || literal instanceof Set) {
             return literal;
         }
-        return null;
+
+        return toValue(String.valueOf(literal), null);
     }
 
     private Function unencodeFunctionName(String name) {
         String functionName = unescapeExpression(name);
-        return Arrays.stream(FUNCTIONS).filter(f -> f.getName().equals(functionName)).findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown function: " + functionName));
+        for (Function function : FUNCTIONS) {
+            if (function.getName().equals(functionName)) {
+                return function;
+            }
+        }
+
+        for (String n : customExpressionFunctions.keySet()) {
+            if (n.equals(functionName)) {
+                if (customExpressionFunctions.get(n) instanceof MultiTypeEvaluatorManager.ExpressionFunction) {
+                    return ((MultiTypeEvaluatorManager.ExpressionFunction) customExpressionFunctions.get(n));
+                }
+            }
+        }
+
+        throw new IllegalArgumentException("Unknown function '" + functionName + "'");
     }
 
     public static final Constant PI = new Constant("pi");
@@ -549,13 +569,13 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     private List<Object> mapArgumentListToEvaluationResultUsingMappingFunction(Iterator<Object> arguments, Object evaluationContext, Function mappingFunction, List<Object> listToMap) {
         List<Object> mappedList = new ArrayList<>();
 
-        StringJoiner otherParameters = new StringJoiner(",");
         VariableSet<Object> otherParametersSet = new VariableSet<>();
         if (evaluationContext instanceof VariableSet) {
             otherParametersSet.getVariables().putAll(((VariableSet<?>) evaluationContext).getVariables());
         }
 
         int i = 1;
+        StringJoiner otherParameters = new StringJoiner(",");
         while (arguments.hasNext()) {
             Object argument = arguments.next();
             String parameterName = "param" + i;
@@ -907,20 +927,24 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     }
 
     private final static Map<String, String> ESCAPE_CHARACTERS = new LinkedHashMap<>();
+    private final static RandomString RANDOM_STRING_GENERATOR = new RandomString(8, 596865);
+
+    private static void putEscapedCharacters(String chars) {
+        ESCAPE_CHARACTERS.put(chars, RANDOM_STRING_GENERATOR.nextString());
+    }
 
     static {
-        RandomString randomString = new RandomString(8, 596865);
         // sort by length, so that longer strings come first
         for (Function function : Arrays.stream(FUNCTIONS).sorted((o1, o2) -> Integer.compare(o2.getName().length(), o1.getName().length())).collect(Collectors.toList())) {
-            ESCAPE_CHARACTERS.put(function.getName(), randomString.nextString());
+            putEscapedCharacters(function.getName());
         }
         for (Operator operator : Arrays.stream(OPERATORS).sorted((o1, o2) -> Integer.compare(o2.getSymbol().length(), o1.getSymbol().length())).collect(Collectors.toList())) {
-            ESCAPE_CHARACTERS.put(operator.getSymbol(), randomString.nextString());
+            putEscapedCharacters(operator.getSymbol());
 
         }
-        ESCAPE_CHARACTERS.put("(", randomString.nextString());
-        ESCAPE_CHARACTERS.put(")", randomString.nextString());
-        ESCAPE_CHARACTERS.put(",", randomString.nextString());
+        putEscapedCharacters("(");
+        putEscapedCharacters(")");
+        putEscapedCharacters(",");
     }
 
     public String escapeFunctionFunctions(String expression) {
