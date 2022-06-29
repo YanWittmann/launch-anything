@@ -391,6 +391,9 @@ public class TimeZoneConversionTile implements RuntimeTile {
                                 time.set(Calendar.MINUTE, 0);
                                 time.set(Calendar.SECOND, 0);
                                 break;
+                            case "pm":
+                                time.add(Calendar.HOUR_OF_DAY, 12);
+                                break;
                         }
                     }
                 }
