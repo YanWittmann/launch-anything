@@ -2,6 +2,8 @@ package bar.tile.custom;
 
 import bar.tile.Tile;
 import bar.tile.action.TileAction;
+import bar.tile.action.TileActionRuntimeInteraction;
+import bar.ui.TrayUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,8 +19,48 @@ public class TimeZoneConversionTile implements RuntimeTile {
 
     private static final Logger LOG = LoggerFactory.getLogger(TimeZoneConversionTile.class);
 
+    private final static Map<String, Timer> countdownTimers = new HashMap<>();
+
     @Override
     public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEvaluated) {
+        if (search.startsWith("timer")) {
+            final String trimmedSearch = search.substring(5).trim();
+
+            if (trimmedSearch.isEmpty()) {
+                final List<Tile> timerTiles = new ArrayList<>();
+                for (Map.Entry<String, Timer> timerEntry : countdownTimers.entrySet()) {
+                    Tile tile = new Tile("Cancel Timer: " + timerEntry.getKey());
+                    tile.addAction(new TileActionRuntimeInteraction(() -> {
+                        timerEntry.getValue().cancel();
+                        countdownTimers.remove(timerEntry.getKey());
+                    }));
+                    timerTiles.add(tile);
+                }
+                return timerTiles;
+            }
+
+            Calendar parsedTime = parseTime(trimmedSearch, TimeZone.getDefault());
+            String formattedTime = formatCalendar(parsedTime);
+
+            Tile timerTile = new Tile("Create Timer: " + formattedTime);
+            timerTile.addAction(new TileActionRuntimeInteraction(() -> {
+                long diff = parsedTime.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
+                Timer timer = new Timer();
+                timer.schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        LOG.info("Timer expired [{}]", formattedTime);
+                        TrayUtil.showMessage("Timer " + formattedTime + " expired");
+                        timer.cancel();
+                        countdownTimers.remove(formattedTime);
+                    }
+                }, diff);
+                countdownTimers.put(formattedTime, timer);
+            }));
+
+            return Collections.singletonList(timerTile);
+        }
+
         TimeZoneConverterUserInputResult convertInput = parseUserInputString(search);
 
         if (convertInput == null || !convertInput.isValid()) {
