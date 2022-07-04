@@ -45,6 +45,11 @@ public class TimeZoneConversionTile implements RuntimeTile {
             Tile timerTile = new Tile("Create Timer: " + formattedTime);
             timerTile.addAction(new TileActionRuntimeInteraction(() -> {
                 long diff = parsedTime.getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
+                if (diff <= 0) {
+                    LOG.warn("Timer is already expired");
+                    TrayUtil.showError("You cannot create a timer that is already expired");
+                    return;
+                }
                 Timer timer = new Timer();
                 timer.schedule(new TimerTask() {
                     @Override
