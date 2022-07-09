@@ -63,6 +63,10 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return new BigInteger(normalizedLiteral.substring(2), 8);
         } else if (normalizedLiteral.startsWith("0d")) {
             return new BigDecimal(normalizedLiteral.substring(2));
+        } else if (normalizedLiteral.startsWith("\"") && normalizedLiteral.endsWith("\"")) {
+            return normalizedLiteral.substring(1, normalizedLiteral.length() - 1);
+        } else if (normalizedLiteral.startsWith("'") && normalizedLiteral.endsWith("'")) {
+            return normalizedLiteral.substring(1, normalizedLiteral.length() - 1);
         }
 
         try {
@@ -161,6 +165,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function IS_PRIME = new Function("isPrime", 1);
     public static final Function NEXT_PRIME = new Function("nextPrime", 1);
     public static final Function IF_ELSE = new Function("if", 3);
+    public static final Function TO_DECIMAL = new Function("toDec", 1);
     public static final Function TO_BINARY_STRING = new Function("toBin", 1);
     public static final Function TO_HEX_STRING = new Function("toHex", 1);
     public static final Function POW = new Function("pow", 2);
@@ -186,15 +191,20 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function NONE_MATCH = new Function("noneMatch", 1, Integer.MAX_VALUE);
     public static final Function FIND_FIRST = new Function("findFirst", 1, Integer.MAX_VALUE);
     public static final Function FIND_LAST = new Function("findLast", 1, Integer.MAX_VALUE);
+    public static final Function LENGTH = new Function("len", 1, 1);
+    public static final Function JOIN = new Function("join", 1, Integer.MAX_VALUE);
+    public static final Function SPLIT = new Function("split", 2, 3);
+    public static final Function REPLACE = new Function("replace", 3, 3);
 
     private static final Function[] FUNCTIONS = new Function[]{SINE, COSINE, TANGENT, ASINE, ACOSINE, ATAN, SINEH,
             COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, PRODUCT, COUNT_DEEP, COUNT_SHALLOW, LN, LOG, ROUND, CEIL, FLOOR,
             ABS, RANDOM, GGT, GCD, PHI, IS_PRIME, NEXT_PRIME, IF_ELSE, TO_BINARY_STRING, TO_HEX_STRING, POW, SQRT, ROOT,
             SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, LIST, SET, DISTINCT, GET_ELEMENT,
-            RANGE, NORMALIZE, MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST};
+            RANGE, NORMALIZE, MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, LENGTH,
+            TO_DECIMAL, JOIN, SPLIT, REPLACE};
 
     private static final Function[] FUNCTION_FUNCTIONS = new Function[]{MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH,
-            NONE_MATCH, FIND_FIRST, FIND_LAST};
+            NONE_MATCH, FIND_FIRST, FIND_LAST, SORT};
 
     @Override
     protected Object evaluate(Function function, Iterator<Object> arguments, Object evaluationContext) {
@@ -312,10 +322,29 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             while (arguments.hasNext()) {
                 argumentsList.add(arguments.next());
             }
+
+            final Comparator<Object> comparator;
+            if (argumentsList.get(0) instanceof Function) {
+                Function f = (Function) argumentsList.get(0);
+                argumentsList.remove(0);
+
+                comparator = (o1, o2) -> {
+                    Object c1 = evaluateFunctionWithSingleParameter(evaluationContext, f, o1);
+                    Object c2 = evaluateFunctionWithSingleParameter(evaluationContext, f, o2);
+                    return OBJECT_COMPARATOR.compare(c1, c2);
+                };
+            } else {
+                comparator = OBJECT_COMPARATOR;
+            }
+
             if (argumentsList.size() == 1 && argumentsList.get(0) instanceof List) {
                 argumentsList = (List<Object>) argumentsList.get(0);
             }
-            return argumentsList.stream().sorted(OBJECT_COMPARATOR).collect(Collectors.toList());
+            if (argumentsList.size() == 0) {
+                return Collections.emptyList();
+            }
+
+            return argumentsList.stream().sorted(comparator).collect(Collectors.toList());
         } else if (MERGE.equals(function)) {
             List<Object> argumentsList = new ArrayList<>();
             while (arguments.hasNext()) {
@@ -413,6 +442,8 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (TO_BINARY_STRING.equals(function)) {
             BigInteger n = getBigDecimal(arguments).toBigInteger();
             return "0b" + n.toString(2);
+        } else if (TO_DECIMAL.equals(function)) {
+            return getBigDecimal(arguments);
         } else if (TO_HEX_STRING.equals(function)) {
             BigInteger n = getBigDecimal(arguments).toBigInteger();
             return "0x" + n.toString(16);
@@ -547,6 +578,31 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             }
 
             return null;
+        } else if (LENGTH.equals(function)) {
+            Object next = arguments.next();
+            if (next instanceof Collection) {
+                return BigDecimal.valueOf(((Collection<?>) next).size());
+            } else if (next instanceof String) {
+                return BigDecimal.valueOf(((String) next).length());
+            } else {
+                return BigDecimal.valueOf(next.toString().length());
+            }
+        } else if (JOIN.equals(function)) {
+            final String delimiter = arguments.next().toString();
+            final List<Object> allArguments = getAllArgumentsAsList(arguments);
+            return allArguments.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(delimiter));
+        } else if (SPLIT.equals(function)) {
+            final String splitString = arguments.next().toString();
+            final String delimiter = arguments.next().toString();
+            final int limit = arguments.hasNext() ? getBigDecimal(arguments.next()).intValue() : -1;
+            return Arrays.asList(splitString.split(delimiter, limit));
+        } else if (REPLACE.equals(function)) {
+            final String string = arguments.next().toString();
+            final String oldValue = arguments.next().toString();
+            final String newValue = arguments.next().toString();
+            return string.replace(oldValue, newValue);
         } else {
             for (Map.Entry<String, MultiTypeEvaluatorManager.Expression> entry : customExpressionFunctions.entrySet()) {
                 if (function.getName().equals(entry.getKey())) {
@@ -578,6 +634,9 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         StringJoiner otherParameters = new StringJoiner(",");
         while (arguments.hasNext()) {
             Object argument = arguments.next();
+            if (mappingFunction instanceof MultiTypeEvaluatorManager.ExpressionFunction) {
+                argument = escapeString(argument);
+            }
             String parameterName = "param" + i;
             otherParameters.add(parameterName);
             otherParametersSet.set(parameterName, argument);
@@ -585,12 +644,36 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         }
 
         for (Object element : listToMap) {
+            if (mappingFunction instanceof MultiTypeEvaluatorManager.ExpressionFunction) {
+                element = escapeString(element);
+            }
             otherParametersSet.set("param0", element);
             Object mappedElement = evaluate(mappingFunction.getName() + "(param0" + (otherParameters.length() > 0 ? "," + otherParameters : "") + ")", otherParametersSet);
             mappedList.add(mappedElement);
         }
 
         return mappedList;
+    }
+
+    private Object evaluateFunctionWithSingleParameter(Object evaluationContext, Function mappingFunction, Object parameter) {
+        VariableSet<Object> otherParametersSet = new VariableSet<>();
+        if (evaluationContext instanceof VariableSet) {
+            otherParametersSet.getVariables().putAll(((VariableSet<?>) evaluationContext).getVariables());
+        }
+
+        if (mappingFunction instanceof MultiTypeEvaluatorManager.ExpressionFunction) {
+            parameter = escapeString(parameter);
+        }
+
+        otherParametersSet.set("param0", parameter);
+        return evaluate(mappingFunction.getName() + "(param0)", otherParametersSet);
+    }
+
+    private Object escapeString(Object parameter) {
+        if (parameter instanceof String) {
+            parameter = "'" + parameter + "'";
+        }
+        return parameter;
     }
 
     private Function getArgumentAsFunction(Iterator<Object> arguments) {
@@ -737,11 +820,36 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (PLUS.equals(operator)) {
             Object left = operands.next();
             Object right = operands.next();
-            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).add(getBigDecimal(rightValue)));
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> {
+                if (leftValue instanceof String || rightValue instanceof String) {
+                    return leftValue.toString() + rightValue.toString();
+                } else {
+                    return getBigDecimal(leftValue).add(getBigDecimal(rightValue));
+                }
+            });
         } else if (MULTIPLY.equals(operator)) {
             Object left = operands.next();
             Object right = operands.next();
-            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).multiply(getBigDecimal(rightValue)));
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> {
+                if (leftValue instanceof String || rightValue instanceof String) {
+                    final BigDecimal number;
+                    final String string;
+                    if (leftValue instanceof String) {
+                        number = getBigDecimal(rightValue);
+                        string = (String) leftValue;
+                    } else {
+                        number = getBigDecimal(leftValue);
+                        string = (String) rightValue;
+                    }
+                    StringBuilder result = new StringBuilder();
+                    for (BigDecimal i = BigDecimal.ZERO; i.compareTo(number) < 0; i = i.add(BigDecimal.ONE)) {
+                        result.append(string);
+                    }
+                    return result.toString();
+                } else {
+                    return getBigDecimal(leftValue).multiply(getBigDecimal(rightValue));
+                }
+            });
         } else if (DIVIDE.equals(operator)) {
             Object left = operands.next();
             Object right = operands.next();
@@ -798,11 +906,23 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (EQUALITY.equals(operator)) {
             Object left = operands.next();
             Object right = operands.next();
-            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) == 0);
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> {
+                if (leftValue instanceof String || rightValue instanceof String) {
+                    return leftValue.equals(rightValue);
+                } else {
+                    return getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) == 0;
+                }
+            });
         } else if (INEQUALITY.equals(operator)) {
             Object left = operands.next();
             Object right = operands.next();
-            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) != 0);
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> {
+                if (leftValue instanceof String || rightValue instanceof String) {
+                    return !leftValue.equals(rightValue);
+                } else {
+                    return getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) != 0;
+                }
+            });
         } else if (BITWISE_AND.equals(operator)) {
             Object left = operands.next();
             Object right = operands.next();
@@ -825,8 +945,9 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     }
 
     private Object performBinaryOperationOnValueAndList(Object left, Object right, BinaryCalculation binaryCalculation) {
-        boolean leftIsValue = isDecimalOrBoolean(left);
-        boolean rightIsValue = isDecimalOrBoolean(right);
+        boolean leftIsValue = isDecimalBooleanOrString(left);
+        boolean rightIsValue = isDecimalBooleanOrString(right);
+
         if (leftIsValue && rightIsValue) {
             return binaryCalculation.calculate(left, right);
         } else if (left instanceof Collection && rightIsValue) {
@@ -856,11 +977,12 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             }
             return result;
         }
+
         throw new IllegalArgumentException("Cannot perform binary operation on " + left + " and " + right);
     }
 
     private Object performUnaryOperationOnValue(Object operand, UnaryCalculation unaryCalculation) {
-        if (isDecimalOrBoolean(operand)) {
+        if (isDecimalBooleanOrString(operand)) {
             return unaryCalculation.calculate(operand);
         } else if (operand instanceof Collection) {
             Collection<Object> collection = (Collection<Object>) operand;
@@ -873,8 +995,8 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         throw new IllegalArgumentException("Cannot perform unary operation on " + operand);
     }
 
-    private boolean isDecimalOrBoolean(Object operand) {
-        return operand instanceof Number || operand instanceof Boolean;
+    private boolean isDecimalBooleanOrString(Object operand) {
+        return operand instanceof Number || operand instanceof Boolean || operand instanceof String;
     }
 
     private interface BinaryCalculation {
@@ -909,6 +1031,12 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                 return new BigDecimal(new BigInteger(str.substring(2), 2));
             } else if (str.startsWith("0x")) {
                 return new BigDecimal(new BigInteger(str.substring(2), 16));
+            } else {
+                try {
+                    return new BigDecimal(str);
+                } catch (NumberFormatException e) {
+                    return null;
+                }
             }
         }
         return null;
@@ -950,7 +1078,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public String escapeFunctionFunctions(String expression) {
         // replace the first parameter of the function with the according escape characters
         for (Function f : FUNCTION_FUNCTIONS) {
-            Pattern p = Pattern.compile(f.getName() + "\\s*\\(([^,]+),");
+            Pattern p = Pattern.compile(f.getName() + "\\s*\\(([^,(]+),");
             Matcher m = p.matcher(expression);
             while (m.find()) {
                 String replacement = f.getName() + "(" + ESCAPE_CHARACTERS.get(m.group(1)) + ",";
