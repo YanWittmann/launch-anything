@@ -1081,7 +1081,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             Pattern p = Pattern.compile(f.getName() + "\\s*\\(([^,(]+),");
             Matcher m = p.matcher(expression);
             while (m.find()) {
-                String replacement = f.getName() + "(" + ESCAPE_CHARACTERS.get(m.group(1)) + ",";
+                String replacement = f.getName() + "(" + ESCAPE_CHARACTERS.getOrDefault(m.group(1), m.group(1)) + ",";
                 expression = expression.replace(m.group(0), replacement);
             }
         }

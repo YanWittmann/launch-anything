@@ -154,6 +154,8 @@ Examples:
 - `toDec("0b" + "10" * 3)` = `42`
 - `if(3 == x, 15, x)` (returns `15` if `x` is `3` and `x` otherwise)
 - `join("=", split("this is a test", " "))` = `this=is=a=test`
+- `join(" ", list("string", "concatination"))` = `string concatination`
+- `sort(sort(len,"aaaa", "aaa", "dd", "d", "c"))` = `[aaa, aaaa, c, d, dd]`
 - `negLen(x) = -len(x)`  
   `isNotMinusEight(x) = x != -8`  
   `filter(isNotMinusEight, sort(len, sort(map(negLen, list("wowowodd", "", "testdd", "ddddddhmm")))))` = `[ 0, -9, -6]`
@@ -231,7 +233,7 @@ When entering a search term, the bar will
 
 Most of the runtime tiles match the input very loosely. In most cases, spaces are ignored and the search is
 case-insensitive. So, this input `sys Local IP` is the same as `syslocalip` (or even better `syslip`). Another example:
-`g(x) = sin(x) + 2 * x for 1,10` --> `gx=sin(x)+2xfor1,10`. This can save a lot of time if done consistently.
+`g(x) = sin(x) + 2 * x for 1,10` --> `g(x)=sin(x)+2xfor1,10`. This can save a lot of time if done consistently.
 
 #### Cloud Tiles
 
