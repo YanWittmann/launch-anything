@@ -135,6 +135,10 @@ The **math expression** tile is very powerful:
   `varname1 = value1; varname2 = value2; ...`
 - Hex, binary and octal numbers can be entered using `0x`, `0b` and `0o` as prefix. Convert to different systems by
   using `toHex` and `toBin`
+- Strings are supported by using `"string"`. String can be concatenated using `+`, multiplied using `*` and used as
+  parameter in several functions, such as `replace`, `split` and `join`.
+- Sort a list or several function arguments using `sort`. A function can be passed as first parameter to use as
+  comparator.
 
 Examples:
 
@@ -147,6 +151,12 @@ Examples:
 - `true || false && true` = `true`
 - `a = 23; b = 54; c = 82` = `3 assignments a = 23, b = 54, c = 82`
 - `toHex(23 + 0b1001 + 0o23 + 0x2DF)` = `0x312`
+- `toDec("0b" + "10" * 3)` = `42`
+- `if(3 == x, 15, x)` (returns `15` if `x` is `3` and `x` otherwise)
+- `join("=", split("this is a test", " "))` = `this=is=a=test`
+- `negLen(x) = -len(x)`  
+  `isNotMinusEight(x) = x != -8`  
+  `filter(isNotMinusEight, sort(len, sort(map(negLen, list("wowowodd", "", "testdd", "ddddddhmm")))))` = `[ 0, -9, -6]`
 - ... and a lot more!
 
 **Chart generator**:
