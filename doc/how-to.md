@@ -162,16 +162,18 @@ Examples:
   `filter(isNotMinusEight, sort(len, sort(map(negLen, list("wowowodd", "", "testdd", "ddddddhmm")))))` = `[ 0, -9, -6]`
 - `sum(map(toDec, split(join(", ", range(1,10)), ", ")))` = `55`
 - `split(isPrime, range(1, 10))` = `[[1, 4, 6, 8, 9, 10], [2, 3, 5, 7]]`
-- `get(1,split(isPrime,range(1,10))) == filter(isPrime,range(1,10))` = `[true, true, true, true]`
-- ... and a lot more!
+- `noneMatch(isFalse,get(1,split(isPrime,range(1,10))) == filter(isPrime,range(1,10)))` = `true`
+- Sort the non-prime numbers from 3-100 by the length of their factorisation (using `invertLen(x) = -len(x)`): `join(", ", map(product,sort(invertLen,map(factorize,get(0,split(isPrime,range(3,100)))))))` = `64, 96, 32, 48, 72, 80, 16, 24, 36, 40, 54, 56, 60, 81, 84, 88, 90, 100, 8, 12, 18, 20, 27, 28, 30, 42, 44, 45, 50, 52, 63, ...`
+- `map(sort, sort(max, split(isSmallerTen, list(1, 5, 2, 12, 62, 44)))` = `[[1, 2, 5], [12, 44, 62]]`
+- ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
 
 **Chart generator**:
 
 - The graph generator can create charts for one or multiple expressions. You can enter multiple expressions by
   separating them with a semicolon: `sin(x);cos(x)`.
 - The range and resolution used by the graph generator can be changed by entering `for start,end,step` after the
-  expression: `sin(x);cos(x) for 0,10,0.1`.
-- If no step size is specified, a fitting step size is being derived from the range size.
+  expression: `sin(x);cos(x) for0,10,0.1`.
+- If no step size is specified, a fitting step size is being calculated using the range size.
 - The custom functions from the math expression tile can be used in the graph generator.
 
 If you have ideas for more runtime tiles, please create an issue using the link below.  
