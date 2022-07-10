@@ -63,10 +63,9 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return new BigInteger(normalizedLiteral.substring(2), 8);
         } else if (normalizedLiteral.startsWith("0d")) {
             return new BigDecimal(normalizedLiteral.substring(2));
-        } else if (normalizedLiteral.startsWith("\"") && normalizedLiteral.endsWith("\"")) {
-            return normalizedLiteral.substring(1, normalizedLiteral.length() - 1);
-        } else if (normalizedLiteral.startsWith("'") && normalizedLiteral.endsWith("'")) {
-            return normalizedLiteral.substring(1, normalizedLiteral.length() - 1);
+        } else if (normalizedLiteral.startsWith("\"") && normalizedLiteral.endsWith("\"") || normalizedLiteral.startsWith("'") && normalizedLiteral.endsWith("'")) {
+            String unescaped = unescapeStringContents(normalizedLiteral);
+            return unescaped.substring(1, unescaped.length() - 1);
         }
 
         try {
@@ -1117,6 +1116,30 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             escaped = escaped.replace(escape.getValue(), escape.getKey());
         }
         return escaped;
+    }
+
+    public String escapeStringContents(String unescaped) {
+        final Pattern STRING_PATTERN = Pattern.compile("\"([^\"]+)\"");
+        final Matcher m = STRING_PATTERN.matcher(unescaped);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            String replacement = "\"" + escapeExpression(m.group(1)).replace(",", "ESC_COMMA") + "\"";
+            m.appendReplacement(sb, replacement);
+        }
+        m.appendTail(sb);
+        return sb.toString();
+    }
+
+    public String unescapeStringContents(String escaped) {
+        final Pattern STRING_PATTERN = Pattern.compile("\"([^\"]+)\"");
+        final Matcher m = STRING_PATTERN.matcher(escaped);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            String replacement = "\"" + unescapeExpression(m.group(1)).replace("ESC_COMMA", ",") + "\"";
+            m.appendReplacement(sb, replacement);
+        }
+        m.appendTail(sb);
+        return sb.toString();
     }
 
     private static Parameters DEFAULT_PARAMETERS = null;

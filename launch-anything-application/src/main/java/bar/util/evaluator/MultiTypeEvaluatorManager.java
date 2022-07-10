@@ -67,6 +67,10 @@ public class MultiTypeEvaluatorManager {
 
         expression = evaluator.escapeFunctionFunctions(expression);
 
+        if (expression.contains("\"")) {
+            expression = evaluator.escapeStringContents(expression);
+        }
+
         Matcher assignmentExpression = ASSIGNMENT_PATTERN.matcher(expression);
         if (assignmentExpression.matches()) {
             String variableName = assignmentExpression.group(1);
