@@ -181,6 +181,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function SET = new Function("set", 1, Integer.MAX_VALUE);
     public static final Function DISTINCT = new Function("distinct", 1, Integer.MAX_VALUE);
     public static final Function GET_ELEMENT = new Function("elementAt", 1, Integer.MAX_VALUE);
+    public static final Function GET_ELEMENT_2 = new Function("get", 1, Integer.MAX_VALUE);
     public static final Function RANGE = new Function("range", 1, 2);
     public static final Function NORMALIZE = new Function("normalize", 1);
     public static final Function MAP_FUNCTION = new Function("map", 1, Integer.MAX_VALUE);
@@ -200,10 +201,10 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             ABS, RANDOM, GGT, GCD, PHI, IS_PRIME, NEXT_PRIME, IF_ELSE, TO_BINARY_STRING, TO_HEX_STRING, POW, SQRT, ROOT,
             SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, LIST, SET, DISTINCT, GET_ELEMENT,
             RANGE, NORMALIZE, MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, LENGTH,
-            TO_DECIMAL, JOIN, SPLIT, REPLACE};
+            TO_DECIMAL, JOIN, SPLIT, REPLACE, GET_ELEMENT_2};
 
     private static final Function[] FUNCTION_FUNCTIONS = new Function[]{MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH,
-            NONE_MATCH, FIND_FIRST, FIND_LAST, SORT};
+            NONE_MATCH, FIND_FIRST, FIND_LAST, SORT, SPLIT};
 
     @Override
     protected Object evaluate(Function function, Iterator<Object> arguments, Object evaluationContext) {
@@ -502,9 +503,12 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                 i = i.add(BigDecimal.ONE);
             }
             return divisors;
-        } else if (GET_ELEMENT.equals(function)) {
+        } else if (GET_ELEMENT.equals(function) || GET_ELEMENT_2.equals(function)) {
             BigDecimal index = getBigDecimal(arguments);
-            List<Object> allElements = getAllArgumentsAsList(arguments);
+            List<Object> allElements = getArgumentAsList(arguments);
+            if (allElements.size() == 1) {
+                allElements = ((List<Object>) allElements.get(0));
+            }
             return allElements.get(index.intValue());
         } else if (RANGE.equals(function)) {
             return IntStream.rangeClosed(getBigDecimal(arguments).intValue(), getBigDecimal(arguments).intValue()).boxed().collect(Collectors.toList());
@@ -599,10 +603,24 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                     .map(Object::toString)
                     .collect(Collectors.joining(delimiter));
         } else if (SPLIT.equals(function)) {
-            final String splitString = arguments.next().toString();
-            final String delimiter = arguments.next().toString();
-            final int limit = arguments.hasNext() ? getBigDecimal(arguments.next()).intValue() : -1;
-            return Arrays.asList(splitString.split(delimiter, limit));
+            final Object firstArgument = arguments.next();
+            if (firstArgument instanceof Function) {
+                final Function splitFunction = (Function) firstArgument;
+                final List<Object> allArguments = getAllArgumentsAsList(arguments);
+                final Map<Object, List<Object>> resultLists = new HashMap<>();
+                for (Object argument : allArguments) {
+                    final Object mappedValue = evaluateFunctionWithSingleParameter(evaluationContext, splitFunction, argument);
+                    resultLists.computeIfAbsent(mappedValue, k -> new ArrayList<>()).add(argument);
+                }
+                return resultLists.entrySet().stream()
+                        .map(entry -> new ArrayList<>(entry.getValue()))
+                        .collect(Collectors.toList());
+            } else {
+                final String splitString = firstArgument.toString();
+                final String delimiter = arguments.next().toString();
+                final int limit = arguments.hasNext() ? getBigDecimal(arguments.next()).intValue() : -1;
+                return Arrays.asList(splitString.split(delimiter, limit));
+            }
         } else if (REPLACE.equals(function)) {
             final String string = arguments.next().toString();
             final String oldValue = arguments.next().toString();

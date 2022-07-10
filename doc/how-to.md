@@ -136,7 +136,8 @@ The **math expression** tile is very powerful:
 - Hex, binary and octal numbers can be entered using `0x`, `0b` and `0o` as prefix. Convert to different systems by
   using `toHex` and `toBin`
 - Strings are supported by using `"string"`. String can be concatenated using `+`, multiplied using `*` and used as
-  parameter in several functions, such as `replace`, `split` and `join`.
+  parameter in several functions, such as `replace`, `split` and `join`. The split method can also be used to split a
+  list of elements into multiple sub-lists by providing a splitting function as first parameter.
 - Sort a list or several function arguments using `sort`. A function can be passed as first parameter to use as
   comparator.
 
@@ -159,6 +160,9 @@ Examples:
 - `negLen(x) = -len(x)`  
   `isNotMinusEight(x) = x != -8`  
   `filter(isNotMinusEight, sort(len, sort(map(negLen, list("wowowodd", "", "testdd", "ddddddhmm")))))` = `[ 0, -9, -6]`
+- `sum(map(toDec, split(join(", ", range(1,10)), ", ")))` = `55`
+- `split(isPrime, range(1, 10))` = `[[1, 4, 6, 8, 9, 10], [2, 3, 5, 7]]`
+- `get(1,split(isPrime,range(1,10))) == filter(isPrime,range(1,10))` = `[true, true, true, true]`
 - ... and a lot more!
 
 **Chart generator**:
