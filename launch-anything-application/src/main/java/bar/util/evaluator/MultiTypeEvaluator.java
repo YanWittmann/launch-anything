@@ -450,7 +450,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (POW.equals(function)) {
             BigDecimal base = getBigDecimal(arguments);
             BigDecimal exponent = getBigDecimal(arguments);
-            return base.pow(exponent.intValue());
+            return bigDecimalPow(base, exponent);
         } else if (SQRT.equals(function)) {
             BigDecimal n = getBigDecimal(arguments);
             return BigDecimal.valueOf(Math.sqrt(n.doubleValue()));
@@ -619,6 +619,17 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                 }
             }
             return super.evaluate(function, arguments, evaluationContext);
+        }
+    }
+
+    private BigDecimal bigDecimalPow(BigDecimal base, BigDecimal exponent) {
+        // check if base or exponent are larger than double max value
+        if (base.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) > 0 || exponent.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) > 0) {
+            // use the BigDecimal.pow method to calculate the result
+            return base.pow(exponent.intValue());
+        } else {
+            // use the Math.pow method to calculate the result
+            return BigDecimal.valueOf(Math.pow(base.doubleValue(), exponent.doubleValue()));
         }
     }
 
@@ -857,7 +868,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (EXPONENT.equals(operator) || EXPONENT_DOUBLE.equals(operator)) {
             Object left = operands.next();
             Object right = operands.next();
-            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).pow(getBigDecimal(rightValue).intValue()));
+            return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> bigDecimalPow(getBigDecimal(leftValue), getBigDecimal(rightValue)));
         } else if (MODULO.equals(operator)) {
             Object left = operands.next();
             Object right = operands.next();
