@@ -157,7 +157,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function COUNT_DEEP = new Function("countDeep", 1, Integer.MAX_VALUE);
     public static final Function COUNT_SHALLOW = new Function("count", 1, Integer.MAX_VALUE);
     public static final Function LN = new Function("ln", 1);
-    public static final Function LOG = new Function("log", 1);
+    public static final Function LOG = new Function("log", 1, 2);
     public static final Function RANDOM = new Function("random", 2);
     public static final Function GGT = new Function("ggt", 2);
     public static final Function GCD = new Function("gcd", 2);
@@ -383,7 +383,13 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (LN.equals(function)) {
             return BigDecimal.valueOf(Math.log(getBigDecimal(arguments).doubleValue()));
         } else if (LOG.equals(function)) {
-            return BigDecimal.valueOf(Math.log10(getBigDecimal(arguments).doubleValue()));
+            BigDecimal arg1 = getBigDecimal(arguments);
+            if (arguments.hasNext()) {
+                BigDecimal value = getBigDecimal(arguments.next());
+                return BigDecimal.valueOf(Math.log(value.doubleValue()) / Math.log(arg1.doubleValue()));
+            } else {
+                return BigDecimal.valueOf(Math.log(arg1.doubleValue()));
+            }
         } else if (RANDOM.equals(function)) {
             BigDecimal b1 = getBigDecimal(arguments);
             BigDecimal b2 = getBigDecimal(arguments);
