@@ -202,6 +202,8 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function INVERT = new Function("invert", 1, 1);
     public static final Function CONTAINS = new Function("contains", 2, 2);
     public static final Function GET_DATA_TYPE = new Function("type", 1, 1);
+    public static final Function REVERSE = new Function("reverse", 1, 1);
+    public static final Function SELF = new Function("self", 1, 1);
 
     private static final Function[] FUNCTIONS = new Function[]{SINE, COSINE, TANGENT, ASINE, ACOSINE, ATAN, SINEH,
             COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, PRODUCT, COUNT_DEEP, COUNT_SHALLOW, LN, LOG, ROUND, CEIL, FLOOR,
@@ -209,7 +211,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, LIST, SET, DISTINCT, GET_ELEMENT,
             RANGE, NORMALIZE, MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, LENGTH,
             TO_DECIMAL, TO_CHARACTER, JOIN, SPLIT, REPLACE, GET_ELEMENT_2, TRIM, IS_TRUE, IS_FALSE, INVERT, CONTAINS,
-            GET_DATA_TYPE};
+            GET_DATA_TYPE, REVERSE, SELF};
 
     private static final Function[] FUNCTION_FUNCTIONS = new Function[]{MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH,
             NONE_MATCH, FIND_FIRST, FIND_LAST, SORT, SPLIT, GET_DATA_TYPE};
@@ -644,8 +646,33 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             final String newValue = arguments.next().toString();
             return string.replace(oldValue, newValue);
         } else if (TRIM.equals(function)) {
-            final String string = arguments.next().toString();
-            return string.trim();
+            final Object arg = arguments.next();
+            if (arg instanceof List) {
+                // remove empty from front and back of list
+                List<Object> list = (List<Object>) arg;
+                while (list.size() > 0 && list.get(0).toString().isEmpty()) {
+                    list.remove(0);
+                }
+                while (list.size() > 0 && list.get(list.size() - 1).toString().isEmpty()) {
+                    list.remove(list.size() - 1);
+                }
+                return list;
+            } else {
+                return arg.toString().trim();
+            }
+        } else if (REVERSE.equals(function)) {
+            final Object arg = arguments.next();
+            if (arg instanceof List) {
+                List<Object> list = (List<Object>) arg;
+                Collections.reverse(list);
+                return list;
+            } else {
+                StringBuilder sb = new StringBuilder(arg.toString());
+                sb.reverse();
+                return sb.toString();
+            }
+        } else if (SELF.equals(function)) {
+            return arguments.next();
         } else if (CONTAINS.equals(function)) {
             final String string = arguments.next().toString();
             final String substring = arguments.next().toString();
