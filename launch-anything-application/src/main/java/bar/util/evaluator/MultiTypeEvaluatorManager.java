@@ -5,7 +5,6 @@ import com.fathzer.soft.javaluator.Parameters;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -75,7 +74,12 @@ public class MultiTypeEvaluatorManager {
         if (assignmentExpression.matches()) {
             String variableName = assignmentExpression.group(1);
             String value = assignmentExpression.group(2);
-            Object result = evaluator.evaluate(value, variables);
+            final Object result;
+            try {
+                result = evaluator.evaluate(value, variables);
+            } catch (Exception e) {
+                return new EvaluationResultFailure(e);
+            }
             if (result instanceof EvaluationResultFailure) {
                 return (EvaluationResultFailure) result;
             }
@@ -98,7 +102,7 @@ public class MultiTypeEvaluatorManager {
         }
     }
 
-    private final static Pattern ASSIGNMENT_PATTERN = Pattern.compile("([A-Za-z_]+) *= *(.+)");
+    private final static Pattern ASSIGNMENT_PATTERN = Pattern.compile("([A-Za-z_]+) *=(?!=) *(.+)");
     private final static Pattern FUNCTION_PATTERN = Pattern.compile("([A-Za-z_]+)\\(((?: *[A-Za-z_]+ *,?)*)\\) *= *(.+)");
 
     public static class ExpressionFunction extends Function implements Expression {

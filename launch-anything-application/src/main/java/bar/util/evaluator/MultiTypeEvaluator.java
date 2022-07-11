@@ -164,6 +164,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function IS_PRIME = new Function("isPrime", 1);
     public static final Function NEXT_PRIME = new Function("nextPrime", 1);
     public static final Function IF_ELSE = new Function("if", 3);
+    public static final Function TO_CHARACTER = new Function("toChar", 1);
     public static final Function TO_DECIMAL = new Function("toDec", 1);
     public static final Function TO_BINARY_STRING = new Function("toBin", 1);
     public static final Function TO_HEX_STRING = new Function("toHex", 1);
@@ -177,8 +178,8 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function GROUP_DUPLICATES = new Function("groupDuplicates", 1, Integer.MAX_VALUE);
     public static final Function SORT = new Function("sort", 1, Integer.MAX_VALUE);
     public static final Function MERGE = new Function("merge", 1, Integer.MAX_VALUE);
-    public static final Function LIST = new Function("list", 1, Integer.MAX_VALUE);
-    public static final Function SET = new Function("set", 1, Integer.MAX_VALUE);
+    public static final Function LIST = new Function("list", 0, Integer.MAX_VALUE);
+    public static final Function SET = new Function("set", 0, Integer.MAX_VALUE);
     public static final Function DISTINCT = new Function("distinct", 1, Integer.MAX_VALUE);
     public static final Function GET_ELEMENT = new Function("elementAt", 1, Integer.MAX_VALUE);
     public static final Function GET_ELEMENT_2 = new Function("get", 1, Integer.MAX_VALUE);
@@ -195,16 +196,23 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function JOIN = new Function("join", 1, Integer.MAX_VALUE);
     public static final Function SPLIT = new Function("split", 2, 3);
     public static final Function REPLACE = new Function("replace", 3, 3);
+    public static final Function TRIM = new Function("trim", 1, 1);
+    public static final Function IS_TRUE = new Function("isTrue", 1, 1);
+    public static final Function IS_FALSE = new Function("isFalse", 1, 1);
+    public static final Function INVERT = new Function("invert", 1, 1);
+    public static final Function CONTAINS = new Function("contains", 2, 2);
+    public static final Function GET_DATA_TYPE = new Function("type", 1, 1);
 
     private static final Function[] FUNCTIONS = new Function[]{SINE, COSINE, TANGENT, ASINE, ACOSINE, ATAN, SINEH,
             COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, PRODUCT, COUNT_DEEP, COUNT_SHALLOW, LN, LOG, ROUND, CEIL, FLOOR,
             ABS, RANDOM, GGT, GCD, PHI, IS_PRIME, NEXT_PRIME, IF_ELSE, TO_BINARY_STRING, TO_HEX_STRING, POW, SQRT, ROOT,
             SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, LIST, SET, DISTINCT, GET_ELEMENT,
             RANGE, NORMALIZE, MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, LENGTH,
-            TO_DECIMAL, JOIN, SPLIT, REPLACE, GET_ELEMENT_2};
+            TO_DECIMAL, TO_CHARACTER, JOIN, SPLIT, REPLACE, GET_ELEMENT_2, TRIM, IS_TRUE, IS_FALSE, INVERT, CONTAINS,
+            GET_DATA_TYPE};
 
     private static final Function[] FUNCTION_FUNCTIONS = new Function[]{MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH,
-            NONE_MATCH, FIND_FIRST, FIND_LAST, SORT, SPLIT};
+            NONE_MATCH, FIND_FIRST, FIND_LAST, SORT, SPLIT, GET_DATA_TYPE};
 
     @Override
     protected Object evaluate(Function function, Iterator<Object> arguments, Object evaluationContext) {
@@ -449,7 +457,16 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             BigInteger n = getBigDecimal(arguments).toBigInteger();
             return "0b" + n.toString(2);
         } else if (TO_DECIMAL.equals(function)) {
-            return getBigDecimal(arguments);
+            final Object arg = arguments.next();
+            final String asString = arg.toString();
+            if (arg instanceof String && asString.length() == 1 && !((String) arg).matches("\\d")) {
+                return BigDecimal.valueOf(asString.charAt(0));
+            } else {
+                return getBigDecimal(arguments);
+            }
+        } else if (TO_CHARACTER.equals(function)) {
+            final BigDecimal n = getBigDecimal(arguments);
+            return Character.toString((char) n.intValue());
         } else if (TO_HEX_STRING.equals(function)) {
             BigInteger n = getBigDecimal(arguments).toBigInteger();
             return "0x" + n.toString(16);
@@ -619,13 +636,54 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
                 final String splitString = firstArgument.toString();
                 final String delimiter = arguments.next().toString();
                 final int limit = arguments.hasNext() ? getBigDecimal(arguments.next()).intValue() : -1;
-                return Arrays.asList(splitString.split(delimiter, limit));
+                return Arrays.stream(splitString.split(delimiter, limit)).filter(s -> !s.isEmpty()).collect(Collectors.toList());
             }
         } else if (REPLACE.equals(function)) {
             final String string = arguments.next().toString();
             final String oldValue = arguments.next().toString();
             final String newValue = arguments.next().toString();
             return string.replace(oldValue, newValue);
+        } else if (TRIM.equals(function)) {
+            final String string = arguments.next().toString();
+            return string.trim();
+        } else if (CONTAINS.equals(function)) {
+            final String string = arguments.next().toString();
+            final String substring = arguments.next().toString();
+            return string.contains(substring);
+        } else if (IS_TRUE.equals(function)) {
+            Object arg = arguments.next();
+            return getBoolean(arg);
+        } else if (IS_FALSE.equals(function)) {
+            Object arg = arguments.next();
+            return !getBoolean(arg);
+        } else if (INVERT.equals(function)) {
+            final Object arg = arguments.next();
+            if (arg instanceof Boolean) {
+                return !getBoolean(arg);
+            } else {
+                return getBigDecimal(arg).multiply(BigDecimal.valueOf(-1.0));
+            }
+        } else if (GET_DATA_TYPE.equals(function)) {
+            final Object arg = arguments.next();
+            if (arg instanceof String) {
+                return "string";
+            } else if (arg instanceof BigDecimal) {
+                return "number";
+            } else if (arg instanceof BigInteger) {
+                return "number";
+            } else if (arg instanceof Boolean) {
+                return "boolean";
+            } else if (arg instanceof Date) {
+                return "date";
+            } else if (arg instanceof List) {
+                return "list";
+            } else if (arg instanceof Map) {
+                return "map";
+            } else if (arg instanceof Function) {
+                return "function";
+            } else {
+                return "unknown";
+            }
         } else {
             for (Map.Entry<String, MultiTypeEvaluatorManager.Expression> entry : customExpressionFunctions.entrySet()) {
                 if (function.getName().equals(entry.getKey())) {
@@ -941,7 +999,9 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             Object left = operands.next();
             Object right = operands.next();
             return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> {
-                if (leftValue instanceof String || rightValue instanceof String) {
+                if (leftValue instanceof String && rightValue instanceof String) {
+                    return leftValue.equals(rightValue);
+                } else if (leftValue instanceof Boolean && rightValue instanceof Boolean) {
                     return leftValue.equals(rightValue);
                 } else {
                     return getBigDecimal(leftValue).compareTo(getBigDecimal(rightValue)) == 0;
@@ -1084,8 +1144,17 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     private Boolean getBoolean(Object argument) {
         if (argument instanceof Boolean) {
             return (Boolean) argument;
+        } else if (argument instanceof String) {
+            return !((String) argument).isEmpty();
+        } else if (argument instanceof Number) {
+            return ((Number) argument).doubleValue() != 0;
+        } else if (argument instanceof Collection) {
+            return !((Collection<?>) argument).isEmpty();
+        } else if (argument instanceof Map) {
+            return !((Map<?, ?>) argument).isEmpty();
+        } else {
+            return !argument.toString().isEmpty();
         }
-        return false;
     }
 
     private final static Map<String, String> ESCAPE_CHARACTERS = new LinkedHashMap<>();
@@ -1112,7 +1181,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public String escapeFunctionFunctions(String expression) {
         // replace the first parameter of the function with the according escape characters
         for (Function f : FUNCTION_FUNCTIONS) {
-            Pattern p = Pattern.compile(f.getName() + "\\s*\\(([^,(]+),");
+            Pattern p = Pattern.compile(f.getName() + "\\s*\\(([^,(]+)[,)]");
             Matcher m = p.matcher(expression);
             while (m.find()) {
                 String replacement = f.getName() + "(" + ESCAPE_CHARACTERS.getOrDefault(m.group(1), m.group(1)) + ",";
@@ -1136,8 +1205,9 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         return escaped;
     }
 
+    private final static Pattern STRING_PATTERN = Pattern.compile("\"([^\"]*)\"");
+
     public String escapeStringContents(String unescaped) {
-        final Pattern STRING_PATTERN = Pattern.compile("\"([^\"]+)\"");
         final Matcher m = STRING_PATTERN.matcher(unescaped);
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
@@ -1149,7 +1219,6 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     }
 
     public String unescapeStringContents(String escaped) {
-        final Pattern STRING_PATTERN = Pattern.compile("\"([^\"]+)\"");
         final Matcher m = STRING_PATTERN.matcher(escaped);
         StringBuffer sb = new StringBuffer();
         while (m.find()) {

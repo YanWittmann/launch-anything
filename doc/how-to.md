@@ -136,10 +136,12 @@ The **math expression** tile is very powerful:
 - Hex, binary and octal numbers can be entered using `0x`, `0b` and `0o` as prefix. Convert to different systems by
   using `toHex` and `toBin`
 - Strings are supported by using `"string"`. String can be concatenated using `+`, multiplied using `*` and used as
-  parameter in several functions, such as `replace`, `split` and `join`. The split method can also be used to split a
+  parameter in several functions, such as `replace`, `split`, `trim`, `contains` and `join`. The split method can also be used to split a
   list of elements into multiple sub-lists by providing a splitting function as first parameter.
 - Sort a list or several function arguments using `sort`. A function can be passed as first parameter to use as
   comparator.
+- Invert booleans or negate numbers using `!` and `-` or the function `invert`.
+- Get the data type of a value using `type`.
 
 Examples:
 
@@ -165,6 +167,9 @@ Examples:
 - `noneMatch(isFalse,get(1,split(isPrime,range(1,10))) == filter(isPrime,range(1,10)))` = `true`
 - Sort the non-prime numbers from 3-100 by the length of their factorisation (using `invertLen(x) = -len(x)`): `join(", ", map(product,sort(invertLen,map(factorize,get(0,split(isPrime,range(3,100)))))))` = `64, 96, 32, 48, 72, 80, 16, 24, 36, 40, 54, 56, 60, 81, 84, 88, 90, 100, 8, 12, 18, 20, 27, 28, 30, 42, 44, 45, 50, 52, 63, ...`
 - `map(sort, sort(max, split(isSmallerTen, list(1, 5, 2, 12, 62, 44)))` = `[[1, 2, 5], [12, 44, 62]]`
+- Sort letters in a string by ascii: `trim(join("", map(toChar, sort(map(toDec, split("this is a test", ""))))))` = `aehiisssttt`
+- `filter(contains, list("test", "hmm"), "t")` = `[test]`
+- `map(type, list("", 1.0, list() ,false)` = `[string, number, list, boolean]`
 - ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
 
 **Chart generator**:
