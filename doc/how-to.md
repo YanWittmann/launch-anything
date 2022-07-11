@@ -170,6 +170,7 @@ Examples:
 - Sort letters in a string by ascii: `trim(join("", map(toChar, sort(map(toDec, split("this is a test", ""))))))` = `aehiisssttt`
 - `filter(contains, list("test", "hmm"), "t")` = `[test]`
 - `map(type, list("", 1.0, list() ,false)` = `[string, number, list, boolean]`
+- Using `isString(x) = type(x) == "string"`: `filter(isString, list("test", 23, "d", true, "true"))` = `[test, d, true]`
 - ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
 
 **Chart generator**:

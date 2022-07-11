@@ -1181,7 +1181,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public String escapeFunctionFunctions(String expression) {
         // replace the first parameter of the function with the according escape characters
         for (Function f : FUNCTION_FUNCTIONS) {
-            Pattern p = Pattern.compile(f.getName() + "\\s*\\(([^,(]+)[,)]");
+            Pattern p = Pattern.compile(f.getName() + "\\s*\\(([^,(]+),");
             Matcher m = p.matcher(expression);
             while (m.find()) {
                 String replacement = f.getName() + "(" + ESCAPE_CHARACTERS.getOrDefault(m.group(1), m.group(1)) + ",";
