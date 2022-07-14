@@ -178,7 +178,8 @@ Examples:
   same: `noneMatch(isFalse,get(1,split(isPrime,range(1,10))) == filter(isPrime,range(1,10)))` = `true`
 - Sort the non-prime numbers from 3-100 by the length of their factorisation (
   using `invertLen(x) = -len(x)`): `join(", ", map(product,sort(invertLen,map(factorize,get(0,split(isPrime,range(3,100)))))))`
-  = `64, 96, 32, 48, 72, 80, 16, 24, 36, 40, 54, 56, 60, 81, 84, 88, 90, 100, 8, 12, 18, 20, 27, 28, 30, 42, 44, 45, 50, 52, 63, ...`
+  = `64, 96, 32, 48, 72, 80, 16, 24, 36, 40, 54, 56, 60, 81, 84, 88, 90, 100, 8, 12, 18, 20, 27, 28, 30, 42, 44, 45, 50, 52, 63, ...`  
+  `invertLen` can be replaced by inline function `{x -> -len(x)}`
 - `map(sort, sort(max, split(isSmallerTen, list(1, 5, 2, 12, 62, 44)))` = `[[1, 2, 5], [12, 44, 62]]`
 - Sort letters in a string by ascii: `trim(join("", map(toChar, sort(map(toDec, split("this is a test", ""))))))`
   = `aehiisssttt`
@@ -189,6 +190,8 @@ Examples:
 - Find the most common letter in a string:
   `get(0, get(0, reverse(sort(len, split(self, split("launch anything", ""))))))` = `n`
 - `filter({x,y -> type(x) == "string" && y}, list("d", 24), true)` = `[d]`
+- Equivalence class mod 6 for numbers from 1-50 with result of 0 in this case:
+  `get(0, split({x->x%6}, range(1, 50)))` = `[6, 12, 18, 24, 30, 36, 42, 48]`
 - ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
 
 **Chart generator**:
