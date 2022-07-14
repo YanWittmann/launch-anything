@@ -144,7 +144,7 @@ The **math expression** tile is very powerful:
 - Invert booleans or negate numbers using `!` and `-` or the function `invert`.
 - Get the data type of a value using `type`.
 - The `self` method can be used to split a list into multiple lists each containing the same element. Used for counting
-  the number of times a value occurs in a list.
+  the number of times a value occurs in a list. (or just `{x->x}`)
 - Inline functions (like lambda expressions) can be used to create filter/map/sort functions without the need of
   declaring new functions separately. Surround them with `{` and `}`: `{x,y -> x+y}`, for example:
   `map({x,y->x+y}, list(12, 1), 6)` = `[18, 7]`
@@ -192,6 +192,8 @@ Examples:
 - `filter({x,y -> type(x) == "string" && y}, list("d", 24), true)` = `[d]`
 - Equivalence class mod 6 for numbers from 1-50 with result of 0 in this case:
   `get(0, split({x->x%6}, range(1, 50)))` = `[6, 12, 18, 24, 30, 36, 42, 48]`
+- `map({x->x<<2}, map(toDec, map({x -> replace(x, "0b", "")},map(toBin,filter({x -> x % 2 == 1}, range(1,10))))))` =
+  `[4, 44, 404, 444, 4004]`
 - ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
 
 **Chart generator**:

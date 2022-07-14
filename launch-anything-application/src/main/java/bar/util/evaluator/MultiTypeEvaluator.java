@@ -460,12 +460,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return "0b" + n.toString(2);
         } else if (TO_DECIMAL.equals(function)) {
             final Object arg = arguments.next();
-            final String asString = arg.toString();
-            if (arg instanceof String && asString.length() == 1 && !((String) arg).matches("\\d")) {
-                return BigDecimal.valueOf(asString.charAt(0));
-            } else {
-                return getBigDecimal(arguments);
-            }
+            return performUnaryOperationOnValue(arg, operand -> new BigDecimal(operand.toString()));
         } else if (TO_CHARACTER.equals(function)) {
             final BigDecimal n = getBigDecimal(arguments);
             return Character.toString((char) n.intValue());
