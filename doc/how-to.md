@@ -145,6 +145,9 @@ The **math expression** tile is very powerful:
 - Get the data type of a value using `type`.
 - The `self` method can be used to split a list into multiple lists each containing the same element. Used for counting
   the number of times a value occurs in a list.
+- Inline functions (like lambda expressions) can be used to create filter/map/sort functions without the need of
+  declaring new functions separately. Surround them with `{` and `}`: `{x,y -> x+y}`, for example:
+  `map({x,y->x+y}, list(12, 1), 6)` = `[18, 7]`
 
 Examples:
 
@@ -154,6 +157,7 @@ Examples:
 - `isNotPrime(x) = !isPrime(x)` --> `isNotPrime(23)` = `false`
 - `map(factorize, set(34, 34, 22, 84))` = `[[2, 17], [2, 11], [2, 2, 3, 7]]`
 - `map(product, map(factorize, set(34, 34, 22, 84)))` = `[34, 22, 84]`
+- `sum(map(round, normalize(list(12, 32, 4)), 3))` = `1`
 - `true || false && true` = `true`
 - `a = 23; b = 54; c = 82` = `3 assignments a = 23, b = 54, c = 82`
 - `toHex(23 + 0b1001 + 0o23 + 0x2DF)` = `0x312`
@@ -182,8 +186,9 @@ Examples:
 - Get data type for multiple elements: `map(type, list("", 1.0, list(), false)` = `[string, number, list, boolean]`
 - Filter only strings using `isString(x) = type(x) == "string"`: `filter(isString, list("test", 23, "d", true, "true"))`
   = `[test, d, true]`
-- Find the most common letter in a
-  string: `toChar(get(0, get(0, reverse(sort(len, split(self, map(toDec, split("launch anything", ""))))))))` = `n`
+- Find the most common letter in a string:
+  `get(0, get(0, reverse(sort(len, split(self, split("launch anything", ""))))))` = `n`
+- `filter({x,y -> type(x) == "string" && y}, list("d", 24), true)` = `[d]`
 - ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
 
 **Chart generator**:

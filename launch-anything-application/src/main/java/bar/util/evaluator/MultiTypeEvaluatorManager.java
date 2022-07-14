@@ -1,10 +1,12 @@
 package bar.util.evaluator;
 
+import bar.util.RandomString;
 import com.fathzer.soft.javaluator.Function;
 import com.fathzer.soft.javaluator.Parameters;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,6 +44,16 @@ public class MultiTypeEvaluatorManager {
         regenerateEvaluator();
     }
 
+    public void removeCustomFunction(ExpressionFunction function) {
+        customFunctions.remove(function);
+        regenerateEvaluator();
+    }
+
+    public void removeCustomFunctions(Collection<ExpressionFunction> functions) {
+        customFunctions.removeAll(functions);
+        regenerateEvaluator();
+    }
+
     private void regenerateEvaluator() {
         Parameters parameters = MultiTypeEvaluator.getDefaultParameters();
         customFunctions.forEach(parameters::add);
@@ -64,6 +76,21 @@ public class MultiTypeEvaluatorManager {
             return new EvaluationResultFailure(new IllegalArgumentException("Expression is empty"));
         }
 
+        // filter({x,y->type(x) == "string" && y},list("d",24),true)
+        final List<ExpressionFunction> inlineFunctions = new ArrayList<>();
+        final Matcher inlineFunctionMatcher = INLINE_FUNCTION_PATTERN.matcher(expression);
+        while (inlineFunctionMatcher.find()) {
+            final String[] inlineFunctionParameters = inlineFunctionMatcher.group(1).trim().split(", *");
+            final String inlineFunctionExpression = inlineFunctionMatcher.group(2);
+            final String inlineFunctionName = new RandomString(8).nextString();
+
+            final ExpressionFunction inlineFunction = new ExpressionFunction(inlineFunctionName, inlineFunctionParameters, inlineFunctionExpression);
+            inlineFunctions.add(inlineFunction);
+
+            addCustomFunction(inlineFunction);
+            expression = expression.replace(inlineFunctionMatcher.group(0), inlineFunctionName);
+        }
+
         expression = evaluator.escapeFunctionFunctions(expression);
 
         if (expression.contains("\"")) {
@@ -78,32 +105,44 @@ public class MultiTypeEvaluatorManager {
             try {
                 result = evaluator.evaluate(value, variables);
             } catch (Exception e) {
+                removeCustomFunctions(inlineFunctions);
                 return new EvaluationResultFailure(e);
             }
             if (result instanceof EvaluationResultFailure) {
+                removeCustomFunctions(inlineFunctions);
                 return (EvaluationResultFailure) result;
             }
+            removeCustomFunctions(inlineFunctions);
             return new EvaluationResultAssignment(variableName, result, this);
         }
 
         Matcher functionExpression = FUNCTION_PATTERN.matcher(expression);
         if (functionExpression.matches()) {
-            String functionName = functionExpression.group(1);
-            String parameterList = functionExpression.group(2).replace(" ", "");
-            String[] parameters = parameterList.split(",");
+            if (inlineFunctions.size() > 0) {
+                removeCustomFunctions(inlineFunctions);
+                return new EvaluationResultFailure(new IllegalArgumentException("Inline functions are not supported in function expressions"));
+            }
+            final String functionName = functionExpression.group(1);
+            final String parameterList = functionExpression.group(2).replace(" ", "");
+            final String[] parameters = parameterList.split(",");
             expression = functionExpression.group(3);
+            removeCustomFunctions(inlineFunctions);
             return new EvaluationResultFunction(new ExpressionFunction(functionName, parameters, expression), this);
         }
 
         try {
-            return new EvaluationResultResult(evaluator.evaluate(expression, variables));
+            Object result = evaluator.evaluate(expression, variables);
+            removeCustomFunctions(inlineFunctions);
+            return new EvaluationResultResult(result);
         } catch (Exception e) {
+            removeCustomFunctions(inlineFunctions);
             return new EvaluationResultFailure(e);
         }
     }
 
     private final static Pattern ASSIGNMENT_PATTERN = Pattern.compile("([A-Za-z_]+) *=(?!=) *(.+)");
     private final static Pattern FUNCTION_PATTERN = Pattern.compile("([A-Za-z_]+)\\(((?: *[A-Za-z_]+ *,?)*)\\) *= *(.+)");
+    private final static Pattern INLINE_FUNCTION_PATTERN = Pattern.compile("\\{([^{}]+) *-> *([^{}]+)}");
 
     public static class ExpressionFunction extends Function implements Expression {
         private final String[] parameters;

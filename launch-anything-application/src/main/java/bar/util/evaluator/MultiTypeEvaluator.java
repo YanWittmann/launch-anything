@@ -525,7 +525,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
         } else if (GET_ELEMENT.equals(function) || GET_ELEMENT_2.equals(function)) {
             BigDecimal index = getBigDecimal(arguments);
             List<Object> allElements = getArgumentAsList(arguments);
-            if (allElements.size() == 1) {
+            if (allElements.size() == 1 && allElements.get(0) instanceof List) {
                 allElements = ((List<Object>) allElements.get(0));
             }
             return allElements.get(index.intValue());
