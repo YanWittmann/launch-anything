@@ -726,14 +726,15 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     }
 
     private BigDecimal bigDecimalPow(BigDecimal base, BigDecimal exponent) {
-        // check if base or exponent are larger than double max value
-        if (base.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) > 0 || exponent.compareTo(BigDecimal.valueOf(Double.MAX_VALUE)) > 0) {
-            // use the BigDecimal.pow method to calculate the result
-            return base.pow(exponent.intValue());
-        } else {
-            // use the Math.pow method to calculate the result
+        if (hasDecimalPlaces(exponent)) {
             return BigDecimal.valueOf(Math.pow(base.doubleValue(), exponent.doubleValue()));
+        } else {
+            return base.pow(exponent.intValue());
         }
+    }
+
+    private boolean hasDecimalPlaces(BigDecimal value) {
+        return value.stripTrailingZeros().scale() > 0;
     }
 
     private List<Object> mapArgumentListToEvaluationResultUsingMappingFunction(Iterator<Object> arguments, Object evaluationContext, Function mappingFunction, List<Object> listToMap) {
