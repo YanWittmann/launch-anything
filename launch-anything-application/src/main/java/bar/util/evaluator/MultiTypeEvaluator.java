@@ -771,10 +771,12 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             i++;
         }
 
-        for (Object element : listToMap) {
+        for (int j = 0; j < listToMap.size(); j++) {
+            Object element = listToMap.get(j);
             if (mappingFunction instanceof MultiTypeEvaluatorManager.ExpressionFunction) {
                 element = escapeString(element);
             }
+            otherParametersSet.set("index", j);
             otherParametersSet.set("param0", element);
             Object mappedElement = evaluate(mappingFunction.getName() + "(param0" + (otherParameters.length() > 0 ? "," + otherParameters : "") + ")", otherParametersSet);
             mappedList.add(mappedElement);

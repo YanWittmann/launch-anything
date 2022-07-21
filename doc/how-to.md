@@ -128,7 +128,8 @@ The **math expression** tile is very powerful:
   operations, enter `function` in the launch bar
 - Lists can be filtered or mapped using the `filter()` and `map()` functions by providing the filter or map function
   as first parameter, the list as second parameter and the parameters for the filter or map function as following
-  parameters.
+  parameters.  
+  You can use the variable `index` to access the index of the current list element.
 - Create functions by using `functionname(parameter1, parameter2) = functionbody` to declare custom functions.
   Currently not supported in mapping and filtering.
 - Variables can be assigned to using `varname = value`, or multiple variables can be assigned at once by using
@@ -196,6 +197,7 @@ Examples:
   `[4, 44, 404, 444, 4004]`
 - Calculate the euler phi function manually (for 208):
   `round(208*product(map({x->1-(1/x)},distinct(factorize(208)))),0)` = `96`
+- `filter({x -> index%2 == 0}, range(1,10))` = `[1, 3, 5, 7, 9]`
 - ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
 
 **Chart generator**:
