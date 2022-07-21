@@ -204,6 +204,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     public static final Function GET_DATA_TYPE = new Function("type", 1, 1);
     public static final Function REVERSE = new Function("reverse", 1, 1);
     public static final Function SELF = new Function("self", 1, 1);
+    public static final Function MATH_MOD = new Function("mathMod", 2, 2);
 
     private static final Function[] FUNCTIONS = new Function[]{SINE, COSINE, TANGENT, ASINE, ACOSINE, ATAN, SINEH,
             COSINEH, TANGENTH, MIN, MAX, SUM, AVERAGE, PRODUCT, COUNT_DEEP, COUNT_SHALLOW, LN, LOG, ROUND, CEIL, FLOOR,
@@ -211,7 +212,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             SUM_OF_DIGITS, FACULTY, FACTORIZE, DIVISORS, GROUP_DUPLICATES, SORT, MERGE, LIST, SET, DISTINCT, GET_ELEMENT,
             RANGE, NORMALIZE, MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH, NONE_MATCH, FIND_FIRST, FIND_LAST, LENGTH,
             TO_DECIMAL, TO_CHARACTER, JOIN, SPLIT, REPLACE, GET_ELEMENT_2, TRIM, IS_TRUE, IS_FALSE, INVERT, CONTAINS,
-            GET_DATA_TYPE, REVERSE, SELF};
+            GET_DATA_TYPE, REVERSE, SELF, MATH_MOD};
 
     private static final Function[] FUNCTION_FUNCTIONS = new Function[]{MAP_FUNCTION, FILTER, ANY_MATCH, ALL_MATCH,
             NONE_MATCH, FIND_FIRST, FIND_LAST, SORT, SPLIT, GET_DATA_TYPE};
@@ -224,7 +225,12 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return getBigDecimal(arguments).setScale(0, RoundingMode.FLOOR);
         } else if (ROUND.equals(function)) {
             BigDecimal roundingValue = getBigDecimal(arguments);
-            BigDecimal decimals = getBigDecimal(arguments);
+            final BigDecimal decimals;
+            if (arguments.hasNext()) {
+                decimals = getBigDecimal(arguments);
+            } else {
+                decimals = BigDecimal.ZERO;
+            }
             return roundingValue.setScale(decimals.intValue(), RoundingMode.HALF_EVEN);
         } else if (ABS.equals(function)) {
             return getBigDecimal(arguments).abs();
@@ -706,6 +712,13 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             } else {
                 return "unknown";
             }
+        } else if (MATH_MOD.equals(function)) {
+            BigDecimal dividend = getBigDecimal(arguments.next());
+            final BigDecimal divisor = getBigDecimal(arguments.next());
+            while (dividend.signum() < 0) {
+                dividend = dividend.add(divisor);
+            }
+            return dividend.remainder(divisor);
         } else {
             for (Map.Entry<String, MultiTypeEvaluatorManager.Expression> entry : customExpressionFunctions.entrySet()) {
                 if (function.getName().equals(entry.getKey())) {

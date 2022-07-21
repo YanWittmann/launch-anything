@@ -133,7 +133,7 @@ public class MultiTypeEvaluatorManager {
         try {
             Object result = evaluator.evaluate(expression, variables);
             removeCustomFunctions(inlineFunctions);
-            return new EvaluationResultResult(result);
+            return new EvaluationResultResult(result).beautifyResult();
         } catch (Exception e) {
             removeCustomFunctions(inlineFunctions);
             return new EvaluationResultFailure(e);
@@ -243,6 +243,29 @@ public class MultiTypeEvaluatorManager {
         @Override
         public String toString() {
             return "Result: " + result;
+        }
+
+        private BigDecimal beautifyBigDecimal(BigDecimal d) {
+            return d.stripTrailingZeros();
+        }
+
+        private EvaluationResultResult beautifyResult() {
+            if (result instanceof BigDecimal) {
+                return new EvaluationResultResult(beautifyBigDecimal((BigDecimal) result));
+            } else if (result instanceof Collection) {
+                Collection<?> collection = (Collection<?>) result;
+                List<Object> newCollection = new ArrayList<>();
+                for (Object o : collection) {
+                    if (o instanceof BigDecimal) {
+                        newCollection.add(beautifyBigDecimal((BigDecimal) o));
+                    } else {
+                        newCollection.add(o);
+                    }
+                }
+                return new EvaluationResultResult(newCollection);
+            } else {
+                return this;
+            }
         }
     }
 

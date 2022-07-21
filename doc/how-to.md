@@ -194,6 +194,8 @@ Examples:
   `get(0, split({x->x%6}, range(1, 50)))` = `[6, 12, 18, 24, 30, 36, 42, 48]`
 - `map({x->x<<2}, map(toDec, map({x -> replace(x, "0b", "")},map(toBin,filter({x -> x % 2 == 1}, range(1,10))))))` =
   `[4, 44, 404, 444, 4004]`
+- Calculate the euler phi function manually (for 208):
+  `round(208*product(map({x->1-(1/x)},distinct(factorize(208)))),0)` = `96`
 - ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
 
 **Chart generator**:
