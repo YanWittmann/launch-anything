@@ -6,7 +6,7 @@ Use this application to launch a variety of processes on your system.
 Currently only supports Windows, but might be expanded to support other platforms. This is because the global key
 detector is based on the Windows API.
 
-Note: The documents seen on this branch always relate to the current beta version state of the application. To view the
+Note: The documents seen on this branch always relates to the current beta version state of the application. To view the
 documentation for the latest stable version, select it's tagged version above.
 
 ## Features
