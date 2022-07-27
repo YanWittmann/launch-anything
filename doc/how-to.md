@@ -198,6 +198,7 @@ Examples:
 - Calculate the euler phi function manually (for 208):
   `round(208*product(map({x->1-(1/x)},distinct(factorize(208)))),0)` = `96`
 - `filter({x -> index%2 == 0}, range(1,10))` = `[1, 3, 5, 7, 9]`
+- `mapRange(45, 0, 100, 0, 1)` = `0.45` (number, fromMin, fromMax, toMin, toMax)
 - ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
 
 **Chart generator**:
