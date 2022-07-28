@@ -72,8 +72,8 @@ public class Main {
 
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
-            // do nothing
+        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
+                 IllegalAccessException ignored) {
         }
 
         LOG.info("Launching application version [{}] on OS [{}]", version, Util.getOS());

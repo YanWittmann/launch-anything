@@ -35,7 +35,7 @@ documentation for the latest stable version, select it's tagged version above.
 
 ## Quick Setup
 
-- Download the **[latest version](https://github.com/Skyball2000/launch-anything/releases)** and place the jar file in
+- Download the **[latest version](https://github.com/YanWittmann/launch-anything/releases)** and place the jar file in
   any directory on your system that you want the base directory to be
 - Start the jar file with at least Java 8
 - Double-Tap `command` or `ctrl` to open the search bar
@@ -67,7 +67,7 @@ git clone https://github.com/steos/jnafilechooser.git
 cd jnafilechooser
 mvn clean install
 cd ..
-git clone https://github.com/Skyball2000/launch-anything.git
+git clone https://github.com/YanWittmann/launch-anything.git
 cd launch-anything
 mvn clean install
 cd launch-anything-application/target

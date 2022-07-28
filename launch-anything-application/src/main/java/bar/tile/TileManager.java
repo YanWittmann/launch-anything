@@ -429,7 +429,7 @@ public class TileManager {
 
     private void generateDefaultTiles() {
         tiles.clear();
-        tiles.add(createUrlTile("LaunchAnything GitHub", "readme help", "https://github.com/Skyball2000/launch-anything"));
+        tiles.add(createUrlTile("LaunchAnything GitHub", "readme help", "https://github.com/YanWittmann/launch-anything"));
         tiles.add(createUrlTile("WhatsApp", "messages", "https://web.whatsapp.com"));
         tiles.add(createUrlTile("GeoGebra", "graphs", "https://www.geogebra.org/calculator"));
         tiles.add(createUrlTile("YouTube", "video", "https://www.youtube.com"));
