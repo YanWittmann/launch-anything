@@ -58,10 +58,11 @@
             <artifactId>jnafilechooser-api</artifactId>
             <version>1.1-SNAPSHOT</version>
         </dependency>
+        <!-- must be 1.0.2, as the following versions use Java 11 -->
         <dependency>
             <groupId>com.github.vatbub</groupId>
             <artifactId>mslinks</artifactId>
-            <version>1.0.6.2</version>
+            <version>1.0.2</version>
         </dependency>
         <dependency>
             <groupId>de.yanwittmann</groupId>
