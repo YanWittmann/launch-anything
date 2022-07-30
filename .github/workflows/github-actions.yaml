@@ -12,11 +12,14 @@ jobs:
         with:
           java-version: '8'
           distribution: 'adopt'
+      - run: pwd
       - uses: actions/checkout@v3
         with:
           repository: steos/jnafilechooser
           path: './jnafilechooser'
-      - run: cd jnafilechooser
+      - run: 'cd ./jnafilechooser'
+      - run: pwd
       - run: mvn clean install
       - run: cd ..
+      - run: pwd
       - run: mvn clean install

@@ -71,7 +71,7 @@ git clone https://github.com/Skyball2000/launch-anything.git
 cd launch-anything
 mvn clean install
 cd launch-anything-application/target
-java -jar launch-anything-application-2.7-SNAPSHOT-jar-with-dependencies.jar
+java -jar launch-anything-application-2.8.1-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ## Have fun using the LaunchAnything bar!
