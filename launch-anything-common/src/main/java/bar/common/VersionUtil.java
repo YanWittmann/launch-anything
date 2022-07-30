@@ -14,7 +14,7 @@ public class VersionUtil {
             "https://api.github.com/repos/Skyball2000/launch-anything/"
     };
 
-    public static String getLatestVersionJson() throws IOException {
+    public static String getLatestVersionJson() {
         for (String repoUrl : REPO_URLS) {
             try {
                 String url = repoUrl + "releases/latest";
@@ -22,7 +22,7 @@ public class VersionUtil {
             } catch (IOException ignored) {
             }
         }
-        return "undefined";
+        throw new RuntimeException("Unable to find latest version");
     }
 
     public static String extractVersion(JSONObject json) {
