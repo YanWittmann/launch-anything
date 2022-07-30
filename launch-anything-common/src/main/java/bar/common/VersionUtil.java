@@ -9,9 +9,20 @@ import java.util.Scanner;
 
 public class VersionUtil {
 
+    public final static String[] REPO_URLS = {
+            "https://api.github.com/repos/YanWittmann/launch-anything/",
+            "https://api.github.com/repos/Skyball2000/launch-anything/"
+    };
+
     public static String getLatestVersionJson() throws IOException {
-        String url = "https://api.github.com/repos/Skyball2000/launch-anything/releases/latest";
-        return new Scanner(new URL(url).openStream(), "UTF-8").useDelimiter("\\A").next();
+        for (String repoUrl : REPO_URLS) {
+            try {
+                String url = repoUrl + "releases/latest";
+                return new Scanner(new URL(url).openStream(), "UTF-8").useDelimiter("\\A").next();
+            } catch (IOException ignored) {
+            }
+        }
+        return "undefined";
     }
 
     public static String extractVersion(JSONObject json) {

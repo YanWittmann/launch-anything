@@ -33,7 +33,7 @@ public List<Tile> generateTiles(String search, AtomicReference<Long> lastInputEv
 First, clone this repository to your local machine:
 
 ```bash
-git clone https://github.com/Skyball2000/launch-anything.git
+git clone https://github.com/YanWittmann/launch-anything.git
 ```
 
 Then navigate to the

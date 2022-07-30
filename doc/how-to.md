@@ -319,5 +319,5 @@ over there.
 ## That's it!
 
 I hope you can put this tool to good use. If you have any questions, suggestions or comments, feel free to contact me or
-to create an issue on the **[GitHub repository](https://github.com/Skyball2000/launch-anything/issues)**.  
+to create an issue on the **[GitHub repository](https://github.com/YanWittmann/launch-anything/issues)**.  
 If you're feeling especially generous, you can also **[buy me a coffee](https://www.paypal.com/paypalme/yanwittmann)**!
