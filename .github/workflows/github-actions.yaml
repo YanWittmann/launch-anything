@@ -17,9 +17,8 @@ jobs:
         with:
           repository: steos/jnafilechooser
           path: './jnafilechooser'
-      - run: 'cd ./jnafilechooser'
-      - run: pwd
-      - run: mvn clean install
-      - run: cd ..
-      - run: pwd
+      - working-directory: './jnafilechooser'
+        run: pwd
+      - working-directory: './jnafilechooser'
+        run: mvn clean install
       - run: mvn clean install
