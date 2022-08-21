@@ -120,7 +120,13 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
         List<Tile> tiles = new ArrayList<>();
 
         if (result instanceof BigDecimal || result instanceof BigInteger) {
-            String resultString = result.toString();
+            String resultString;
+            if (result instanceof BigDecimal) {
+                resultString = ((BigDecimal) result).toPlainString();
+            } else {
+                resultString = result.toString();
+            }
+
             resultString = !resultString.contains(".") ? resultString : resultString.replaceAll("0*$", "").replaceAll("\\.$", "");
             tiles.add(createCopyTextTile(resultString, resultString));
 
