@@ -467,7 +467,21 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return "0b" + n.toString(2);
         } else if (TO_DECIMAL.equals(function)) {
             final Object arg = arguments.next();
-            return performUnaryOperationOnValue(arg, operand -> new BigDecimal(operand.toString()));
+            return performUnaryOperationOnValue(arg, operand -> {
+                if (operand instanceof String) {
+                    String s = (String) operand;
+                    if (s.length() == 1) {
+                        return BigDecimal.valueOf((int) s.charAt(0));
+                    }
+                } else if (operand instanceof Character) {
+                    return BigDecimal.valueOf((int) (Character) operand);
+                } else if (operand instanceof Boolean) {
+                    return BigDecimal.valueOf((Boolean) operand ? 1 : 0);
+                } else if (operand instanceof Number) {
+                    return operand;
+                }
+                return new BigDecimal(operand.toString());
+            });
         } else if (TO_CHARACTER.equals(function)) {
             final BigDecimal n = getBigDecimal(arguments);
             return Character.toString((char) n.intValue());
@@ -532,7 +546,25 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             }
             return allElements.get(index.intValue());
         } else if (RANGE.equals(function)) {
-            return IntStream.rangeClosed(getBigDecimal(arguments).intValue(), getBigDecimal(arguments).intValue()).boxed().collect(Collectors.toList());
+            final Object lower = arguments.next();
+            final Object upper = arguments.next();
+
+            if (lower instanceof String && upper instanceof String) {
+                final String lowerString = String.valueOf(lower);
+                final String upperString = String.valueOf(upper);
+                if (lowerString.length() == 1 && upperString.length() == 1) {
+                    return IntStream.rangeClosed(lowerString.charAt(0), upperString.charAt(0))
+                            .mapToObj(i -> Character.toString((char) i))
+                            .collect(Collectors.toList());
+                }
+            }
+
+            final int lowerInt = getBigDecimal(lower).intValue();
+            final int upperInt = getBigDecimal(upper).intValue();
+
+            return IntStream.rangeClosed(Math.min(lowerInt, upperInt), Math.max(lowerInt, upperInt))
+                    .mapToObj(BigDecimal::valueOf)
+                    .collect(Collectors.toList());
         } else if (NORMALIZE.equals(function)) {
             List<Object> allArgumentsAsList = getAllArgumentsAsList(arguments);
             BigDecimal sum = BigDecimal.ZERO;

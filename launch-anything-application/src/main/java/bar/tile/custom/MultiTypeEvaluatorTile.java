@@ -99,6 +99,7 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
 
     private MultiTypeEvaluatorManager.EvaluationResult attemptEvaluate(String expression) {
         MultiTypeEvaluatorManager.EvaluationResult result = evaluator.evaluate(expression);
+
         if (result instanceof MultiTypeEvaluatorManager.EvaluationResultFailure) {
             int openBraces = Util.countSubstring(expression, "(");
             int closedBraces = Util.countSubstring(expression, ")");
@@ -117,17 +118,11 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
     }
 
     private List<Tile> createResultTiles(String query, Object result) {
-        List<Tile> tiles = new ArrayList<>();
+        final List<Tile> tiles = new ArrayList<>();
 
         if (result instanceof BigDecimal || result instanceof BigInteger) {
-            String resultString;
-            if (result instanceof BigDecimal) {
-                resultString = ((BigDecimal) result).toPlainString();
-            } else {
-                resultString = result.toString();
-            }
+            final String resultString = formatBigNumberResult(result);
 
-            resultString = !resultString.contains(".") ? resultString : resultString.replaceAll("0*$", "").replaceAll("\\.$", "");
             tiles.add(createCopyTextTile(resultString, resultString));
 
             if (((Number) result).doubleValue() < Double.MAX_VALUE) {
@@ -144,9 +139,9 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
                 }
             }
 
-            String r = findRoundedValue((Number) result);
-            if (r.length() > 0)
-                tiles.add(createCopyTextTile(r, r.replace(" ≈ ", "")));
+            final String rounded = findRoundedValue((Number) result);
+            if (rounded.length() > 0)
+                tiles.add(createCopyTextTile(rounded, rounded.replace(" ≈ ", "")));
 
             if (query.matches("[0-9 ]+/[0-9 ]+")) {
                 int dividend = Integer.parseInt(query.split("/")[0].trim());
@@ -159,11 +154,35 @@ public class MultiTypeEvaluatorTile implements RuntimeTile {
                     }
                 }
             }
+        } else if (result instanceof Collection) {
+            final StringJoiner joiner = new StringJoiner(", ", "[", "]");
+
+            for (Object o : (Collection<?>) result) {
+                if (o instanceof BigDecimal || o instanceof BigInteger) {
+                    joiner.add(formatBigNumberResult(o));
+                } else {
+                    joiner.add(o.toString());
+                }
+            }
+
+            tiles.add(createCopyTextTile(joiner.toString(), joiner.toString()));
         } else {
             tiles.add(createCopyTextTile(result.toString(), result.toString()));
         }
 
         return tiles;
+    }
+
+    private String formatBigNumberResult(Object result) {
+        String resultString;
+        if (result instanceof BigDecimal) {
+            resultString = ((BigDecimal) result).toPlainString();
+        } else {
+            resultString = result.toString();
+        }
+
+        resultString = !resultString.contains(".") ? resultString : resultString.replaceAll("0*$", "").replaceAll("\\.$", "");
+        return resultString;
     }
 
     private String findRoundedValue(Number value) {

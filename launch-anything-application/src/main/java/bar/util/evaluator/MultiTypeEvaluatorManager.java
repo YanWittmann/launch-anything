@@ -5,6 +5,7 @@ import com.fathzer.soft.javaluator.Function;
 import com.fathzer.soft.javaluator.Parameters;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -253,11 +254,13 @@ public class MultiTypeEvaluatorManager {
             if (result instanceof BigDecimal) {
                 return new EvaluationResultResult(beautifyBigDecimal((BigDecimal) result));
             } else if (result instanceof Collection) {
-                Collection<?> collection = (Collection<?>) result;
-                List<Object> newCollection = new ArrayList<>();
+                final Collection<?> collection = (Collection<?>) result;
+                final List<Object> newCollection = new ArrayList<>();
                 for (Object o : collection) {
                     if (o instanceof BigDecimal) {
                         newCollection.add(beautifyBigDecimal((BigDecimal) o));
+                    } else if (o instanceof BigInteger) {
+                        newCollection.add(beautifyBigDecimal(new BigDecimal((BigInteger) o)));
                     } else {
                         newCollection.add(o);
                     }
