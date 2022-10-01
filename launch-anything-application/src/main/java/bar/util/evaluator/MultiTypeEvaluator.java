@@ -934,6 +934,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
 
     public static final Operator EXPONENT_DOUBLE = new Operator("^^", 2, Operator.Associativity.LEFT, 15);
     public static final Operator EXPONENT = new Operator("^", 2, Operator.Associativity.LEFT, 15);
+    public static final Operator EXPONENT_STAR = new Operator("**", 2, Operator.Associativity.LEFT, 15);
     public static final Operator NEGATE = new Operator("-", 1, Operator.Associativity.RIGHT, 14);
     public static final Operator DECREMENT = new Operator("--", 1, Operator.Associativity.RIGHT, 14);
     public static final Operator INCREMENT = new Operator("++", 1, Operator.Associativity.RIGHT, 14);
@@ -964,7 +965,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
     private static final Operator[] OPERATORS = new Operator[]{NEGATE, DECREMENT, INCREMENT, MULTIPLY, DIVIDE, MODULO, MINUS, PLUS, RIGHT_SHIFT, LEFT_SHIFT,
             RELATIONAL_SMALLER, RELATIONAL_SMALLER_OR_EQUAL, RELATIONAL_GREATER, RELATIONAL_GREATER_OR_EQUAL, EQUALITY, INEQUALITY, BITWISE_AND, BITWISE_OR,
             LOGICAL_AND_1, LOGICAL_AND_2, LOGICAL_OR_1, LOGICAL_OR_2, LOGICAL_NOT_1, LOGICAL_NOT_2, EXPONENT, EXPONENT_DOUBLE, LOGICAL_IMPLICATION,
-            LOGICAL_EQUIVALENCE};
+            LOGICAL_EQUIVALENCE, EXPONENT_STAR};
 
     @Override
     protected Object evaluate(Operator operator, Iterator<Object> operands, Object evaluationContext) {
@@ -1029,7 +1030,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             Object left = operands.next();
             Object right = operands.next();
             return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> getBigDecimal(leftValue).divide(getBigDecimal(rightValue), DOUBLE_SCALE, RoundingMode.HALF_EVEN));
-        } else if (EXPONENT.equals(operator) || EXPONENT_DOUBLE.equals(operator)) {
+        } else if (EXPONENT.equals(operator) || EXPONENT_DOUBLE.equals(operator) || EXPONENT_STAR.equals(operator)) {
             Object left = operands.next();
             Object right = operands.next();
             return performBinaryOperationOnValueAndList(left, right, (leftValue, rightValue) -> bigDecimalPow(getBigDecimal(leftValue), getBigDecimal(rightValue)));
