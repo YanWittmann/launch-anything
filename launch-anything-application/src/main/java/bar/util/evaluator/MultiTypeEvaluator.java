@@ -470,7 +470,7 @@ public class MultiTypeEvaluator extends AbstractEvaluator<Object> {
             return performUnaryOperationOnValue(arg, operand -> {
                 if (operand instanceof String) {
                     String s = (String) operand;
-                    if (s.length() == 1) {
+                    if (s.length() == 1 && (s.charAt(0) < '0' || s.charAt(0) > '9')) {
                         return BigDecimal.valueOf((int) s.charAt(0));
                     }
                 } else if (operand instanceof Character) {
