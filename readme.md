@@ -61,18 +61,21 @@ Important: These documents represent the state of the latest snapshot of the Lau
 
 ## Build it yourself
 
-You will need to download maven and git to build this application. Then, run these commands:
+You will need to download maven and git to build this application. Then, run these commands in an empty directory
 
 ```shell
 git clone https://github.com/steos/jnafilechooser.git
 cd jnafilechooser
 mvn clean install
 cd ..
+git clone https://github.com/YanWittmann/menter-lang.git
+cd menter-lang
+mvn clean install
+cd ..
 git clone https://github.com/YanWittmann/launch-anything.git
 cd launch-anything
 mvn clean install
 cd launch-anything-application/target
-java -jar launch-anything-application-2.9-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 ## Have fun using the LaunchAnything bar!
