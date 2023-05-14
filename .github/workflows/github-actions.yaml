@@ -22,4 +22,13 @@ jobs:
       - working-directory: './jnafilechooser'
         run: mvn clean install
 
+      - uses: actions/checkout@v3
+        with:
+          repository: YanWittmann/menter-lang
+          path: './menter-lang'
+      - working-directory: './menter-lang'
+        run: git checkout 40a93ce039c9cb7afcfda0bf51f45f089811386b
+      - working-directory: './menter-lang'
+        run: mvn clean install
+
       - run: mvn clean install
