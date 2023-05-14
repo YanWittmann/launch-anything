@@ -17,7 +17,8 @@ documentation for the latest stable version, select it's tagged version above.
 - Copy text to the clipboard
 - Tile Generators: generate tiles for files in a given directory
 - Runtime Tiles (see **[this document](doc/how-to.md)** for more information)
-    - Evaluate mathematical expressions with variables, custom functions, numbers, booleans, lists, binary, hex, ...
+    - Integrated [Menter Interpreter](https://yanwittmann.github.io/menter-lang-docs/)! Run Menter code directly from the
+      search bar
     - Display charts for mathematical functions/expressions
     - Copy system information like the local IP address
     - Convert between a variety of units

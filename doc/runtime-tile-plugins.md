@@ -160,7 +160,7 @@ no built-in action for that. So, you have to implement your own action:
 
 ```java
 Tile tile = new Tile("Template Plugin Tile", "Template", "", false);
-TileAction action = new TileAction(() -> {
+TileAction action = new TileActionRuntimeInteraction(() -> {
     Util.popupMessage("Template Plugin Tile", "You executed the Template Plugin Tile!");
 });
 tile.addAction(action);
