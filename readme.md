@@ -34,7 +34,7 @@ documentation for the latest stable version, select it's tagged version above.
 - Cloud Tiles: Store your tiles in the cloud to access them from any device. **[More information](doc/cloud-tiles.md)**.
 
 ## Quick Setup
-d
+
 - Download the **[latest version](https://github.com/YanWittmann/launch-anything/releases)** and place the jar file in
   any directory on your system that you want the base directory to be
 - Start the jar file with at least Java 8

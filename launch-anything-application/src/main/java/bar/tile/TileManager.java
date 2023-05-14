@@ -5,6 +5,7 @@ import bar.tile.action.TileAction;
 import bar.tile.custom.*;
 import bar.ui.TrayUtil;
 import bar.util.Util;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -145,21 +146,21 @@ public class TileManager {
     }
 
     private void readTilesFromFile() {
+        if (!tileFile.exists()) {
+            TrayUtil.showError("Unable to load tiles: file does not exist");
+            LOG.error("Unable to load tiles: file does not exist");
+            return;
+        }
         try {
-            StringBuilder fileContent = new StringBuilder();
-            Scanner reader = new Scanner(tileFile);
-            while (reader.hasNextLine()) {
-                fileContent.append(reader.nextLine().trim());
-            }
-            reader.close();
+            final String fileContent = FileUtils.readFileToString(tileFile, "UTF-8");
 
-            JSONObject tilesRoot = new JSONObject(fileContent.toString());
+            JSONObject tilesRoot = new JSONObject(fileContent);
             loadTilesFromJson(tilesRoot);
 
             // only create a backup if the file was loaded successfully,
             // we don't want to create a backup if the file is corrupted
             tileBackups.createBackup();
-        } catch (JSONException e) {
+        } catch (JSONException | IOException e) {
             TrayUtil.showError("Unable to load tiles: file is corrupted");
             LOG.error("Unable to load tiles: file is corrupted: {}", e.getMessage());
             if (tileBackups.userAskLoadBackup()) {
@@ -167,9 +168,6 @@ public class TileManager {
                                             "If the problem persists, please create an issue on GitHub.");
                 readTilesFromFile();
             }
-        } catch (FileNotFoundException e) {
-            TrayUtil.showError("Unable to load tiles: file does not exist");
-            LOG.error("Unable to load tiles: file does not exist: {}", e.getMessage());
         }
         regenerateGeneratedTiles();
         createSettingsTiles();

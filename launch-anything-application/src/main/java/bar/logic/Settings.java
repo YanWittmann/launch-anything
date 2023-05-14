@@ -2,6 +2,7 @@ package bar.logic;
 
 import bar.ui.TrayUtil;
 import bar.util.Util;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,14 +58,9 @@ public class Settings {
 
     private void readSettingsFromFile() {
         try {
-            StringJoiner fileContent = new StringJoiner("\n");
-            Scanner reader = new Scanner(settingsFile);
-            while (reader.hasNextLine()) {
-                fileContent.add(reader.nextLine());
-            }
-            reader.close();
-            settings.putAll(new JSONObject(fileContent.toString()).toMap());
-        } catch (FileNotFoundException e) {
+            String fileContent = FileUtils.readFileToString(settingsFile, "UTF-8");
+            settings.putAll(new JSONObject(fileContent).toMap());
+        } catch (IOException e) {
             TrayUtil.showError("Unable to read settings file: " + e.getMessage());
             LOG.error("error: ", e);
         }
@@ -78,7 +74,7 @@ public class Settings {
         }
 
         for (Map.Entry<String, Object> setting : settings.entrySet()) {
-            if (categorySettings.entrySet().stream().anyMatch(e -> e.getValue().keySet().contains(setting.getKey()))) {
+            if (categorySettings.entrySet().stream().anyMatch(e -> e.getValue().containsKey(setting.getKey()))) {
                 continue;
             }
             categorySettings.computeIfAbsent("custom", k -> new LinkedHashMap<>()).put(setting.getKey(), String.valueOf(setting.getValue()));
