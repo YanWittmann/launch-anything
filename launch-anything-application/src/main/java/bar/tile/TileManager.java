@@ -3,6 +3,7 @@ package bar.tile;
 import bar.logic.Settings;
 import bar.tile.action.TileAction;
 import bar.tile.custom.*;
+import bar.tile.custom.menter.MenterEvaluatorTile;
 import bar.ui.TrayUtil;
 import bar.util.Util;
 import org.apache.commons.io.FileUtils;
@@ -14,14 +15,10 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -482,12 +479,11 @@ public class TileManager {
         TIMEZONE_CONVERTER(TimeZoneConversionTile::new),
         WOLFRAM_ALPHA(WolframAlphaTile::new),
         UNIT_CONVERTER(UnitConverterTile::new),
-        MULTI_TYPE_EVALUATOR(MultiTypeEvaluatorTile::new),
-        CHART_GENERATOR(ChartGeneratorTile::new),
         WIKI_SEARCH(WikiSearchTile::new),
         TIMEOUT(TimeoutTile::new),
         SYSTEM_INFO(SystemInfoTile::new),
-        DIRECTORY_PATH(URIOpenerTile::new);
+        DIRECTORY_PATH(URIOpenerTile::new),
+        MENTER_EVALUATOR(MenterEvaluatorTile::new);
 
         private final String name;
         private final String description;

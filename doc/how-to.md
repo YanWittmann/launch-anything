@@ -1,6 +1,6 @@
 # How To use: Tips and Tricks
 
-## Controls: Interact with the bar
+## Controls
 
 - Double-tap the `ctrl` or `command` key to open the bar. Here you can enter your search query.
 - Use `arrow up` and `arrow down` to navigate through the result tiles.
@@ -8,7 +8,7 @@
 - Press `esc` to cancel the search and close the bar.
 - Use `alt` + `arrow up` and `arrow down` to scroll through your last inputs.
 
-## Adjust everything: Settings overview
+## Settings overview
 
 To get to the settings page, enter `settings` in the bar and hit enter. A web page will open up. These are the
 navigation items:
@@ -25,6 +25,8 @@ navigation items:
 - If the content does not on the page, you can scroll down. I cannot believe I have to explain this.
 
 ### Sections
+
+#### Tiles
 
 <details>
   <summary>Tiles</summary>
@@ -56,6 +58,8 @@ left click it.
 Want to create your own tile actions? Find out how to **[write a plugin](tile-action-plugins.md)**!
 </details>
 
+#### Tile Generators
+
 <details>
   <summary>Tile Generators</summary>
 
@@ -69,6 +73,8 @@ The category and the keywords of the tiles are inherited from the tile generator
 Similar to the tiles: to delete a tile generator, right-click the category of the tile generator.
 </details>
 
+#### Runtime Tiles
+
 <details>
   <summary>Runtime Tiles</summary>
 
@@ -76,6 +82,12 @@ Runtime tiles are tiles that are generated based on the current search terms. Th
 only thing you can change is the choice to deactivate them by left-clicking the according badge. These runtime tiles are
 currently only available:
 
+- **[Menter Interpreter](https://yanwittmann.github.io/menter-lang-docs)**
+  The Menter Interpreter provides a way to execute Menter code directly in the bar. Enter any expression and directly
+  see the result. Hit enter to copy the result to the clipboard. See the Menter documentation for more information.  
+  By using the plot function, you can display functions in your browser using the ChartJs library. This is powered by
+  the [J2ChartJs](https://github.com/YanWittmann/j2chartjs) library. Example: `plot(space(1, 10), x -> x^2, x -> x^3)`
+  or `plot([1, 2, 3, 4], [1, 2, 3, 4], [4, 3, 2, 1])` for a scatter plot.
 - **Go Website**: Enter `go` and any search term to use the `I'm Feeling Lucky` functionality and instantly open the
   corresponding website.
 - **Wiki Search**: Enter `wiki` and any search term to display the short description of the Wikipedia article. Press
@@ -118,102 +130,11 @@ currently only available:
   request to the api. Since only 2000 requests per month are allowed, the `alpha` is required as a confirmation, to
   prevent accidental requests.
 
-The **math expression** tile is very powerful:
-
-- The math evaluator can perform operations on decimals, booleans and lists/sets
-- Use operators like `+`, `-`, `*`, `/`, `%` and `^` for numbers (precision is 20 digits)
-- Use operators like `&&`, `||`, `!`, `=` for booleans (`true` and `false`)
-- Lists can be created using the `range()`, `list()` and `set()` functions
-- Functions can take a certain amount of parameters and each return a certain type of value. For all functions and
-  operations, enter `function` in the launch bar
-- Lists can be filtered or mapped using the `filter()` and `map()` functions by providing the filter or map function
-  as first parameter, the list as second parameter and the parameters for the filter or map function as following
-  parameters.  
-  You can use the variable `index` to access the index of the current list element.
-- Create functions by using `functionname(parameter1, parameter2) = functionbody` to declare custom functions.
-  Currently not supported in mapping and filtering.
-- Variables can be assigned to using `varname = value`, or multiple variables can be assigned at once by using
-  `varname1 = value1; varname2 = value2; ...`
-- Hex, binary and octal numbers can be entered using `0x`, `0b` and `0o` as prefix. Convert to different systems by
-  using `toHex` and `toBin`
-- Strings are supported by using `"string"`. String can be concatenated using `+`, multiplied using `*` and used as
-  parameter in several functions, such as `replace`, `split`, `trim`, `contains` and `join`. The split method can also
-  be used to split a
-  list of elements into multiple sub-lists by providing a splitting function as first parameter.
-- Sort a list or several function arguments using `sort`. A function can be passed as first parameter to use as
-  comparator. You can reverse a list using `reverse`.
-- Invert booleans or negate numbers using `!` and `-` or the function `invert`.
-- Get the data type of a value using `type`.
-- The `self` method can be used to split a list into multiple lists each containing the same element. Used for counting
-  the number of times a value occurs in a list. (or just `{x->x}`)
-- Inline functions (like lambda expressions) can be used to create filter/map/sort functions without the need of
-  declaring new functions separately. Surround them with `{` and `}`: `{x,y -> x+y}`, for example:
-  `map({x,y->x+y}, list(12, 1), 6)` = `[18, 7]`
-
-Examples:
-
-- `12 + 4` = `16`
-- `12 + (55 % 23 + 2)` = `23`
-- `filter(isPrime, range(2, 10))` = `[2, 3, 5, 7]`
-- `isNotPrime(x) = !isPrime(x)` --> `isNotPrime(23)` = `false`
-- `map(factorize, set(34, 34, 22, 84))` = `[[2, 17], [2, 11], [2, 2, 3, 7]]`
-- `map(product, map(factorize, set(34, 34, 22, 84)))` = `[34, 22, 84]`
-- `sum(map(round, normalize(list(12, 32, 4)), 3))` = `1`
-- `true || false && true` = `true`
-- `a = 23; b = 54; c = 82` = `3 assignments a = 23, b = 54, c = 82`
-- `toHex(23 + 0b1001 + 0o23 + 0x2DF)` = `0x312`
-- `toDec("0b" + "10" * 3)` = `42`
-- `if(3 == x, 15, x)` (returns `15` if `x` is `3` and `x` otherwise)
-- `join("=", split("this is a test", " "))` = `this=is=a=test`
-- `join(" ", list("string", "concatination"))` = `string concatination`
-- `sort(sort(len,"aaaa", "aaa", "dd", "d", "c"))` = `[aaa, aaaa, c, d, dd]`
-- Sorts the lengths of the strings and removes -8:  
-  `negLen(x) = -len(x)`  
-  `isNotMinusEight(x) = x != -8`  
-  `filter(isNotMinusEight, sort(len, sort(map(negLen, list("wowowodd", "", "testdd", "ddddddhmm")))))` = `[0, -9, -6]`
-- Joins the numbers from 1-10 in a CSV-String, splits them, converts back into decimals and sums them
-  up: `sum(map(toDec, split(join(", ", range(1,10)), ", ")))` = `55`
-- Creates two lists, one containing prime numbers, one the rest: `split(isPrime, range(1, 10))`
-  = `[[1, 4, 6, 8, 9, 10], [2, 3, 5, 7]]`
-- Check if the two expressions checking for prime numbers from 1-10 are the
-  same: `noneMatch(isFalse,get(1,split(isPrime,range(1,10))) == filter(isPrime,range(1,10)))` = `true`
-- Sort the non-prime numbers from 3-100 by the length of their factorisation (
-  using `invertLen(x) = -len(x)`): `join(", ", map(product,sort(invertLen,map(factorize,get(0,split(isPrime,range(3,100)))))))`
-  = `64, 96, 32, 48, 72, 80, 16, 24, 36, 40, 54, 56, 60, 81, 84, 88, 90, 100, 8, 12, 18, 20, 27, 28, 30, 42, 44, 45, 50, 52, 63, ...`  
-  `invertLen` can be replaced by inline function `{x -> -len(x)}`
-- `map(sort, sort(max, split(isSmallerTen, list(1, 5, 2, 12, 62, 44)))` = `[[1, 2, 5], [12, 44, 62]]`
-- Sort letters in a string by ascii: `trim(join("", map(toChar, sort(map(toDec, split("this is a test", ""))))))`
-  = `aehiisssttt`
-- Only words with 't': `filter(contains, list("test", "hmm"), "t")` = `[test]`
-- Get data type for multiple elements: `map(type, list("", 1.0, list(), false)` = `[string, number, list, boolean]`
-- Filter only strings using `isString(x) = type(x) == "string"`: `filter(isString, list("test", 23, "d", true, "true"))`
-  = `[test, d, true]`
-- Find the most common letter in a string:
-  `get(0, get(0, reverse(sort(len, split(self, split("launch anything", ""))))))` = `n`
-- `filter({x,y -> type(x) == "string" && y}, list("d", 24), true)` = `[d]`
-- Equivalence class mod 6 for numbers from 1-50 with result of 0 in this case:
-  `get(0, split({x->x%6}, range(1, 50)))` = `[6, 12, 18, 24, 30, 36, 42, 48]`
-- `map({x->x<<2}, map(toDec, map({x -> replace(x, "0b", "")},map(toBin,filter({x -> x % 2 == 1}, range(1,10))))))` =
-  `[4, 44, 404, 444, 4004]`
-- Calculate the euler phi function manually (for 208):
-  `round(208*product(map({x->1-(1/x)},distinct(factorize(208)))),0)` = `96`
-- `filter({x -> index%2 == 0}, range(1,10))` = `[1, 3, 5, 7, 9]`
-- `mapRange(45, 0, 100, 0, 1)` = `0.45` (number, fromMin, fromMax, toMin, toMax)
-- `filter({x -> toDec(x)%2==0}, range("a", "z"))` = `[b, d, f, h, j, l, n, p, r, t, v, x, z]`
-- ... and a lot more! and don't forget that you can evaluate all those in the chart generator as well.
-
-**Chart generator**:
-
-- The graph generator can create charts for one or multiple expressions. You can enter multiple expressions by
-  separating them with a semicolon: `sin(x);cos(x)`.
-- The range and resolution used by the graph generator can be changed by entering `for start,end,step` after the
-  expression: `sin(x);cos(x) for0,10,0.1`.
-- If no step size is specified, a fitting step size is being calculated using the range size.
-- The custom functions from the math expression tile can be used in the graph generator.
-
 If you have ideas for more runtime tiles, please create an issue using the link below.  
 Or, if you want to create a runtime tile plugin, please follow these **[instructions](runtime-tile-plugins.md)**.
 </details>
+
+#### Categories
 
 <details>
   <summary>Categories</summary>
@@ -230,6 +151,8 @@ be used as a search term. There are a few default categories:
 But of course you can add as many categories as you like.
 </details>
 
+#### Cloud Tiles
+
 <details>
   <summary>Cloud Tiles</summary>
 
@@ -239,7 +162,7 @@ all your devices.
 See **[cloud-tiles.md](cloud-tiles.md)** for more information.
 </details>
 
-### Section: Settings & Help
+### Settings & Help
 
 Here you can find some general help and most importantly: the settings for the bar. Here you can customize almost every
 value that is being used to determine the behavior of the bar. Some of these settings require a restart of the
@@ -273,8 +196,7 @@ When entering a search term, the bar will
 #### Fuzzy inputs
 
 Most of the runtime tiles match the input very loosely. In most cases, spaces are ignored and the search is
-case-insensitive. So, this input `sys Local IP` is the same as `syslocalip` (or even better `syslip`). Another example:
-`g(x) = sin(x) + 2 * x for 1,10` --> `g(x)=sin(x)+2xfor1,10`. This can save a lot of time if done consistently.
+case-insensitive. So, this input `sys Local IP` is the same as `syslocalip` (or even better `syslip`).
 
 #### Cloud Tiles
 
