@@ -27,7 +27,7 @@ jobs:
           repository: YanWittmann/menter-lang
           path: './menter-lang'
       - working-directory: './menter-lang'
-        run: git checkout v1.0.0
+        run: git checkout 592690bbe1d53c52808eb145a52a121a126c38dd
       - working-directory: './menter-lang'
         run: mvn clean install
 
