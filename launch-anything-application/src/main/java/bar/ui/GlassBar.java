@@ -300,18 +300,24 @@ public class GlassBar extends JFrame {
 
     public void setCaretVisible(boolean visible) {
         if (visible) {
+            if (isLightMode) inputField.setCaretColor(Color.BLACK);
+            else inputField.setCaretColor(Color.WHITE);
+
             this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             backgroundImageLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             frameBorderLabel.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             inputField.setCursor(new Cursor(Cursor.TEXT_CURSOR));
-            if (isLightMode) inputField.setCaretColor(Color.BLACK);
-            else inputField.setCaretColor(Color.WHITE);
+
         } else {
+            inputField.setCaretColor(new Color(0, 0, 0, 0));
+
+            // I realized that I do not want the cursor to become invisible anymore.
+            if (true) return;
+
             this.setCursor(INVISIBLE_CURSOR);
             backgroundImageLabel.setCursor(INVISIBLE_CURSOR);
             frameBorderLabel.setCursor(INVISIBLE_CURSOR);
             inputField.setCursor(INVISIBLE_CURSOR);
-            inputField.setCaretColor(new Color(0, 0, 0, 0));
         }
     }
 

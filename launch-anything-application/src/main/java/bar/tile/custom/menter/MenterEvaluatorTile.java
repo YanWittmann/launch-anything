@@ -94,26 +94,27 @@ public class MenterEvaluatorTile implements RuntimeTile {
         if (result.isEmpty()) return tiles;
 
         if (result.getValue() instanceof BigDecimal || result.getValue() instanceof BigInteger) {
-            final String resultString = formatBigNumberResult(result);
+            final String resultString = result.toString();
+            final String copyString = result.toDisplayString();
 
-            tiles.add(createCopyTextTile(resultString, resultString));
+            tiles.add(createCopyTextTile(resultString, copyString));
 
             if (((Number) result.getValue()).doubleValue() < Double.MAX_VALUE) {
                 double doubleValue = ((Number) result.getValue()).doubleValue();
                 String f1 = findFractionValue(doubleValue, 0.001);
                 String f1Value = f1.replace(" = ", "").replace(" ≈ ", "");
-                if (f1.length() > 0 && !f1Value.equals(query)) {
+                if (!f1.isEmpty() && !f1Value.equals(query)) {
                     tiles.add(createCopyTextTile(f1, f1Value));
                 }
                 String f2 = findFractionValue(doubleValue, 0.01);
                 String f2Value = f2.replace(" = ", "").replace(" ≈ ", "");
-                if (f2.length() > 0 && !f1.equals(f2) && !f2Value.equals(query)) {
+                if (!f2.isEmpty() && !f1.equals(f2) && !f2Value.equals(query)) {
                     tiles.add(createCopyTextTile(f2, f2Value));
                 }
             }
 
             final String rounded = findRoundedValue((Number) result.getValue());
-            if (rounded.length() > 0)
+            if (!rounded.isEmpty())
                 tiles.add(createCopyTextTile(rounded, rounded.replace(" ≈ ", "")));
 
             if (query.matches("[0-9 ]+/[0-9 ]+")) {
@@ -127,20 +128,27 @@ public class MenterEvaluatorTile implements RuntimeTile {
                     }
                 }
             }
-        } else if (result instanceof Collection) {
-            final StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        } else if (result.getValue() instanceof Collection) {
+            final Collection<?> collection = (Collection<?>) result.getValue();
+            final StringJoiner displayJoiner = new StringJoiner(", ", "[", "]");
+            final StringJoiner copyJoiner = new StringJoiner(", ", "[", "]");
 
-            for (Object o : (Collection<?>) result) {
-                if (o instanceof BigDecimal || o instanceof BigInteger) {
-                    joiner.add(formatBigNumberResult(o));
+            for (Object o : collection) {
+                if (o instanceof Value) {
+                    displayJoiner.add(((Value) o).toString());
+                    copyJoiner.add(((Value) o).toDisplayString());
+                } else if (o instanceof BigDecimal || o instanceof BigInteger) {
+                    displayJoiner.add(formatBigNumberResult(o));
+                    copyJoiner.add(formatBigNumberResult(o));
                 } else {
-                    joiner.add(o.toString());
+                    displayJoiner.add(o.toString());
+                    copyJoiner.add(o.toString());
                 }
             }
 
-            tiles.add(createCopyTextTile(joiner.toString(), joiner.toString()));
+            tiles.add(createCopyTextTile(displayJoiner.toString(), copyJoiner.toString()));
         } else {
-            tiles.add(createCopyTextTile(result.toString(), result.toString()));
+            tiles.add(createCopyTextTile(result.toString(), result.toDisplayString()));
         }
 
         return tiles;
@@ -190,8 +198,8 @@ public class MenterEvaluatorTile implements RuntimeTile {
         }
 
         if (input.contains("+") || input.contains("-") || input.contains("*") || input.contains("/") || input.contains("%") ||
-            input.contains("==") || input.contains("!=") || input.contains("<") || input.contains(">") || input.contains("<=") ||
-            input.contains(">=") || input.contains("&&") || input.contains("||") || input.contains("!")) {
+                input.contains("==") || input.contains("!=") || input.contains("<") || input.contains(">") || input.contains("<=") ||
+                input.contains(">=") || input.contains("&&") || input.contains("||") || input.contains("!")) {
             return true;
         }
 
@@ -199,9 +207,38 @@ public class MenterEvaluatorTile implements RuntimeTile {
     }
 
     private String formatErrorMessage(String message) {
-        return message.replace("Syntax error starting from: ", "Error: ")
-                .replaceAll("\t", " ")
-                .replaceAll(" +", " ");
+        if (message.contains("Syntax error starting from")) {
+            message = message.replace("Syntax error starting from: ", "Error: ");
+        }
+        if (message.contains("Cannot resolve symbol")) {
+            String[] lines = message.split("\n");
+            String symbol = "";
+            String suggestions = "";
+            for (String line : lines) {
+                if (line.startsWith("Cannot resolve symbol")) {
+                    int start = line.indexOf('\'');
+                    int end = line.indexOf('\'', start + 1);
+                    if (start >= 0 && end > start) {
+                        symbol = line.substring(start + 1, end);
+                    }
+                } else if (line.startsWith("Did you mean")) {
+                    int start = line.indexOf('\'');
+                    int end = line.lastIndexOf('\'');
+                    if (start >= 0 && end > start) {
+                        suggestions = line.substring(start, end + 1).replace("', '", ", ");
+                    }
+                }
+            }
+            if (!symbol.isEmpty()) {
+                if (!suggestions.isEmpty()) {
+                    message = "Unknown '" + symbol + "' (" + suggestions + ")";
+                } else {
+                    message = "Unknown '" + symbol + "'";
+                }
+            }
+        }
+        message = message.replaceAll("\t", " ").replaceAll(" +", " ");
+        return message;
     }
 
     private Tile createCopyTextTile(String label, String copyText) {
